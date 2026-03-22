@@ -17,7 +17,7 @@ function makeOverlay() {
     background: 'rgba(5,5,15,0.92)',
     display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center',
-    zIndex: '9800',
+    zIndex: '10000',
     fontFamily: 'monospace',
   });
   return el;
