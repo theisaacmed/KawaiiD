@@ -262,8 +262,8 @@ export function renderMap(ctx, canvasW, canvasH, camera, player, npcs, opts = {}
 
   // --- Apartment marker ---
   if (showApartment) {
-    // Player apartment is at approximately (0, 20) — Town center area
-    const [ax, az] = toMap(0, 20);
+    // Player apartment is at (12, 14) in world space
+    const [ax, az] = toMap(12, 14);
     if (ax > 0 && ax < canvasW && az > 0 && az < canvasH) {
       ctx.fillStyle = 'rgba(100,200,255,0.7)';
       ctx.font = `${Math.max(10, labelSize)}px monospace`;

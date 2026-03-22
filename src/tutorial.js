@@ -4,8 +4,8 @@
 
 import * as THREE from 'three';
 
-// Ruins entrance area (RUINS_Z_START ≈ 28)
-const RUINS_WAYPOINT = new THREE.Vector3(0, 0, 34);
+// Ruins entrance area (RUINS_Z_START = -150)
+const RUINS_WAYPOINT = new THREE.Vector3(0, 0, -150);
 // Mei's world position
 const MEI_POS = new THREE.Vector3(-10, 0, 15);
 
@@ -83,6 +83,11 @@ export function initTutorial(scene, isNewGame) {
 // Called every frame from main.js game loop
 export function updateTutorial(dt, playerPos, piles) {
   if (tutorialComplete) return;
+
+  // Bob waypoint up and down (0.5 amplitude, ~2s cycle)
+  if (waypointMesh && waypointMesh.visible) {
+    waypointMesh.position.y = 4 + Math.sin(Date.now() * 0.003) * 0.5;
+  }
 
   stepTimer = Math.max(0, stepTimer - dt);
 
@@ -278,5 +283,5 @@ function hideWaypoint() {
 }
 
 function positionWaypoint(pos) {
-  if (waypointMesh) waypointMesh.position.set(pos.x, 0, pos.z);
+  if (waypointMesh) waypointMesh.position.set(pos.x, 4, pos.z);
 }
