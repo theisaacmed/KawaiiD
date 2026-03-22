@@ -39,6 +39,29 @@ function _danteT()    { return nb('dante_tower',    -160, 100); }
 function _quinnApt()  { return nb('quinn_apartment',-140, 140); }
 function _gusOff()    { return nb('gus_dock_office', -55, 198); }
 
+// Additional landmark positions (inline fallbacks for non-named-building spots)
+function _clockTower()    { return nb('clock_tower',        8, 112); }
+function _chapel()        { return nb('chapel',           130, 135); }
+function _theSchool()     { return nb('the_school',       175, -42); }
+function _marineLH()      { return nb('marina_lighthouse', -95, 225); }
+function _shippingYard()  { return nb('shipping_yard',    -75, 195); }
+function _hotelUptown()   { return nb('the_hotel',        182,  58); }
+function _workshop()      { return nb('workshop_property',  35, -88); }
+
+// NPC home/hangout spots without dedicated named buildings
+function _renStudio()     { return { x: -5,   z: 100 }; }  // Ren's studio, downtown
+function _felixHome()     { return { x: 30,   z: 75  }; }  // Felix's downtown flat
+function _dtBench()       { return { x: 10,   z: 75  }; }  // Downtown bench near road
+function _mikaHome()      { return { x: 125,  z: -15 }; }  // Mika's burbs house
+function _zoeHome()       { return { x: 155,  z: -20 }; }  // Zoe's burbs house
+function _saraHome()      { return { x: 135,  z: 5   }; }  // Sara's burbs house
+function _jinHome()       { return { x: 145,  z: -52 }; }  // Jin's burbs cottage
+function _burbsBench()    { return { x: 140,  z: -8  }; }  // Benches near burbs park
+function _pollyShack()    { return { x: 30,   z: -75 }; }  // Polly's industrial space
+function _miraApt()       { return { x: 155,  z: 55  }; }  // Mira's uptown apartment
+function _kaiDock()       { return { x: 100,  z: 168 }; }  // Kai's dock fishing spot
+function _aceHQ()         { return { x: -155, z: -100}; }  // ACE headquarters area
+
 const ROUTINES = {
   Mei: [
     { time: 6.0,  ..._meiApt(),  activity: 'sleeping', dealOk: false },
@@ -78,6 +101,212 @@ const ROUTINES = {
     { time: 13.0, x: -35, z: 15,  activity: 'working', dealOk: false, dealRefuseLine: "I c-can't do this at the library..." },
     { time: 16.0, x: 0,   z: 0,   activity: 'wandering', dealOk: false, dealRefuseLine: "I'm too nervous out in the open..." },
     { time: 19.0, x: 35,  z: 38,  activity: 'sleeping', dealOk: false },
+  ],
+
+  // ===== DOWNTOWN =====
+
+  Nao: [
+    { time: 6.0,  ..._naoCafe(),    activity: 'working',     dealOk: true,  heldObject: 'coffee',  dealRefuseLine: null },       // opens café, arranges chairs
+    { time: 10.0, ..._naoCafe(),    activity: 'working',     dealOk: true,  heldObject: null,       dealRefuseLine: null },       // mid-day café service
+    { time: 17.0, ..._naoCafe(),    activity: 'working',     dealOk: true,  heldObject: 'cloth',    dealRefuseLine: null },       // wiping tables, winding down
+    { time: 21.0, ..._naoCafe(),    activity: 'sleeping',    dealOk: false, dealRefuseLine: "Café's closed. Come back tomorrow morning." },
+  ],
+
+  Marco: [
+    { time: 6.0,  ..._marco(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "Restaurant's not open yet." },
+    { time: 7.0,  ..._marco(),      activity: 'working',     dealOk: false, dealRefuseLine: "I'm setting up for the day. Come back when we open." },
+    { time: 10.0, ..._marco(),      activity: 'working',     dealOk: true,  heldObject: 'notepad',  dealRefuseLine: null },       // outside by menu board
+    { time: 22.0, ..._marco(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "Kitchen's closed. Come back tomorrow." },
+  ],
+
+  Felix: [
+    { time: 0.0,  ..._felixHome(),  activity: 'sleeping',    dealOk: false, dealRefuseLine: "Too late. Come back in the morning." },
+    { time: 8.0,  ..._dtBench(),    activity: 'socializing', dealOk: true,  heldObject: 'sketchbook', dealRefuseLine: null },    // morning bench session
+    { time: 12.0, ..._naoCafe(),    activity: 'eating',      dealOk: true,  requiresDistrict: 'downtown' },                       // lunch at Nao's
+    { time: 12.0, ..._dtBench(),    activity: 'eating',      dealOk: true,  altIfLocked: true },
+    { time: 14.0, ..._clockTower(), activity: 'wandering',   dealOk: true },                                                      // downtown wander
+    { time: 18.0, ..._dtBench(),    activity: 'socializing', dealOk: true,  heldObject: 'sketchbook' },                           // evening bench — meets Zoe
+    { time: 22.0, ..._felixHome(),  activity: 'sleeping',    dealOk: false, dealRefuseLine: "It's late. Not tonight." },
+  ],
+
+  Harper: [
+    { time: 0.0,  ..._harper(),     activity: 'sleeping',    dealOk: false, dealRefuseLine: "I'm not doing interviews at this hour." },
+    { time: 7.0,  ..._clockTower(), activity: 'walking',     dealOk: true,  heldObject: 'notepad',  dealRefuseLine: null },      // morning neighborhood round
+    { time: 10.0, ..._harper(),     activity: 'working',     dealOk: false, dealRefuseLine: "Not at the office. Catch me on my walk at 7AM." },
+    { time: 18.0, ..._harper(),     activity: 'working',     dealOk: true,  heldObject: 'notepad',  dealRefuseLine: null },      // after hours more relaxed
+    { time: 22.0, ..._harper(),     activity: 'sleeping',    dealOk: false, dealRefuseLine: "Filing deadline. Not now." },
+  ],
+
+  Ren: [
+    { time: 0.0,  ..._renStudio(),  activity: 'sleeping',    dealOk: false, dealRefuseLine: "Not this late. The art doesn't need you, either." },
+    { time: 9.0,  ..._renStudio(),  activity: 'working',     dealOk: true,  heldObject: 'sketchbook' },                           // studio morning
+    { time: 12.0, ..._naoCafe(),    activity: 'eating',      dealOk: true,  requiresDistrict: 'downtown' },
+    { time: 12.0, ..._renStudio(),  activity: 'sitting',     dealOk: true,  altIfLocked: true },
+    { time: 14.0, ..._clockTower(), activity: 'wandering',   dealOk: true,  heldObject: 'sketchbook' },                           // art walk
+    { time: 18.0, ..._renStudio(),  activity: 'socializing', dealOk: true },
+    { time: 22.0, ..._renStudio(),  activity: 'sleeping',    dealOk: false, dealRefuseLine: "Studio's dark. Come tomorrow." },
+  ],
+
+  // ===== BURBS =====
+
+  Mika: [
+    { time: 0.0,  ..._mikaHome(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "I'm asleep!" },
+    { time: 8.0,  ..._theSchool(),  activity: 'working',     dealOk: false, dealRefuseLine: "I'm in school right now, meet me after." },
+    { time: 14.0, ..._burbsBench(), activity: 'sitting',     dealOk: true,  heldObject: 'sketchbook' },                           // after school sketching
+    { time: 18.0, ..._mikaHome(),   activity: 'walking',     dealOk: true },
+    { time: 20.0, ..._mikaHome(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "Too tired from class. Tomorrow?" },
+  ],
+
+  Zoe: [
+    { time: 0.0,  ..._zoeHome(),    activity: 'sleeping',    dealOk: false, dealRefuseLine: "Shh! My parents!" },
+    { time: 8.0,  ..._theSchool(),  activity: 'working',     dealOk: false, dealRefuseLine: "I can't do this at school, are you serious?" },
+    { time: 15.0, ..._playground(), activity: 'socializing', dealOk: true },                                                      // after school at playground
+    { time: 18.0, ..._dtBench(),    activity: 'socializing', dealOk: true,  requiresDistrict: 'downtown' },                       // evening — meets Felix at downtown bench
+    { time: 18.0, ..._burbsBench(), activity: 'socializing', dealOk: true,  altIfLocked: true },
+    { time: 22.0, ..._zoeHome(),    activity: 'sleeping',    dealOk: false, dealRefuseLine: "I have to be home. Tomorrow?" },
+  ],
+
+  Tomas: [
+    { time: 0.0,  ..._tomas(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "I'm already in bed." },
+    { time: 8.0,  ..._burbsBench(), activity: 'sitting',     dealOk: true,  heldObject: 'book' },                                 // morning bench reading
+    { time: 10.0, ..._playground(), activity: 'walking',     dealOk: true,  heldObject: 'book' },                                 // mid-morning stroll
+    { time: 12.0, ..._tomas(),      activity: 'eating',      dealOk: true },                                                      // lunch at cottage
+    { time: 14.0, ..._burbsBench(), activity: 'sitting',     dealOk: true,  heldObject: 'book' },                                 // afternoon bench
+    { time: 17.0, ..._tomas(),      activity: 'walking',     dealOk: true },
+    { time: 20.0, ..._tomas(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "Reading time is over. Good night." },
+  ],
+
+  Sara: [
+    { time: 0.0,  ..._saraHome(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "My daughter's asleep. Please." },
+    { time: 8.0,  ..._saraHome(),   activity: 'working',     dealOk: false, dealRefuseLine: "Morning routine. Not now, she's watching." },
+    { time: 13.0, ..._playground(), activity: 'sitting',     dealOk: true },                                                      // daughter at playground
+    { time: 17.0, ..._burbsBench(), activity: 'walking',     dealOk: true },                                                      // evening walk with daughter
+    { time: 19.0, ..._saraHome(),   activity: 'working',     dealOk: false, dealRefuseLine: "Bedtime routine. Later." },
+    { time: 21.0, ..._saraHome(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "She just fell asleep. Don't ring the bell." },
+  ],
+
+  Jin: [
+    { time: 0.0,  ..._jinHome(),    activity: 'sleeping',    dealOk: false, dealRefuseLine: "..." },
+    { time: 9.0,  ..._burbsBench(), activity: 'sitting',     dealOk: true,  heldObject: 'book' },                                 // morning quiet time
+    { time: 12.0, ..._jinHome(),    activity: 'eating',      dealOk: true },
+    { time: 14.0, ..._theSchool(),  activity: 'walking',     dealOk: true },                                                      // afternoon stroll around school area
+    { time: 17.0, ..._jinHome(),    activity: 'walking',     dealOk: true },
+    { time: 20.0, ..._jinHome(),    activity: 'sleeping',    dealOk: false, dealRefuseLine: "That's enough people for one day." },
+  ],
+
+  // ===== NORTHTOWN =====
+
+  Yuna: [
+    { time: 0.0,  ..._yunaSh(),     activity: 'sleeping',    dealOk: false, dealRefuseLine: "Come by the shop during the day." },
+    { time: 6.0,  ..._yunaSh(),     activity: 'working',     dealOk: true,  heldObject: 'flower', dealRefuseLine: null },         // early morning — watering, kneeling in garden
+    { time: 10.0, ..._yunaSh(),     activity: 'working',     dealOk: true },
+    { time: 18.0, ..._chapel(),     activity: 'walking',     dealOk: true },                                                      // evening walk to chapel
+    { time: 20.0, ..._yunaSh(),     activity: 'working',     dealOk: true },
+    { time: 22.0, ..._yunaSh(),     activity: 'sleeping',    dealOk: false, dealRefuseLine: "Shop is closed. Come back at dawn." },
+  ],
+
+  Kai: [
+    { time: 0.0,  ..._kaiShack(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "Zzz." },
+    { time: 6.0,  ..._kaiDock(),    activity: 'sitting',     dealOk: true,  heldObject: 'fishing_rod', dealRefuseLine: null },    // dawn fishing at dock
+    { time: 10.0, ..._kaiShack(),   activity: 'working',     dealOk: true },
+    { time: 15.0, ..._chapel(),     activity: 'walking',     dealOk: true },                                                      // afternoon stroll
+    { time: 18.0, ..._kaiShack(),   activity: 'sitting',     dealOk: true },
+    { time: 22.0, ..._kaiShack(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "Early morning tomorrow. Not tonight." },
+  ],
+
+  // ===== INDUSTRIAL =====
+
+  Taro: [
+    { time: 0.0,  ..._taroFact(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "Factory's locked up." },
+    { time: 7.0,  ..._taroFact(),   activity: 'working',     dealOk: true,  heldObject: 'toolbox' },                              // at factory
+    { time: 12.0, ..._workshop(),   activity: 'eating',      dealOk: true },                                                      // lunch near workshop
+    { time: 14.0, ..._taroFact(),   activity: 'working',     dealOk: true },
+    { time: 19.0, x: -5, z: -70,   activity: 'walking',     dealOk: false, dealRefuseLine: "Heading home. Not a good time." },
+    { time: 21.0, ..._taroFact(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "Done for the day." },
+  ],
+
+  Vex: [
+    { time: 0.0,  ..._vexSquat(),   activity: 'working',     dealOk: true,  heldObject: 'spray_can' },                            // night — spray painting
+    { time: 6.0,  ..._vexSquat(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "I just got in. Come back at dusk." },
+    { time: 17.0, ..._workshop(),   activity: 'wandering',   dealOk: true,  heldObject: 'spray_can' },                            // late afternoon — out stickering walls
+    { time: 22.0, x: 20, z: -82,   activity: 'working',     dealOk: true,  heldObject: 'spray_can' },                            // night — spray painting the streets
+  ],
+
+  Polly: [
+    { time: 0.0,  ..._pollyShack(), activity: 'sleeping',    dealOk: false, dealRefuseLine: "Not this late." },
+    { time: 8.0,  ..._pollyShack(), activity: 'working',     dealOk: true },
+    { time: 12.0, ..._taroFact(),   activity: 'walking',     dealOk: true },                                                      // lunch walk
+    { time: 14.0, ..._pollyShack(), activity: 'working',     dealOk: true },
+    { time: 18.0, ..._pollyShack(), activity: 'walking',     dealOk: true },
+    { time: 20.0, ..._pollyShack(), activity: 'sleeping',    dealOk: false, dealRefuseLine: "Called it a night. Tomorrow." },
+  ],
+
+  // ===== UPTOWN =====
+
+  Sora: [
+    { time: 0.0,  ..._soraB(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "Do you know what time it is?" },
+    { time: 9.0,  ..._soraB(),      activity: 'working',     dealOk: true },
+    { time: 12.0, ..._hotelUptown(),activity: 'eating',      dealOk: true },                                                      // lunch at hotel restaurant
+    { time: 14.0, ..._soraB(),      activity: 'working',     dealOk: true },
+    { time: 19.0, ..._kenjiOff(),   activity: 'socializing', dealOk: true },                                                      // evening visit
+    { time: 22.0, ..._soraB(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "Not at this hour. I need my beauty sleep." },
+  ],
+
+  Kenji: [
+    { time: 0.0,  ..._kenjiOff(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "This is neither the time nor the place." },
+    { time: 7.0,  ..._hotelUptown(),activity: 'walking',     dealOk: true },                                                      // morning walk past hotel
+    { time: 9.0,  ..._kenjiOff(),   activity: 'working',     dealOk: false, dealRefuseLine: "Office hours. Absolutely not." },
+    { time: 18.0, ..._hotelUptown(),activity: 'walking',     dealOk: true },                                                      // after-hours walk
+    { time: 20.0, ..._kenjiOff(),   activity: 'sitting',     dealOk: true },
+    { time: 22.0, ..._kenjiOff(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "I have an early meeting." },
+  ],
+
+  Mira: [
+    { time: 0.0,  ..._miraApt(),    activity: 'sleeping',    dealOk: false, dealRefuseLine: "Not at night. I value my privacy." },
+    { time: 10.0, ..._miraApt(),    activity: 'walking',     dealOk: true },
+    { time: 14.0, ..._hotelUptown(),activity: 'socializing', dealOk: true },                                                      // afternoon at hotel bar
+    { time: 18.0, ..._soraB(),      activity: 'socializing', dealOk: true },                                                      // evening visit to Sora
+    { time: 21.0, ..._miraApt(),    activity: 'sleeping',    dealOk: false, dealRefuseLine: "Done for today." },
+  ],
+
+  // ===== TOWER =====
+
+  Dante: [
+    { time: 0.0,  ..._danteT(),     activity: 'sleeping',    dealOk: false, dealRefuseLine: "Lobby is closed. Night security's on." },
+    { time: 8.0,  ..._danteT(),     activity: 'working',     dealOk: true,  heldObject: 'notepad' },                              // at tower lobby
+    { time: 20.0, ..._danteT(),     activity: 'sleeping',    dealOk: false, dealRefuseLine: "End of shift. Come back tomorrow." },
+  ],
+
+  Quinn: [
+    { time: 0.0,  ..._quinnApt(),   activity: 'wandering',   dealOk: true },                                                     // night — active
+    { time: 6.0,  ..._quinnApt(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "I don't do daylight. Come back after dark." },
+    { time: 22.0, ..._quinnApt(),   activity: 'wandering',   dealOk: true },                                                     // late night — reappears
+  ],
+
+  // ===== PORT =====
+
+  Gus: [
+    { time: 0.0,  ..._gusOff(),     activity: 'sleeping',    dealOk: false, dealRefuseLine: "Docks are closed." },
+    { time: 7.0,  ..._shippingYard(),activity: 'working',    dealOk: true,  heldObject: 'notepad' },                             // morning dock rounds
+    { time: 12.0, ..._gusOff(),     activity: 'eating',      dealOk: true },                                                     // lunch at office
+    { time: 14.0, ..._gusOff(),     activity: 'working',     dealOk: true },
+    { time: 18.0, ..._shippingYard(),activity: 'walking',    dealOk: false, dealRefuseLine: "Shift's ending. Tomorrow morning." },
+    { time: 20.0, ..._gusOff(),     activity: 'sleeping',    dealOk: false, dealRefuseLine: "Done for the night." },
+  ],
+
+  Marina: [
+    { time: 0.0,  ..._marineLH(),   activity: 'working',     dealOk: false, dealRefuseLine: "Night is for the light." },
+    { time: 10.0, ..._marineLH(),   activity: 'working',     dealOk: true },
+    { time: 16.0, ..._shippingYard(),activity: 'walking',    dealOk: true },                                                     // afternoon port walk
+    { time: 20.0, ..._marineLH(),   activity: 'working',     dealOk: false, dealRefuseLine: "I'm tending the light." },
+  ],
+
+  // ===== ACE HQ (endgame only — Dove) =====
+
+  Dove: [
+    { time: 0.0,  ..._aceHQ(),      activity: 'wandering',   dealOk: true },                                                     // night — active near ACE HQ
+    { time: 6.0,  ..._aceHQ(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "Not during the day. You'll get us both caught." },
+    { time: 20.0, ..._aceHQ(),      activity: 'wandering',   dealOk: true },                                                     // evening — reappears
   ],
 
   // Dex is special — random daily location
