@@ -41,7 +41,7 @@ import { createApartment } from './apartment.js';
 import { initStationShop, isStationShopOpen, restoreStationShopState, applyRestoredPurchases } from './station-shop.js';
 import { initSmuggling, updateSmuggling, getSmugglingState, restoreSmugglingState, isSmuggleUIOpen } from './smuggling.js';
 import { initScavenger, updateScavenger, onNewDayScavenger, getScavengerSaveData, restoreScavenger } from './scavenger-system.js';
-import { initStoryEvents, setStoryCallbacks, syncStoryEffects, onStoryTrigger, getStoryEventsSaveData, restoreStoryEvents } from './story-events.js';
+import { initStoryEvents, setStoryCallbacks, syncStoryEffects, onStoryTrigger, updateStoryEvents, getStoryEventsSaveData, restoreStoryEvents } from './story-events.js';
 import { initWorkshop, updateWorkshop, isWorkshopStorageOpen } from './workshop.js';
 import { initTutorial, updateTutorial, getTutorialState, restoreTutorialState, isTutorialComplete, onTutorialDealComplete } from './tutorial.js';
 import { initPrintStation, updatePrintStation, isPrintStationOpen } from './stations/print-station.js';
@@ -529,6 +529,7 @@ async function boot() {
     updateACE(dt);
     updateKit();
     updateSmuggling();
+    updateStoryEvents(dt);
     updateWorkshop();
     updateTutorial(dt, player.position, piles);
     updateScavenger(dt);

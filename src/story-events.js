@@ -9,6 +9,7 @@
 
 import * as THREE from 'three';
 import { getBuildingColors } from './color-system.js';
+import { isOrderInTransit } from './smuggling.js';
 
 // Marina's lighthouse position (from named-buildings.js)
 const LIGHTHOUSE_POS = new THREE.Vector3(-95, 0, 225);
@@ -23,6 +24,8 @@ const applied = {
 
 let lighthouseLight = null;
 let sceneRef = null;
+let lighthouseBlinkTimer = 0;
+let lighthouseBlinkOn = true;
 
 // Callbacks injected from main.js
 let addJPFn = null;
@@ -88,9 +91,11 @@ export function onStoryTrigger(result, referralState) {
 // --- Marina: Lighthouse on ---
 function enableLighthouse() {
   if (!lighthouseLight) return;
-  lighthouseLight.intensity = 2.5;
-  lighthouseLight.distance = 60;
+  lighthouseLight.intensity = 2;
+  lighthouseLight.distance = 100;
   lighthouseLight.color.set(0x9FE1CB);
+  lighthouseBlinkOn = true;
+  lighthouseBlinkTimer = 0;
 }
 
 // --- Sora: Color Party ---
@@ -288,6 +293,29 @@ function showStoryOverlay(title, body, accentColor) {
 
   // Auto-dismiss after 12 seconds if not clicked
   setTimeout(dismiss, 12000);
+}
+
+// --- Per-frame update ---
+// Drives lighthouse blink when a Gus shipment is in transit.
+// Steady light otherwise (when lighthouse is enabled).
+const BLINK_PERIOD_TRANSIT = 1.4;  // blink cycle in seconds during transit
+const BLINK_ON_FRAC = 0.45;        // fraction of period the light is on
+
+export function updateStoryEvents(dt) {
+  if (!applied.lighthouse || !lighthouseLight) return;
+
+  if (isOrderInTransit()) {
+    // Blinking mode while order is in transit
+    lighthouseBlinkTimer += dt;
+    if (lighthouseBlinkTimer >= BLINK_PERIOD_TRANSIT) {
+      lighthouseBlinkTimer -= BLINK_PERIOD_TRANSIT;
+    }
+    const blinkOn = lighthouseBlinkTimer / BLINK_PERIOD_TRANSIT < BLINK_ON_FRAC;
+    lighthouseLight.intensity = blinkOn ? 2 : 0;
+  } else {
+    // Steady glow when no order in transit
+    lighthouseLight.intensity = 2;
+  }
 }
 
 // --- Save / Load ---
