@@ -11,7 +11,11 @@
       "Bash(git rm:*)",
       "Bash(git add:*)",
       "Bash(npx vite:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git tag:*)",
+      "Bash(ls /c/Users/Admin/Desktop/KawaiiD/src/*.js)",
+      "Bash(cmd //c \"npx vite build 2>&1\")",
+      "Bash(node_modules/.bin/vite build:*)"
     ]
   }
 }

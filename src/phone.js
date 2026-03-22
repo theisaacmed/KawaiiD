@@ -20,6 +20,7 @@ import { renderMap } from './map-renderer.js';
 import { showNotification, updateNotifBadge as updateNotifBadgeNew, getNPCColor, getNotificationHistory, markHistoryRead } from './notifications.js';
 import { getJP, getRankName, getJPProgress, getNextRank, RANKS } from './jp-system.js';
 import { isAshHired, isAshHireUnlocked, hireAsh, fireAsh } from './scavenger-system.js';
+import { addActiveDeal, completeDeal as completeActiveDeal, expireDeal as expireActiveDeal, updateDeals, getActiveDealsState, restoreActiveDealsState } from './active-deals-hud.js';
 
 // Deal panel functions — set by main.js to avoid circular dependencies
 let isDealOpenFn = () => false;
@@ -302,6 +303,8 @@ export function acceptMessage(msgId) {
     messageId: msg.id,
   });
 
+  addActiveDeal(msg);
+
   updateNotifBadge();
   if (isPhoneOpen && activeTab === 'messages') renderMessagesTab();
 }
@@ -351,6 +354,8 @@ export function onPhoneDealCompleted(npcName, itemType, price) {
   // Update the message to show it's done
   const msg = messages.find(m => m.npcName === npcName && m.accepted && !m.expired);
   if (msg) msg.expired = true; // Mark as completed
+
+  completeActiveDeal(npcName);
 
   // Check gacha unlock at 25 deals
   if (stats.totalDeals >= 25 && !gachaUnlockSent) {
@@ -1331,6 +1336,7 @@ export function getPhoneState() {
     gachaUnlockSent,
     eastsideUnlockSent,
     dexMsgDay,
+    activeDeals: getActiveDealsState(),
     // Don't save active waypoints — they expire on reload
   };
 }
@@ -1352,6 +1358,7 @@ export function restorePhoneState(data) {
   if (data.gachaUnlockSent) gachaUnlockSent = true;
   if (data.eastsideUnlockSent) eastsideUnlockSent = true;
   if (data.dexMsgDay !== undefined) dexMsgDay = data.dexMsgDay;
+  if (data.activeDeals) restoreActiveDealsState(data.activeDeals);
   updateNotifBadge();
 }
 
@@ -1411,6 +1418,9 @@ export function initPhone(scene, npcs, player) {
 export function updatePhone(dt) {
   if (!npcsRef || npcsRef.length === 0) return;
 
+  // Update active deals HUD timers
+  updateDeals(dt);
+
   // Message generation timer — only during NPC active hours (6 AM – 6 PM)
   if (isNPCActive()) {
     msgTimer += dt;
@@ -1443,6 +1453,8 @@ export function updatePhone(dt) {
       // Mark original message as expired
       const msg = messages.find(m => m.id === wp.messageId);
       if (msg) msg.expired = true;
+
+      expireActiveDeal(wp.messageId);
 
       // Add timeout message
       const npc = npcsRef.find(n => n.name === wp.npcName);
