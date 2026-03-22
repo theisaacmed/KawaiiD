@@ -7,7 +7,9 @@ export const MATERIALS = {
   stuffing:      { name: 'Stuffing',      stackMax: 15, price: 3, dailyStock: 15 },
   capsule_shell: { name: 'Capsule Shell', stackMax: 10, price: 5, dailyStock: 10 },
   thread_spool:  { name: 'Thread Spool',  stackMax: 20, price: 2, dailyStock: 20 },
-  fabric_scrap:  { name: 'Fabric Scrap',  stackMax: 20, price: 0, dailyStock: 0 },
+  fabric_scrap:    { name: 'Fabric Scrap',    stackMax: 20, price: 0, dailyStock: 0 },
+  plushie_pattern: { name: 'Plushie Pattern', stackMax: 15, price: 0, dailyStock: 0 },
+  plushie_shell:   { name: 'Plushie Shell',   stackMax: 10, price: 0, dailyStock: 0 },
 };
 
 // Returns inline CSS style object for material icons in inventory slots
@@ -58,6 +60,22 @@ export function getMaterialIconStyle(subtype) {
         background: 'linear-gradient(135deg, #6888a8, #506878)',
         boxShadow: '0 0 5px rgba(80,120,160,0.2)',
         transform: 'rotate(-8deg)',
+      };
+    case 'plushie_pattern':
+      return {
+        width: '22px', height: '22px',
+        borderRadius: '1px',
+        background: 'linear-gradient(135deg, #f5e8c8, #e0d0a8)',
+        boxShadow: '0 0 6px rgba(240,220,160,0.3)',
+        border: '1px dashed rgba(160,120,60,0.5)',
+      };
+    case 'plushie_shell':
+      return {
+        width: '22px', height: '22px',
+        borderRadius: '50% 50% 45% 45%',
+        background: 'radial-gradient(circle at 40% 35%, #ffcce0, #f0a0c0)',
+        boxShadow: '0 0 8px rgba(240,120,180,0.3)',
+        border: '1px solid rgba(220,100,160,0.4)',
       };
     default:
       return {

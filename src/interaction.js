@@ -14,6 +14,9 @@ import { isNearGachaMachine, isGachaUnlocked, openUI as openGachaUI, isGachaUIOp
 import { playSearchScrape, playItemFound } from './audio.js';
 import { isNearKit, isKitAvailable, openShop, isShopOpen } from './shop.js';
 import { isNearPrintStation, isPrintStationOpen, openUI as openPrintStationUI } from './stations/print-station.js';
+import { isNearCuttingTable, isCuttingTableOpen, openCuttingTableUI } from './stations/cutting-table.js';
+import { isNearSewingMachine, isSewingMachineOpen, openSewingMachineUI } from './stations/sewing-machine.js';
+import { isNearStuffingStation, isStuffingStationOpen, openStuffingStationUI } from './stations/stuffing-station.js';
 
 const SEARCH_RADIUS = 3;
 const SEARCH_DURATION = 3; // seconds
@@ -81,13 +84,27 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
   createSleepConfirm();
 
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isPrintStationOpen()) {
+    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen()) {
       // Close phone if open
       if (isPhoneVisible()) closePhone();
 
       // Handle sleep confirmation dialog
       if (sleepConfirmVisible) {
         confirmSleep(true);
+        return;
+      }
+
+      // Check if near plushie workshop stations
+      if (isNearCuttingTable(playerRef.position)) {
+        openCuttingTableUI();
+        return;
+      }
+      if (isNearSewingMachine(playerRef.position)) {
+        openSewingMachineUI();
+        return;
+      }
+      if (isNearStuffingStation(playerRef.position)) {
+        openStuffingStationUI();
         return;
       }
 
@@ -338,8 +355,8 @@ function checkRuinsTransition() {
 export function updateInteraction(dt) {
   if (!playerRef) return;
 
-  // Don't update prompts while deal panel, phone, or print station is open
-  if (isDealOpen() || isPrintStationOpen()) return;
+  // Don't update prompts while deal panel, phone, or any station UI is open
+  if (isDealOpen() || isPrintStationOpen() || isCuttingTableOpen() || isSewingMachineOpen() || isStuffingStationOpen()) return;
 
   checkRuinsTransition();
 
@@ -361,6 +378,9 @@ export function updateInteraction(dt) {
   // Show prompt based on context
   if (isSleepingNow() || sleepConfirmVisible) return;
 
+  const nearCuttingTable = isNearCuttingTable(playerRef.position);
+  const nearSewingMachine = isNearSewingMachine(playerRef.position);
+  const nearStuffingStation = isNearStuffingStation(playerRef.position);
   const nearPrintStation = isNearPrintStation(playerRef.position);
   const nearGacha = isGachaUnlocked() && isNearGachaMachine(playerRef.position);
   const nearKit = isKitAvailable() && isNearKit(playerRef.position);
@@ -369,7 +389,13 @@ export function updateInteraction(dt) {
   const nearPile = getNearestSearchable();
   const nearBed = isNearBed();
 
-  if (nearPrintStation && !searching) {
+  if (nearCuttingTable && !searching) {
+    showPrompt('Press E to use Cutting Table');
+  } else if (nearSewingMachine && !searching) {
+    showPrompt('Press E to use Sewing Machine');
+  } else if (nearStuffingStation && !searching) {
+    showPrompt('Press E to use Stuffing Station');
+  } else if (nearPrintStation && !searching) {
     showPrompt('Press E to use print station');
   } else if (nearGacha && !searching) {
     showPrompt('Press E to use gacha machine');

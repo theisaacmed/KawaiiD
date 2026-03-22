@@ -10,6 +10,9 @@ import { getProgressionState } from './progression.js';
 import { getReferralState, restoreReferralState, getRelationships, restoreRelationships, getAffinityOverrides, restoreAffinityOverrides, getRoutineSaveData, restoreRoutineState } from './npc.js';
 import { getKitStock, restoreKitStock } from './shop.js';
 import { getStationSaveData, restorePrintStationState } from './stations/print-station.js';
+import { getCuttingTableSaveData, restoreCuttingTableState } from './stations/cutting-table.js';
+import { getSewingMachineSaveData, restoreSewingMachineState } from './stations/sewing-machine.js';
+import { getStuffingStationSaveData, restoreStuffingStationState } from './stations/stuffing-station.js';
 import { getNotifState, restoreNotifState } from './notifications.js';
 
 const SAVE_KEY = 'kawaiid_save';
@@ -143,6 +146,11 @@ function gatherSaveData() {
   // Print station state
   data.printStation = getStationSaveData();
 
+  // Plushie workshop stations
+  data.cuttingTable = getCuttingTableSaveData();
+  data.sewingMachine = getSewingMachineSaveData();
+  data.stuffingStation = getStuffingStationSaveData();
+
   // Notification history
   data.notifications = getNotifState();
 
@@ -268,6 +276,11 @@ export function applySave(data, player, npcs, piles) {
 
   // Print station state
   if (data.printStation) restorePrintStationState(data.printStation);
+
+  // Plushie workshop stations
+  if (data.cuttingTable) restoreCuttingTableState(data.cuttingTable);
+  if (data.sewingMachine) restoreSewingMachineState(data.sewingMachine);
+  if (data.stuffingStation) restoreStuffingStationState(data.stuffingStation);
 
   // Notification history
   if (data.notifications) restoreNotifState(data.notifications);

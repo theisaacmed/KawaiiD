@@ -36,6 +36,9 @@ import { initAdmin } from './admin.js';
 import { createKit, updateKit, resetKitStock, isShopOpen } from './shop.js';
 import { createApartment } from './apartment.js';
 import { initPrintStation, updatePrintStation, isPrintStationOpen } from './stations/print-station.js';
+import { initCuttingTable, updateCuttingTable, isCuttingTableOpen } from './stations/cutting-table.js';
+import { initSewingMachine, updateSewingMachine, isSewingMachineOpen } from './stations/sewing-machine.js';
+import { initStuffingStation, updateStuffingStation, isStuffingStationOpen } from './stations/stuffing-station.js';
 import {
   initNotifications, setNotifBlockedCheck, setQuickAcceptFn, setQuickDeclineFn,
   setOpenPhoneToMsgFn, setUnreadCountFn, flushNotifQueue,
@@ -176,6 +179,9 @@ async function boot() {
   registerPausePredicate(() => isPauseMenuOpen());
   registerPausePredicate(() => isShopOpen());
   registerPausePredicate(() => isPrintStationOpen());
+  registerPausePredicate(() => isCuttingTableOpen());
+  registerPausePredicate(() => isSewingMachineOpen());
+  registerPausePredicate(() => isStuffingStationOpen());
 
   // Kit supplier NPC
   createKit(scene);
@@ -185,6 +191,11 @@ async function boot() {
 
   // Print station (first manufacturing station)
   initPrintStation(scene, player);
+
+  // Plushie workshop stations
+  initCuttingTable(scene, player);
+  initSewingMachine(scene, player);
+  initStuffingStation(scene, player);
 
   // ACE patrol officers
   createACEOfficers(scene);
@@ -406,6 +417,9 @@ async function boot() {
     updateACE(dt);
     updateKit();
     updatePrintStation(dt);
+    updateCuttingTable(dt);
+    updateSewingMachine(dt);
+    updateStuffingStation(dt);
     updateRuinsGlow(piles, elapsed);
     updatePhone(dt);
     updateInteraction(dt);

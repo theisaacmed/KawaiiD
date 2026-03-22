@@ -16,9 +16,9 @@ const INTERIOR_D = 5.5;
 // Bed is already at (14, 0, 12) — south-east corner
 // Print station: against the north wall, west side
 export const PRINT_STATION_POS = new THREE.Vector3(10.0, 0, 16.5);
-// Future station spots:
-export const SEWING_STATION_POS = new THREE.Vector3(14.0, 0, 16.5);  // north wall, east side
+export const SEWING_STATION_POS = new THREE.Vector3(14.0, 0, 16.5);   // north wall, east side
 export const STUFFING_STATION_POS = new THREE.Vector3(10.0, 0, 11.5); // south wall, west side
+export const CUTTING_TABLE_POS = new THREE.Vector3(9.5, 0, 14.0);     // west side wall, center
 // Gacha machine already at (14, 0, 12) — south-east corner
 
 export function createApartment(scene) {
