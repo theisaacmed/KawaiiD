@@ -15,7 +15,27 @@
       "Bash(git tag:*)",
       "Bash(ls /c/Users/Admin/Desktop/KawaiiD/src/*.js)",
       "Bash(cmd //c \"npx vite build 2>&1\")",
-      "Bash(node_modules/.bin/vite build:*)"
+      "Bash(node_modules/.bin/vite build:*)",
+      "Bash(ls /c/Program*/nodejs/npm*)",
+      "Read(//usr/local/bin/**)",
+      "Read(//c/Users/Admin/.nvm/versions/**)",
+      "Read(//c/Users/Admin/AppData/Roaming/**)",
+      "Read(//c/ProgramData/**)",
+      "Bash(find /c -name node.exe -maxdepth 6)",
+      "Bash(cmd.exe /c \"where npm\")",
+      "Bash(cmd.exe /c \"where node\")",
+      "Bash(/c/nodejs/node.exe node_modules/.bin/vite build)",
+      "Bash(/c/nodejs/node.exe node_modules/vite/bin/vite.js build)",
+      "Bash(cmd.exe /c \"where npm 2>&1 & where node 2>&1\")",
+      "Bash(cmd.exe /c \"npm --version\")",
+      "Bash(powershell.exe -Command \"npm --version\")",
+      "Read(//c/Users/Admin/scoop/shims/**)",
+      "Read(//c/Users/Admin/**)",
+      "Bash(/c/nodejs/npm.cmd run:*)",
+      "Read(//c/nodejs/**)",
+      "Bash(export PATH=\"/c/nodejs:$PATH\")",
+      "Bash(npm --version)",
+      "Bash(npm run:*)"
     ]
   }
 }

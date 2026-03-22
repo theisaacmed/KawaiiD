@@ -19,7 +19,7 @@ import { playPhoneBuzz } from './audio.js';
 import { renderMap } from './map-renderer.js';
 import { showNotification, updateNotifBadge as updateNotifBadgeNew, getNPCColor, getNotificationHistory, markHistoryRead } from './notifications.js';
 import { getJP, getRankName, getJPProgress, getNextRank, RANKS } from './jp-system.js';
-import { isAshHired, isAshHireUnlocked, hireAsh, fireAsh, isRuinsKidHired, isRuinsKidHireUnlocked, hireRuinsKid, fireRuinsKid, isAnyScavengerHired } from './scavenger-system.js';
+import { isAshHired, isAshHireUnlocked, hireAsh, fireAsh, isRuinsKidHired, isRuinsKidHireUnlocked, hireRuinsKid, fireRuinsKid } from './scavenger-system.js';
 import { addActiveDeal, completeDeal as completeActiveDeal, expireDeal as expireActiveDeal, updateDeals, getActiveDealsState, restoreActiveDealsState } from './active-deals-hud.js';
 
 // Deal panel functions — set by main.js to avoid circular dependencies
@@ -1138,27 +1138,25 @@ function renderContactsTab() {
             : `<button class="ash-hire-btn" data-action="hire" style="background:rgba(100,200,150,0.1);border:1px solid rgba(100,200,150,0.3);border-radius:6px;padding:5px 12px;color:#6f9;font-family:monospace;font-size:11px;cursor:pointer">Hire Ash ($15/day)</button>`
           }
           ${isAshHired() ? '<span style="color:#555;font-size:10px;margin-left:8px">Scavenging 6AM–4PM</span>' : ''}
-          ${!isAshHired() && isAnyScavengerHired() ? '<span style="color:#555;font-size:10px;margin-left:8px">Fire current scavenger first</span>' : ''}
         </div>` : ''}
       </div>
     `;
   }
 
-  // Add Ruins Kid hire card if unlocked (standalone NPC, shown at bottom)
+  // Add Pip hire card if recruited (standalone NPC, shown at bottom)
   if (isRuinsKidHireUnlocked()) {
     html += `
       <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px 14px;margin-bottom:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <div style="font-weight:bold;color:#c8b090">Ruins Kid</div>
+          <div style="font-weight:bold;color:#c8b090">Pip</div>
           <div style="font-size:11px;color:#556">Ruins — scavenger</div>
         </div>
-        <div style="font-size:12px;color:#667;margin-bottom:8px">Finds fabric and stuffing in the ruins. $20/day.</div>
+        <div style="font-size:12px;color:#667;margin-bottom:8px">Finds old stickers and plushies in the ruins. $20/day.</div>
         <div>
           ${isRuinsKidHired()
-            ? `<button class="rk-hire-btn" data-action="fire" style="background:rgba(255,100,100,0.1);border:1px solid rgba(255,100,100,0.3);border-radius:6px;padding:5px 12px;color:#f88;font-family:monospace;font-size:11px;cursor:pointer">Fire Ruins Kid ($20/day)</button>
+            ? `<button class="rk-hire-btn" data-action="fire" style="background:rgba(255,100,100,0.1);border:1px solid rgba(255,100,100,0.3);border-radius:6px;padding:5px 12px;color:#f88;font-family:monospace;font-size:11px;cursor:pointer">Let Pip go ($20/day)</button>
                <span style="color:#555;font-size:10px;margin-left:8px">Scavenging 6AM–4PM</span>`
-            : `<button class="rk-hire-btn" data-action="hire" style="background:rgba(180,150,100,0.1);border:1px solid rgba(180,150,100,0.3);border-radius:6px;padding:5px 12px;color:#c8a860;font-family:monospace;font-size:11px;cursor:pointer">Hire Ruins Kid ($20/day)</button>
-               ${isAnyScavengerHired() ? '<span style="color:#555;font-size:10px;margin-left:8px">Fire current scavenger first</span>' : ''}`
+            : `<button class="rk-hire-btn" data-action="hire" style="background:rgba(180,150,100,0.1);border:1px solid rgba(180,150,100,0.3);border-radius:6px;padding:5px 12px;color:#c8a860;font-family:monospace;font-size:11px;cursor:pointer">Hire Pip ($20/day)</button>`
           }
         </div>
       </div>

@@ -3,7 +3,7 @@
 // Waypoint meetups: NPC always accepts when you reach their requested meetup point
 
 import * as THREE from 'three';
-import { addItem, isFull } from './inventory.js';
+import { addItem, isFull, hasItem } from './inventory.js';
 import { showPrompt, hidePrompt, showProgress, hideProgress, showInventoryFull } from './hud.js';
 import { getNearestNPC, npcLine, resetNPCPurchases } from './npc.js';
 import { openDealPanel, isDealOpen, setLocationRefuseCallback } from './dealing.js';
@@ -19,7 +19,7 @@ import { isNearSewingMachine, isSewingMachineOpen, openSewingMachineUI } from '.
 import { isNearStuffingStation, isStuffingStationOpen, openStuffingStationUI } from './stations/stuffing-station.js';
 import { isNearStationShop, isStationShopOpen, openStationShopUI } from './station-shop.js';
 import { isNearGus, isGusAvailable, openOrderUI, isSmuggleUIOpen, isNearCrate, collectCrate, closeOrderUI } from './smuggling.js';
-import { isAshOnDuty, isNearRuinsKid, isRuinsKidHired, isRuinsKidHireUnlocked, hireRuinsKid, fireRuinsKid } from './scavenger-system.js';
+import { isAshOnDuty, isNearRuinsKid, isRuinsKidHired, isPipRecruited, isPipHired, recruitPip, hirePip, firePip, onPileSearched } from './scavenger-system.js';
 import { isNearWorkshopBuilding, isWorkshopPurchased, openStorageUI, isWorkshopStorageOpen } from './workshop.js';
 import { getNearestDecorSpot, openDecorUI, isDecorUIOpen } from './apartment-decor.js';
 
@@ -164,12 +164,18 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
         return;
       }
 
-      // Check if near Ruins Kid (scavenger hire)
-      if (isNearRuinsKid(playerRef.position) && isRuinsKidHireUnlocked()) {
-        if (isRuinsKidHired()) {
-          fireRuinsKid();
+      // Check if near Pip (Ruins Kid scavenger)
+      if (isNearRuinsKid(playerRef.position)) {
+        if (!isPipRecruited()) {
+          if (hasItem('plushie')) {
+            recruitPip();
+          } else {
+            showRefusal("Got a spare plushie? Give me one and I'll help out.");
+          }
+        } else if (isPipHired()) {
+          firePip();
         } else {
-          hireRuinsKid();
+          hirePip();
         }
         return;
       }
@@ -384,6 +390,9 @@ function completeSearch() {
   searchTarget.glow.visible = false;
   searchTarget.light.visible = false;
 
+  // Track cumulative scavenge count for Pip unlock
+  onPileSearched();
+
   searching = false;
   searchTarget = null;
   searchTimer = 0;
@@ -459,8 +468,12 @@ export function updateInteraction(dt) {
     showPrompt('Press E to shop');
   } else if (nearCrate && !searching) {
     showPrompt('Press E to collect delivery');
-  } else if (nearRuinsKid && isRuinsKidHireUnlocked() && !searching) {
-    showPrompt(isRuinsKidHired() ? 'Press E to fire Ruins Kid' : 'Press E to hire Ruins Kid ($20/day)');
+  } else if (nearRuinsKid && !searching) {
+    if (!isPipRecruited()) {
+      showPrompt(hasItem('plushie') ? 'Press E to give plushie to Pip' : 'Press E to talk to Pip');
+    } else {
+      showPrompt(isPipHired() ? 'Press E to let Pip go' : 'Press E to hire Pip ($20/day)');
+    }
   } else if (nearGus && !searching) {
     showPrompt(isGusAvailable() ? 'Press E to order supplies' : 'Need higher trust with Gus');
   } else if (nearBed && !searching) {

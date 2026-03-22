@@ -1,40 +1,47 @@
-// Scavenger Hire system — hire Ash or Ruins Kid to find raw materials daily
-// Unlocks at Rank 3 (Supplier, 300 JP)
-// Hired via phone Contacts tab or by talking to NPC
-// When hired, scavenger is unavailable for deals 6 AM – 4 PM
-// At 4 PM, scavenger deposits 3–5 materials at the apartment
-// Daily wages auto-deducted at 6 AM ($15 Ash, $20 Ruins Kid)
-// One scavenger at a time
+// Scavenger Hire system — hire Ash and/or Pip to find materials daily
+// Ash: Rank 3 unlock, finds sticker paper + stickers, $15/day
+// Pip (Ruins Kid): unlocks after 5 scavenges in ruins, finds stickers + plushies, $20/day
+// Both can be hired simultaneously
+// Deposits at 4 PM, wages deducted at 6 AM
 
 import * as THREE from 'three';
-import { addItem, getMoney, deductMoney } from './inventory.js';
+import { addItem, getMoney, deductMoney, hasItem, removeItem } from './inventory.js';
 import { getCurrentRankIndex } from './jp-system.js';
 import { getGameHour, getDayNumber } from './time-system.js';
 import { showNotification } from './notifications.js';
 import { getRelationship } from './npc.js';
 
-// Ruins Kid position — inside ruins zone
-const RUINS_KID_POS = new THREE.Vector3(22, 0, -80);
-const RUINS_KID_INTERACT_RADIUS = 3;
+// Pip position — near first rubble pile in the ruins
+const PIP_POS = new THREE.Vector3(-30, 0, -162);
+const PIP_INTERACT_RADIUS = 3;
 
 // --- State ---
+// Ash
 let ashHired = false;
 let lastWageDay = 0;
 let lastDepositDay = 0;
 let npcsRef = [];
 
-// Ruins Kid state
-let ruinsKidHired = false;
-let lastRuinsKidWageDay = 0;
-let lastRuinsKidDepositDay = 0;
-let ruinsKidMesh = null;
+// Pip (Ruins Kid)
+let pipScavengeCount = 0; // how many rubble piles player has searched (cumulative, never reset)
+let pipUnlocked = false;  // Pip has appeared in ruins (5+ scavenges done)
+let pipRecruited = false; // player gave Pip a plushie (one-time unlock)
+let pipHired = false;
+let lastPipWageDay = 0;
+let lastPipDepositDay = 0;
+let pipMesh = null;
 
 // --- Queries ---
 export function isAshHired() { return ashHired; }
-export function isRuinsKidHired() { return ruinsKidHired; }
 export function isAshHireUnlocked() { return getCurrentRankIndex() >= 3; }
-export function isRuinsKidHireUnlocked() { return getCurrentRankIndex() >= 3; }
-export function isAnyScavengerHired() { return ashHired || ruinsKidHired; }
+export function isPipUnlocked() { return pipUnlocked; }
+export function isPipRecruited() { return pipRecruited; }
+export function isPipHired() { return pipHired; }
+export function isAnyScavengerHired() { return ashHired || pipHired; }
+
+// Backward-compat aliases used by interaction.js and phone.js
+export function isRuinsKidHired() { return pipHired; }
+export function isRuinsKidHireUnlocked() { return pipRecruited; }
 
 // True if Ash is on scavenger duty (6 AM – 4 PM, hired)
 export function isAshOnDuty() {
@@ -43,34 +50,96 @@ export function isAshOnDuty() {
   return hour >= 6 && hour < 16;
 }
 
-// True if Ruins Kid is near player
+// True if player is near Pip (only when Pip has appeared)
 export function isNearRuinsKid(playerPos) {
-  const dx = playerPos.x - RUINS_KID_POS.x;
-  const dz = playerPos.z - RUINS_KID_POS.z;
-  return Math.sqrt(dx * dx + dz * dz) < RUINS_KID_INTERACT_RADIUS;
+  if (!pipUnlocked) return false;
+  const dx = playerPos.x - PIP_POS.x;
+  const dz = playerPos.z - PIP_POS.z;
+  return Math.sqrt(dx * dx + dz * dz) < PIP_INTERACT_RADIUS;
+}
+
+// Called each time a rubble pile search completes — tracks Pip unlock
+export function onPileSearched() {
+  if (pipUnlocked) return;
+  pipScavengeCount++;
+  if (pipScavengeCount >= 5) {
+    pipUnlocked = true;
+    if (pipMesh) pipMesh.visible = true;
+    showNotification({
+      id: 'pip_appear',
+      npcName: 'Pip',
+      title: 'A kid is watching you',
+      text: "Someone's huddled near a rubble pile in the ruins...",
+    });
+  }
+}
+
+// One-time recruitment — player gives Pip a plushie
+export function recruitPip() {
+  if (pipRecruited || !hasItem('plushie')) return false;
+  removeItem('plushie');
+  pipRecruited = true;
+  pipHired = true;
+  lastPipWageDay = getDayNumber();
+  showNotification({
+    id: 'pip_recruited',
+    npcName: 'Pip',
+    title: 'Pip joined you',
+    text: "They pocketed the plushie and grinned. $20/day, finds at 4 PM.",
+  });
+  return true;
 }
 
 // --- Init ---
 export function initScavenger(scene, npcs) {
   npcsRef = npcs;
-  _createRuinsKidMesh(scene);
+  _createPipMesh(scene);
 }
 
-function _createRuinsKidMesh(scene) {
+function _createPipMesh(scene) {
   if (!scene) return;
   const group = new THREE.Group();
-  group.position.copy(RUINS_KID_POS);
+  group.position.copy(PIP_POS);
+  group.scale.setScalar(0.8); // Pip is shorter than other NPCs
 
-  const bodyMat = new THREE.MeshLambertMaterial({ color: 0x6a7a5a });
+  // Body — patched olive jacket
+  const bodyMat = new THREE.MeshLambertMaterial({ color: 0x5a6b4a });
   const body = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.1, 0.35), bodyMat);
   body.position.y = 0.85;
   body.castShadow = true;
   group.add(body);
 
-  const headMat = new THREE.MeshLambertMaterial({ color: 0xd4a87a });
+  // Patches on jacket
+  const patchMat = new THREE.MeshLambertMaterial({ color: 0x8a7a5a });
+  const patch1 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.04), patchMat);
+  patch1.position.set(0.18, 0.95, 0.19);
+  group.add(patch1);
+  const patch2 = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.09, 0.04), patchMat);
+  patch2.position.set(-0.16, 0.75, 0.19);
+  group.add(patch2);
+
+  // Head
+  const headMat = new THREE.MeshLambertMaterial({ color: 0xc8a070 });
   const head = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.38, 0.38), headMat);
   head.position.y = 1.6;
   group.add(head);
+
+  // Hood — half-sphere behind head (like Kit)
+  const hoodMat = new THREE.MeshLambertMaterial({ color: 0x3d4d30 });
+  const hoodGeo = new THREE.SphereGeometry(0.26, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+  const hood = new THREE.Mesh(hoodGeo, hoodMat);
+  hood.position.set(0, 1.68, -0.08);
+  hood.rotation.x = 0.3;
+  group.add(hood);
+
+  // Eyes
+  const eyeMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 0.04), eyeMat);
+  eyeL.position.set(-0.1, 1.62, 0.2);
+  group.add(eyeL);
+  const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 0.04), eyeMat);
+  eyeR.position.set(0.1, 1.62, 0.2);
+  group.add(eyeR);
 
   // Name label
   const canvas = document.createElement('canvas');
@@ -82,22 +151,22 @@ function _createRuinsKidMesh(scene) {
   ctx.fillStyle = '#ccc';
   ctx.shadowColor = 'rgba(0,0,0,0.8)';
   ctx.shadowBlur = 4;
-  ctx.fillText('Ruins Kid', 128, 32);
+  ctx.fillText('Pip', 128, 32);
   const tex = new THREE.CanvasTexture(canvas);
   tex.minFilter = THREE.LinearFilter;
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
   sprite.scale.set(2.2, 0.55, 1);
-  sprite.position.y = 2.2;
+  sprite.position.y = 2.5; // slightly higher to account for scale
   group.add(sprite);
 
+  group.visible = pipUnlocked; // hidden until 5 scavenges done
   scene.add(group);
-  ruinsKidMesh = group;
+  pipMesh = group;
 }
 
-// --- Hire / Fire ---
+// --- Hire / Fire Ash ---
 export function hireAsh() {
   if (ashHired || !isAshHireUnlocked()) return false;
-  if (ruinsKidHired) return false; // one scavenger at a time
   const ash = npcsRef.find(n => n.name === 'Ash');
   if (!ash || !ash.isAvailable) return false;
   ashHired = true;
@@ -122,32 +191,36 @@ export function fireAsh() {
   });
 }
 
-export function hireRuinsKid() {
-  if (ruinsKidHired || !isRuinsKidHireUnlocked()) return false;
-  if (ashHired) return false; // one scavenger at a time
-  ruinsKidHired = true;
-  lastRuinsKidWageDay = getDayNumber();
+// --- Hire / Fire Pip ---
+export function hirePip() {
+  if (pipHired || !pipRecruited) return false;
+  pipHired = true;
+  lastPipWageDay = getDayNumber();
   showNotification({
-    id: `hire_rk_${Date.now()}`,
-    npcName: 'Ruins Kid',
-    title: 'Ruins Kid hired',
-    text: "They'll drop off fabric and stuffing at 4 PM. $20/day.",
+    id: `hire_pip_${Date.now()}`,
+    npcName: 'Pip',
+    title: 'Pip rehired',
+    text: "They'll drop off finds at 4 PM. $20/day.",
   });
   return true;
 }
 
-export function fireRuinsKid() {
-  if (!ruinsKidHired) return;
-  ruinsKidHired = false;
+export function firePip() {
+  if (!pipHired) return;
+  pipHired = false;
   showNotification({
-    id: `fire_rk_${Date.now()}`,
-    npcName: 'Ruins Kid',
-    title: 'Ruins Kid let go',
+    id: `fire_pip_${Date.now()}`,
+    npcName: 'Pip',
+    title: 'Pip let go',
     text: "They've gone back to scavenging on their own.",
   });
 }
 
-// --- Daily logic ---
+// Backward-compat aliases used by phone.js
+export function hireRuinsKid() { return pipRecruited ? hirePip() : false; }
+export function fireRuinsKid() { firePip(); }
+
+// --- Daily logic — Ash ---
 function deductWage() {
   const day = getDayNumber();
   if (day <= lastWageDay) return;
@@ -162,7 +235,6 @@ function deductWage() {
       text: "−$15 for Ash's scavenging work.",
     });
   } else {
-    // Can't afford — Ash quits
     fireAsh();
     showNotification({
       id: `ash_quit_${day}`,
@@ -173,7 +245,6 @@ function deductWage() {
   }
 }
 
-// Bonus items from relationship level with a scavenger NPC
 function _relBonus(npcName) {
   const rel = getRelationship(npcName);
   const lvl = Math.floor(rel ? rel.level : 0);
@@ -187,7 +258,6 @@ function depositMaterials() {
   if (day <= lastDepositDay) return;
   lastDepositDay = day;
 
-  // 3–5 items + relationship bonus: level 3 = +1, level 5 = +2
   const base = 3 + Math.floor(Math.random() * 3); // 3, 4, or 5
   const count = base + _relBonus('Ash');
 
@@ -207,88 +277,96 @@ function depositMaterials() {
   });
 }
 
-// --- Ruins Kid daily logic ---
-function deductRuinsKidWage() {
+// --- Daily logic — Pip ---
+function deductPipWage() {
   const day = getDayNumber();
-  if (day <= lastRuinsKidWageDay) return;
-  lastRuinsKidWageDay = day;
+  if (day <= lastPipWageDay) return;
+  lastPipWageDay = day;
   const money = getMoney();
   if (money >= 20) {
     deductMoney(20);
     showNotification({
-      id: `rk_wage_${day}`,
-      npcName: 'Ruins Kid',
+      id: `pip_wage_${day}`,
+      npcName: 'Pip',
       title: 'Daily wage paid',
-      text: "−$20 for Ruins Kid's scavenging work.",
+      text: "−$20 for Pip's scavenging work.",
     });
   } else {
-    fireRuinsKid();
+    firePip();
     showNotification({
-      id: `rk_quit_${day}`,
-      npcName: 'Ruins Kid',
-      title: "Ruins Kid quit",
-      text: "Couldn't pay the wage. They've stopped working for you.",
+      id: `pip_quit_${day}`,
+      npcName: 'Pip',
+      title: "Pip stopped showing up",
+      text: "Couldn't pay the wage. Pip went back to scavenging alone.",
     });
   }
 }
 
-function depositRuinsKidMaterials() {
-  const day = getDayNumber();
-  if (day <= lastRuinsKidDepositDay) return;
-  lastRuinsKidDepositDay = day;
+const PIP_DEPOSIT_LINES = [
+  "Found these behind the old school",
+  "Almost got spotted but I'm fast",
+  "This plushie was buried under a wall",
+  "Good haul today",
+];
 
-  // 3–5 items (fabric_roll + stuffing) + relationship bonus
-  const base = 3 + Math.floor(Math.random() * 3);
-  const count = base + _relBonus('Ruins Kid');
+function depositPipFinds() {
+  const day = getDayNumber();
+  if (day <= lastPipDepositDay) return;
+  lastPipDepositDay = day;
+
+  // 2–4 items: 60% sticker, 40% plushie
+  const count = 2 + Math.floor(Math.random() * 3);
 
   for (let i = 0; i < count; i++) {
     if (Math.random() < 0.6) {
-      addItem('material', 'fabric_roll');
+      addItem('sticker');
     } else {
-      addItem('material', 'stuffing');
+      addItem('plushie');
     }
   }
 
+  const line = PIP_DEPOSIT_LINES[Math.floor(Math.random() * PIP_DEPOSIT_LINES.length)];
   showNotification({
-    id: `rk_deposit_${day}`,
-    npcName: 'Ruins Kid',
-    title: 'Ruins Kid dropped off materials',
-    text: `Found ${count} item${count !== 1 ? 's' : ''} in the ruins.`,
+    id: `pip_deposit_${day}`,
+    npcName: 'Pip',
+    title: 'Pip dropped off finds',
+    text: `"${line}" — ${count} item${count !== 1 ? 's' : ''}.`,
   });
 }
 
 // Called each frame from main update loop
 let prevHour = -1;
 export function updateScavenger(dt) {
-  if (!ashHired && !ruinsKidHired) return;
+  if (!ashHired && !pipHired) return;
 
   const hour = getGameHour();
 
   // 6 AM — wage deductions
   if (prevHour < 6 && hour >= 6) {
     if (ashHired) deductWage();
-    if (ruinsKidHired) deductRuinsKidWage();
+    if (pipHired) deductPipWage();
   }
 
-  // 4 PM — material deposits
+  // 4 PM — deposits
   if (prevHour < 16 && hour >= 16) {
     if (ashHired) depositMaterials();
-    if (ruinsKidHired) depositRuinsKidMaterials();
+    if (pipHired) depositPipFinds();
   }
 
   prevHour = hour;
 }
 
-// Called at new day start (sleeping resets the hour from 18→6)
+// Called at new day start
 export function onNewDayScavenger() {
-  prevHour = -1; // ensure transitions fire fresh each day
+  prevHour = -1;
 }
 
 // --- Save / Load ---
 export function getScavengerSaveData() {
   return {
     ashHired, lastWageDay, lastDepositDay,
-    ruinsKidHired, lastRuinsKidWageDay, lastRuinsKidDepositDay,
+    pipScavengeCount, pipUnlocked, pipRecruited,
+    pipHired, lastPipWageDay, lastPipDepositDay,
   };
 }
 
@@ -297,7 +375,24 @@ export function restoreScavenger(data) {
   ashHired = data.ashHired || false;
   lastWageDay = data.lastWageDay || 0;
   lastDepositDay = data.lastDepositDay || 0;
-  ruinsKidHired = data.ruinsKidHired || false;
-  lastRuinsKidWageDay = data.lastRuinsKidWageDay || 0;
-  lastRuinsKidDepositDay = data.lastRuinsKidDepositDay || 0;
+
+  pipScavengeCount = data.pipScavengeCount || 0;
+  pipUnlocked = data.pipUnlocked || false;
+  pipRecruited = data.pipRecruited || false;
+  pipHired = data.pipHired || false;
+  lastPipWageDay = data.lastPipWageDay || 0;
+  lastPipDepositDay = data.lastPipDepositDay || 0;
+
+  // Show pip mesh if already unlocked (mesh created before restore is called)
+  if (pipMesh && pipUnlocked) pipMesh.visible = true;
+
+  // Backward compat: migrate old ruinsKidHired save data
+  if (!pipRecruited && data.ruinsKidHired) {
+    pipRecruited = true;
+    pipHired = data.ruinsKidHired;
+    lastPipWageDay = data.lastRuinsKidWageDay || 0;
+    lastPipDepositDay = data.lastRuinsKidDepositDay || 0;
+    pipUnlocked = true;
+    if (pipMesh) pipMesh.visible = true;
+  }
 }
