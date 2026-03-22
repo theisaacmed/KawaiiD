@@ -15,6 +15,7 @@ import { getSewingMachineSaveData, restoreSewingMachineState } from './stations/
 import { getStuffingStationSaveData, restoreStuffingStationState } from './stations/stuffing-station.js';
 import { getNotifState, restoreNotifState } from './notifications.js';
 import { getJPState, restoreJPState } from './jp-system.js';
+import { getStationShopSaveData } from './station-shop.js';
 
 const SAVE_KEY = 'kawaiid_save';
 const AUTO_SAVE_INTERVAL = 60000; // 60 seconds
@@ -160,6 +161,9 @@ function gatherSaveData() {
 
   // Joy Points and rank
   data.jp = getJPState();
+
+  // Station shop purchases
+  data.stationShop = getStationShopSaveData();
 
   return data;
 }

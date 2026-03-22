@@ -17,6 +17,7 @@ import { isNearPrintStation, isPrintStationOpen, openUI as openPrintStationUI } 
 import { isNearCuttingTable, isCuttingTableOpen, openCuttingTableUI } from './stations/cutting-table.js';
 import { isNearSewingMachine, isSewingMachineOpen, openSewingMachineUI } from './stations/sewing-machine.js';
 import { isNearStuffingStation, isStuffingStationOpen, openStuffingStationUI } from './stations/stuffing-station.js';
+import { isNearStationShop, isStationShopOpen, openStationShopUI } from './station-shop.js';
 
 const SEARCH_RADIUS = 3;
 const SEARCH_DURATION = 3; // seconds
@@ -84,7 +85,7 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
   createSleepConfirm();
 
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen()) {
+    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen() && !isStationShopOpen()) {
       // Close phone if open
       if (isPhoneVisible()) closePhone();
 
@@ -111,6 +112,12 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
       // Check if near print station
       if (isNearPrintStation(playerRef.position)) {
         openPrintStationUI();
+        return;
+      }
+
+      // Check if near station shop counter
+      if (isNearStationShop(playerRef.position)) {
+        openStationShopUI();
         return;
       }
 

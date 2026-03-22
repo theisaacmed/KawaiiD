@@ -26,6 +26,7 @@ let statusLightMat = null;
 let needleMesh = null;
 let sceneRef = null;
 let isUIOpen = false;
+let enabled = false;
 
 let backdrop = null;
 let panel = null;
@@ -34,13 +35,18 @@ let audioCtx = null;
 // --- Public API ---
 
 export function isNearSewingMachine(playerPos) {
-  if (!stationMesh) return false;
+  if (!stationMesh || !enabled) return false;
   const dx = playerPos.x - SEWING_STATION_POS.x;
   const dz = playerPos.z - SEWING_STATION_POS.z;
   return Math.sqrt(dx * dx + dz * dz) < INTERACT_RADIUS;
 }
 
 export function isSewingMachineOpen() { return isUIOpen; }
+
+export function setStationEnabled(val) {
+  enabled = val;
+  if (stationMesh) stationMesh.visible = val;
+}
 
 export function getSewingMachineSaveData() {
   return { ...stationState, lastUpdateTime: Date.now() };
@@ -66,6 +72,7 @@ export function restoreSewingMachineState(data) {
 export function initSewingMachine(scene, player) {
   sceneRef = scene;
   createStationMesh();
+  if (stationMesh) stationMesh.visible = false; // hidden until purchased
   createUI();
 
   try {

@@ -21,6 +21,14 @@ export const STUFFING_STATION_POS = new THREE.Vector3(10.0, 0, 11.5); // south w
 export const CUTTING_TABLE_POS = new THREE.Vector3(9.5, 0, 14.0);     // west side wall, center
 // Gacha machine already at (14, 0, 12) — south-east corner
 
+// Station slot placeholder positions — shown until a station is purchased
+const STATION_SLOTS = [
+  { pos: PRINT_STATION_POS,    label: 'Print' },
+  { pos: SEWING_STATION_POS,   label: 'Sewing' },
+  { pos: STUFFING_STATION_POS, label: 'Stuffing' },
+  { pos: CUTTING_TABLE_POS,    label: 'Cutting' },
+];
+
 export function createApartment(scene) {
   sceneRef = scene;
   apartmentGroup = new THREE.Group();
@@ -55,6 +63,15 @@ export function createApartment(scene) {
   const warmLight = new THREE.PointLight(0xffe8c0, 0.4, 8);
   warmLight.position.set(12, 3, 14);
   apartmentGroup.add(warmLight);
+
+  // Floor markers at each station slot (tape outlines — always visible)
+  const tapeMat = new THREE.MeshLambertMaterial({ color: 0x4a4a5a, transparent: true, opacity: 0.5 });
+  for (const slot of STATION_SLOTS) {
+    const marker = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.8), tapeMat);
+    marker.rotation.x = -Math.PI / 2;
+    marker.position.set(slot.pos.x, 0.025, slot.pos.z);
+    apartmentGroup.add(marker);
+  }
 
   scene.add(apartmentGroup);
 }

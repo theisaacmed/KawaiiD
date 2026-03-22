@@ -26,6 +26,7 @@ let statusLightMat = null;
 let sceneRef = null;
 let isUIOpen = false;
 let playerRef = null;
+let enabled = false;
 
 // UI elements
 let backdrop = null;
@@ -37,10 +38,15 @@ let audioCtx = null;
 // --- Public API ---
 
 export function isNearPrintStation(playerPos) {
-  if (!stationMesh) return false;
+  if (!stationMesh || !enabled) return false;
   const dx = playerPos.x - PRINT_STATION_POS.x;
   const dz = playerPos.z - PRINT_STATION_POS.z;
   return Math.sqrt(dx * dx + dz * dz) < INTERACT_RADIUS;
+}
+
+export function setStationEnabled(val) {
+  enabled = val;
+  if (stationMesh) stationMesh.visible = val;
 }
 
 export function isPrintStationOpen() { return isUIOpen; }
@@ -78,6 +84,7 @@ export function initPrintStation(scene, player) {
   sceneRef = scene;
   playerRef = player;
   createStationMesh();
+  if (stationMesh) stationMesh.visible = false; // hidden until purchased
   createUI();
 
   // Try to get audio context

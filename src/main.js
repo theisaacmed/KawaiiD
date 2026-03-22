@@ -37,6 +37,7 @@ import {
 import { initAdmin } from './admin.js';
 import { createKit, updateKit, resetKitStock, isShopOpen } from './shop.js';
 import { createApartment } from './apartment.js';
+import { initStationShop, isStationShopOpen, restoreStationShopState, applyRestoredPurchases } from './station-shop.js';
 import { initPrintStation, updatePrintStation, isPrintStationOpen } from './stations/print-station.js';
 import { initCuttingTable, updateCuttingTable, isCuttingTableOpen } from './stations/cutting-table.js';
 import { initSewingMachine, updateSewingMachine, isSewingMachineOpen } from './stations/sewing-machine.js';
@@ -191,12 +192,16 @@ async function boot() {
   registerPausePredicate(() => isCuttingTableOpen());
   registerPausePredicate(() => isSewingMachineOpen());
   registerPausePredicate(() => isStuffingStationOpen());
+  registerPausePredicate(() => isStationShopOpen());
 
   // Kit supplier NPC
   createKit(scene);
 
   // Apartment interior (workshop)
   createApartment(scene);
+
+  // Station shop (purchase counter in apartment)
+  initStationShop(scene);
 
   // Print station (first manufacturing station)
   initPrintStation(scene, player);
@@ -354,6 +359,12 @@ async function boot() {
     restoreAllProps(scene, getRelationships());
     // Restore inventory expansion from JP rank (Dealer rank = index 2 → 10 slots)
     if (getCurrentRankIndex() >= 2) setMaxSlots(10);
+    // Restore station purchases (enables/shows purchased station meshes)
+    if (savedData.stationShop) restoreStationShopState(savedData.stationShop);
+    applyRestoredPurchases();
+  } else {
+    // New game — apply any already-restored purchases (none, but future-proof)
+    applyRestoredPurchases();
   }
 
   // Init save system

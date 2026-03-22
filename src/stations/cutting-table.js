@@ -26,6 +26,7 @@ let stationMesh = null;
 let statusLightMat = null;
 let sceneRef = null;
 let isUIOpen = false;
+let enabled = false;
 
 let backdrop = null;
 let panel = null;
@@ -34,10 +35,15 @@ let audioCtx = null;
 // --- Public API ---
 
 export function isNearCuttingTable(playerPos) {
-  if (!stationMesh) return false;
+  if (!stationMesh || !enabled) return false;
   const dx = playerPos.x - CUTTING_TABLE_POS.x;
   const dz = playerPos.z - CUTTING_TABLE_POS.z;
   return Math.sqrt(dx * dx + dz * dz) < INTERACT_RADIUS;
+}
+
+export function setStationEnabled(val) {
+  enabled = val;
+  if (stationMesh) stationMesh.visible = val;
 }
 
 export function isCuttingTableOpen() { return isUIOpen; }
@@ -66,6 +72,7 @@ export function restoreCuttingTableState(data) {
 export function initCuttingTable(scene, player) {
   sceneRef = scene;
   createStationMesh();
+  if (stationMesh) stationMesh.visible = false; // hidden until purchased
   createUI();
 
   try {

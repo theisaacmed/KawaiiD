@@ -26,6 +26,7 @@ let statusLightMat = null;
 let hopperMesh = null;
 let sceneRef = null;
 let isUIOpen = false;
+let enabled = false;
 
 let backdrop = null;
 let panel = null;
@@ -34,13 +35,18 @@ let audioCtx = null;
 // --- Public API ---
 
 export function isNearStuffingStation(playerPos) {
-  if (!stationMesh) return false;
+  if (!stationMesh || !enabled) return false;
   const dx = playerPos.x - STUFFING_STATION_POS.x;
   const dz = playerPos.z - STUFFING_STATION_POS.z;
   return Math.sqrt(dx * dx + dz * dz) < INTERACT_RADIUS;
 }
 
 export function isStuffingStationOpen() { return isUIOpen; }
+
+export function setStationEnabled(val) {
+  enabled = val;
+  if (stationMesh) stationMesh.visible = val;
+}
 
 export function getStuffingStationSaveData() {
   return { ...stationState, lastUpdateTime: Date.now() };
@@ -66,6 +72,7 @@ export function restoreStuffingStationState(data) {
 export function initStuffingStation(scene, player) {
   sceneRef = scene;
   createStationMesh();
+  if (stationMesh) stationMesh.visible = false; // hidden until purchased
   createUI();
 
   try {
