@@ -39,11 +39,11 @@ import { initAdmin } from './admin.js';
 import { createKit, updateKit, resetKitStock, isShopOpen } from './shop.js';
 import { createApartment } from './apartment.js';
 import { initStationShop, isStationShopOpen, restoreStationShopState, applyRestoredPurchases } from './station-shop.js';
-import { initSmuggling, updateSmuggling, getSmugglingState, restoreSmugglingState, isSmuggleUIOpen } from './smuggling.js';
-import { initScavenger, updateScavenger, onNewDayScavenger, getScavengerSaveData, restoreScavenger } from './scavenger-system.js';
-import { initStoryEvents, setStoryCallbacks, syncStoryEffects, onStoryTrigger, updateStoryEvents, getStoryEventsSaveData, restoreStoryEvents } from './story-events.js';
+import { initSmuggling, updateSmuggling, isSmuggleUIOpen } from './smuggling.js';
+import { initScavenger, updateScavenger, onNewDayScavenger } from './scavenger-system.js';
+import { initStoryEvents, setStoryCallbacks, syncStoryEffects, onStoryTrigger, updateStoryEvents } from './story-events.js';
 import { initWorkshop, updateWorkshop, isWorkshopStorageOpen } from './workshop.js';
-import { initTutorial, updateTutorial, getTutorialState, restoreTutorialState, isTutorialComplete, onTutorialDealComplete } from './tutorial.js';
+import { initTutorial, updateTutorial, onTutorialDealComplete } from './tutorial.js';
 import { initPrintStation, updatePrintStation, isPrintStationOpen } from './stations/print-station.js';
 import { initCuttingTable, updateCuttingTable, isCuttingTableOpen } from './stations/cutting-table.js';
 import { initSewingMachine, updateSewingMachine, isSewingMachineOpen } from './stations/sewing-machine.js';
@@ -400,12 +400,7 @@ async function boot() {
     // Restore station purchases (enables/shows purchased station meshes)
     if (savedData.stationShop) restoreStationShopState(savedData.stationShop);
     applyRestoredPurchases();
-    // Restore smuggling state
-    if (savedData.smuggling) restoreSmugglingState(savedData.smuggling);
-    // Restore scavenger state
-    if (savedData.scavenger) restoreScavenger(savedData.scavenger);
-    // Restore story events state then sync visual effects
-    if (savedData.storyEvents) restoreStoryEvents(savedData.storyEvents);
+    // Sync story event visual effects after state restored in applySave
     syncStoryEffects(getReferralState());
     // Workshop restore is handled in save-system.js applySave (via restoreWorkshopState)
   } else {
