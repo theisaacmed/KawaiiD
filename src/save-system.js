@@ -14,6 +14,7 @@ import { getCuttingTableSaveData, restoreCuttingTableState } from './stations/cu
 import { getSewingMachineSaveData, restoreSewingMachineState } from './stations/sewing-machine.js';
 import { getStuffingStationSaveData, restoreStuffingStationState } from './stations/stuffing-station.js';
 import { getNotifState, restoreNotifState } from './notifications.js';
+import { getJPState, restoreJPState } from './jp-system.js';
 
 const SAVE_KEY = 'kawaiid_save';
 const AUTO_SAVE_INTERVAL = 60000; // 60 seconds
@@ -157,6 +158,9 @@ function gatherSaveData() {
   // NPC routine states (current schedule entry, activity, position)
   data.routines = getRoutineSaveData();
 
+  // Joy Points and rank
+  data.jp = getJPState();
+
   return data;
 }
 
@@ -287,6 +291,9 @@ export function applySave(data, player, npcs, piles) {
 
   // NPC routine states
   if (data.routines) restoreRoutineState(data.routines);
+
+  // Joy Points and rank
+  if (data.jp) restoreJPState(data.jp);
 
   // ACE officers — restore waypoint index (mode will sync from game hour)
   if (data.aceOfficers && officersRef) {

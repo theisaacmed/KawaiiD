@@ -3,7 +3,7 @@
 
 import { MATERIALS } from './materials.js';
 
-const MAX_SLOTS = 8;
+let MAX_SLOTS = 8;
 
 // Max stack sizes per item type
 const MAX_STACK = {
@@ -160,6 +160,17 @@ export function onMoneyChange(fn) {
 
 export function getMaxSlots() {
   return MAX_SLOTS;
+}
+
+// Expand the max slot count (one-way — can't shrink below current items)
+const maxSlotsListeners = [];
+export function onMaxSlotsChange(fn) { maxSlotsListeners.push(fn); }
+
+export function setMaxSlots(n) {
+  if (n <= MAX_SLOTS) return;
+  MAX_SLOTS = n;
+  for (const fn of maxSlotsListeners) fn(MAX_SLOTS);
+  notify();
 }
 
 // Clear all inventory slots (used by ACE confiscation)

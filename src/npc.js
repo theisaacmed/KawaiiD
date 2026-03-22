@@ -155,6 +155,10 @@ export function getNPCColorModifier(npcName, itemType) {
 const relationships = {};
 // { [npcName]: { level, totalDeals, todayDeals, lastDealDay, totalSpent, spooked, spookedUntil, refusedRequests } }
 
+// JP callback — fired when an NPC relationship reaches a new integer level
+let onRelLevelUpCb = null;
+export function setOnRelLevelUpCallback(fn) { onRelLevelUpCb = fn; }
+
 export function getRelationship(npcName) {
   if (!relationships[npcName]) {
     relationships[npcName] = {
@@ -190,12 +194,17 @@ function calcRelationshipLevel(totalDeals) {
 // Record a successful deal
 export function recordDeal(npcName, price) {
   const rel = getRelationship(npcName);
+  const prevLevel = Math.floor(rel.level);
   rel.totalDeals++;
   rel.totalSpent += price;
   rel.lastDealDay = getDayNumber();
   rel.todayDeals++;
   rel.refusedRequests = 0; // reset on successful deal
   rel.level = calcRelationshipLevel(rel.totalDeals);
+  // Fire JP callback if relationship reached a new integer level
+  if (onRelLevelUpCb && Math.floor(rel.level) > prevLevel) {
+    onRelLevelUpCb(npcName, Math.floor(rel.level));
+  }
 }
 
 // Record a phone deal refusal

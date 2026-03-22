@@ -214,6 +214,11 @@ function triggerVictory() {
   if (onVictoryFn) onVictoryFn();
 }
 
+// Show a rank-up narrative message via the existing overlay system
+export function showRankMessage(msg) {
+  queueMessage(msg);
+}
+
 // --- Save / Restore ---
 export function getProgressionState() {
   return {

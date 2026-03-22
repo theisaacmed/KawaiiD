@@ -18,6 +18,7 @@ import { getRelationship, getNPCAffinity, getAffinityIcon, getNPCMood, getDexDai
 import { playPhoneBuzz } from './audio.js';
 import { renderMap } from './map-renderer.js';
 import { showNotification, updateNotifBadge as updateNotifBadgeNew, getNPCColor, getNotificationHistory, markHistoryRead } from './notifications.js';
+import { getJP, getRankName, getJPProgress, getNextRank, RANKS } from './jp-system.js';
 
 // Deal panel functions — set by main.js to avoid circular dependencies
 let isDealOpenFn = () => false;
@@ -1137,14 +1138,34 @@ function renderStatsTab() {
   if (!content) return;
 
   const worldColor = Math.round(getWorldColor() * 100);
-  const rank = getRank(stats.totalDeals);
+  const rankName = getRankName();
+  const jp = getJP();
+  const progress = getJPProgress();
+  const nextRank = getNextRank();
   stats.dayNumber = getDayNumber(); // always sync with time system
+
+  // Build rank ladder rows
+  const rankRows = RANKS.map(r => {
+    const isCurrent = r.name === rankName;
+    const isPast = jp >= r.jp && r.name !== rankName;
+    const color = isCurrent ? '#6cf' : isPast ? '#446' : '#333';
+    const weight = isCurrent ? 'bold' : 'normal';
+    return `<div style="color:${color};font-weight:${weight}">${isCurrent ? '▶ ' : '  '}${r.name} <span style="color:#333">(${r.jp} JP)</span></div>`;
+  }).join('');
 
   content.innerHTML = `
     <div style="padding:16px">
-      <div style="text-align:center;margin-bottom:20px">
+      <div style="text-align:center;margin-bottom:16px">
         <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px">Your Rank</div>
-        <div style="font-size:20px;font-weight:bold;color:#6cf">${rank}</div>
+        <div style="font-size:20px;font-weight:bold;color:#6cf">${rankName}</div>
+        <div style="margin-top:6px;font-size:22px;font-weight:bold;color:#fff">${jp} <span style="font-size:13px;color:#556">JP</span></div>
+        ${nextRank ? `
+        <div style="margin-top:6px;display:flex;align-items:center;gap:8px;justify-content:center">
+          <div style="width:120px;height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden">
+            <div style="width:${Math.round(progress * 100)}%;height:100%;background:#6cf;border-radius:3px"></div>
+          </div>
+          <div style="font-size:10px;color:#446">${nextRank.jp - jp} JP to ${nextRank.name}</div>
+        </div>` : '<div style="font-size:10px;color:#6cf;margin-top:4px">Max Rank Achieved</div>'}
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
@@ -1159,20 +1180,14 @@ function renderStatsTab() {
         ${statCard('', '', 'transparent')}
       </div>` : ''}
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
         ${statCard('Day', stats.dayNumber, '#fa8')}
         ${statCard('World Color', worldColor + '%', '#6f6')}
       </div>
 
-      <div style="margin-top:20px;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px">
-        <div style="font-size:11px;color:#555;margin-bottom:8px">RANK PROGRESSION</div>
-        <div style="font-size:10px;color:#666;line-height:1.6">
-          <div style="color:${stats.totalDeals <= 5 ? '#6cf' : '#444'}">0-5 deals: Newcomer</div>
-          <div style="color:${stats.totalDeals > 5 && stats.totalDeals <= 15 ? '#6cf' : '#444'}">6-15 deals: Peddler</div>
-          <div style="color:${stats.totalDeals > 15 && stats.totalDeals <= 30 ? '#6cf' : '#444'}">16-30 deals: Dealer</div>
-          <div style="color:${stats.totalDeals > 30 && stats.totalDeals <= 50 ? '#6cf' : '#444'}">31-50 deals: Supplier</div>
-          <div style="color:${stats.totalDeals > 50 ? '#6cf' : '#444'}">51+ deals: Kawaii Kingpin</div>
-        </div>
+      <div style="padding:12px;background:rgba(255,255,255,0.02);border-radius:8px">
+        <div style="font-size:11px;color:#555;margin-bottom:8px;letter-spacing:1px">RANK LADDER</div>
+        <div style="font-size:10px;line-height:1.8;font-family:monospace">${rankRows}</div>
       </div>
     </div>
   `;
@@ -1185,14 +1200,6 @@ function statCard(label, value, color) {
       <div style="font-size:18px;font-weight:bold;color:${color}">${value}</div>
     </div>
   `;
-}
-
-function getRank(deals) {
-  if (deals > 50) return 'Kawaii Kingpin';
-  if (deals > 30) return 'Supplier';
-  if (deals > 15) return 'Dealer';
-  if (deals > 5) return 'Peddler';
-  return 'Newcomer';
 }
 
 // --- Notification History Panel ---

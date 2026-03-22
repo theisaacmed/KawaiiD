@@ -12,6 +12,23 @@ import { getGameHour, isNight, getDaylightFactor, getTimePeriod } from './time-s
 let onCaughtCallback = null;
 export function setOnCaughtCallback(fn) { onCaughtCallback = fn; }
 
+// Callback fired when player successfully escapes a chase (all officers give up)
+let onEscapeCallback = null;
+export function setOnEscapeCallback(fn) { onEscapeCallback = fn; }
+
+// Returns true if any officer is within range units of the player
+export function isAnyOfficerWithinRange(range) {
+  if (!playerRef) return false;
+  const px = playerRef.position.x, pz = playerRef.position.z;
+  const r2 = range * range;
+  for (const o of officers) {
+    const dx = o.group.position.x - px;
+    const dz = o.group.position.z - pz;
+    if (dx * dx + dz * dz < r2) return true;
+  }
+  return false;
+}
+
 // --- Constants ---
 const PLAYER_WALK_SPEED = 5;
 
@@ -663,6 +680,8 @@ export function updateACE(dt) {
           officer.chaseLostTimer = 0; officer.lastKnownPos = null; officer.chaseStartPos = null;
           if (!officers.some(o => o !== officer && o.state === 'CHASE')) {
             stopChaseSound(); hideVignette(); anyChasing = false;
+            // Player successfully escaped — fire escape callback for JP bonus
+            if (onEscapeCallback) onEscapeCallback();
           }
         }
         break;

@@ -1,11 +1,13 @@
-// HUD — bottom inventory bar, money counter, search prompt, progress bar
+// HUD — bottom inventory bar, money counter, rank/JP display, search prompt, progress bar
 
-import { getSlots, getMaxSlots, onInventoryChange, onMoneyChange } from './inventory.js';
+import { getSlots, getMaxSlots, onInventoryChange, onMoneyChange, onMaxSlotsChange } from './inventory.js';
 import { isOverGachaInput, handleGachaDrop, updateGachaDropHighlight, isGachaUIOpen } from './gacha.js';
 import { getMaterialIconStyle, getMaterialGhostStyle } from './materials.js';
+import { getJP, getRankName, getJPProgress, getNextRank, setOnJPChangeCallback } from './jp-system.js';
 
 let moneyEl, moneyFlashTimeout;
 let promptEl, progressBarOuter, progressBarInner;
+let rankHudEl;
 let invBar, slotEls = [];
 let dragState = null; // { slotIndex, type, ghostEl }
 
@@ -30,6 +32,38 @@ export function createHUD() {
   onMoneyChange((money) => {
     moneyEl.textContent = `$${money}`;
   });
+
+  // Rank / JP display — top-left, beside money
+  rankHudEl = document.createElement('div');
+  Object.assign(rankHudEl.style, {
+    position: 'fixed', top: '16px', left: '130px',
+    background: 'rgba(0,0,0,0.5)',
+    fontFamily: 'monospace', fontSize: '12px',
+    padding: '6px 12px', borderRadius: '6px',
+    pointerEvents: 'none', zIndex: '100',
+    minWidth: '160px',
+  });
+  document.body.appendChild(rankHudEl);
+
+  function updateRankHUD() {
+    const name = getRankName();
+    const jp = getJP();
+    const progress = getJPProgress();
+    const next = getNextRank();
+    const nextJP = next ? next.jp : jp;
+    rankHudEl.innerHTML = `
+      <div style="color:#6cf;font-weight:bold;font-size:11px;letter-spacing:0.5px">${name}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+        <div style="flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden">
+          <div style="width:${Math.round(progress * 100)}%;height:100%;background:#6cf;border-radius:2px;transition:width 0.4s ease"></div>
+        </div>
+        <div style="font-size:10px;color:#556;white-space:nowrap">${jp}${next ? ' / ' + nextJP : ''} JP</div>
+      </div>
+    `;
+  }
+
+  setOnJPChangeCallback(updateRankHUD);
+  updateRankHUD();
 
   // Bottom inventory bar
   invBar = document.createElement('div');
@@ -69,6 +103,29 @@ export function createHUD() {
   // Listen for inventory changes
   onInventoryChange(() => renderSlots());
   renderSlots();
+
+  // Listen for max-slots expansion (e.g., Dealer rank → 10 slots)
+  onMaxSlotsChange((newMax) => {
+    const current = slotEls.length;
+    for (let i = current; i < newMax; i++) {
+      const slot = document.createElement('div');
+      slot.dataset.slotIndex = i;
+      Object.assign(slot.style, {
+        width: '56px', height: '56px',
+        borderRadius: '8px',
+        border: '1px solid rgba(255,255,255,0.12)',
+        background: 'rgba(255,255,255,0.04)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'relative',
+        cursor: 'default',
+        transition: 'border-color 0.15s, background 0.15s',
+        userSelect: 'none',
+      });
+      invBar.appendChild(slot);
+      slotEls.push(slot);
+    }
+    renderSlots();
+  });
 
   // Drag listeners on document (work even when pointer lock is off)
   document.addEventListener('mousedown', onDragStart);

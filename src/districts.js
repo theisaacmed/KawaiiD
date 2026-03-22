@@ -5,12 +5,15 @@ import * as THREE from 'three';
 import { getPhoneStats } from './phone.js';
 
 // ========== DISTRICT DEFINITIONS ==========
+// unlockRank: minimum rank index (from jp-system.js RANKS) to unlock via rank system
+// unlockDeals: legacy deal-count threshold (kept for backward compat / debug)
 export const DISTRICTS = {
   town: {
     name: 'Town',
     center: { x: 0, z: 20 },
     radius: 80,
-    unlockDeals: 0,  // always open
+    unlockDeals: 0,   // always open
+    unlockRank: 0,
     unlocked: true,
     description: 'Home. Modest residential, small shops.',
   },
@@ -18,7 +21,8 @@ export const DISTRICTS = {
     name: 'Ruins',
     center: { x: 0, z: -200 },
     radius: 100,
-    unlockDeals: 0,  // always open
+    unlockDeals: 0,   // always open
+    unlockRank: 0,
     unlocked: true,
     description: 'Destroyed old city. Scavenging grounds.',
   },
@@ -27,6 +31,7 @@ export const DISTRICTS = {
     center: { x: 20, z: 120 },
     radius: 70,
     unlockDeals: 15,
+    unlockRank: 2,    // Dealer (150 JP)
     unlocked: false,
     description: 'Commercial hub. Taller buildings, shops, markets.',
   },
@@ -35,6 +40,7 @@ export const DISTRICTS = {
     center: { x: 150, z: -20 },
     radius: 70,
     unlockDeals: 20,
+    unlockRank: 3,    // Supplier (300 JP)
     unlocked: false,
     description: 'Suburban sprawl. Bigger houses, wider streets.',
   },
@@ -43,6 +49,7 @@ export const DISTRICTS = {
     center: { x: 130, z: 150 },
     radius: 60,
     unlockDeals: 25,
+    unlockRank: 4,    // Smuggler (500 JP)
     unlocked: false,
     description: 'Quiet residential near the coast.',
   },
@@ -51,6 +58,7 @@ export const DISTRICTS = {
     center: { x: 20, z: -100 },
     radius: 70,
     unlockDeals: 30,
+    unlockRank: 4,    // Smuggler (500 JP)
     unlocked: false,
     description: 'Factories, warehouses, workshops.',
   },
@@ -59,6 +67,7 @@ export const DISTRICTS = {
     center: { x: 170, z: 80 },
     radius: 60,
     unlockDeals: 35,
+    unlockRank: 5,    // Distributor (800 JP)
     unlocked: false,
     description: 'Upscale district. Premium customers.',
   },
@@ -67,6 +76,7 @@ export const DISTRICTS = {
     center: { x: -140, z: 120 },
     radius: 60,
     unlockDeals: 40,
+    unlockRank: 6,    // Kingpin (1200 JP)
     unlocked: false,
     description: 'High-rise district. Dense, shadowy streets.',
   },
@@ -75,6 +85,7 @@ export const DISTRICTS = {
     center: { x: -80, z: 200 },
     radius: 50,
     unlockDeals: 50,
+    unlockRank: 6,    // Kingpin (1200 JP)
     unlocked: false,
     description: 'Docks. Shipping containers, cranes.',
   },
@@ -83,6 +94,7 @@ export const DISTRICTS = {
     center: { x: -140, z: -60 },
     radius: 50,
     unlockDeals: 60,
+    unlockRank: 7,    // Kawaii Kingpin (2000 JP)
     unlocked: false,
     description: 'Institutional. Heavy ACE presence.',
   },
@@ -201,7 +213,23 @@ export function createDistricts(scene) {
 }
 
 // ========== UNLOCK LOGIC ==========
-// Called after each deal to check if new districts should unlock
+
+function removeBarriersForDistrict(key) {
+  for (const barrier of BARRIERS) {
+    if (barrier.district === key && !barrier.removed) {
+      barrier.removed = true;
+      if (sceneRef && barrier.group) {
+        sceneRef.remove(barrier.group);
+        barrier.group.traverse(child => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) child.material.dispose();
+        });
+      }
+    }
+  }
+}
+
+// Called after each deal to check if new districts should unlock (legacy deal-count system)
 export function checkDistrictUnlocks(totalDeals) {
   const unlocked = [];
 
@@ -209,24 +237,26 @@ export function checkDistrictUnlocks(totalDeals) {
     if (!district.unlocked && totalDeals >= district.unlockDeals) {
       district.unlocked = true;
       unlocked.push(key);
-
-      // Remove barriers for this district
-      for (const barrier of BARRIERS) {
-        if (barrier.district === key && !barrier.removed) {
-          barrier.removed = true;
-          if (sceneRef && barrier.group) {
-            sceneRef.remove(barrier.group);
-            barrier.group.traverse(child => {
-              if (child.geometry) child.geometry.dispose();
-              if (child.material) child.material.dispose();
-            });
-          }
-        }
-      }
+      removeBarriersForDistrict(key);
     }
   }
 
   return unlocked; // list of newly unlocked district keys
+}
+
+// Called on rank-up — unlocks all districts whose unlockRank <= new rank index
+export function checkDistrictUnlocksByRank(rankIndex) {
+  const unlocked = [];
+
+  for (const [key, district] of Object.entries(DISTRICTS)) {
+    if (!district.unlocked && district.unlockRank > 0 && rankIndex >= district.unlockRank) {
+      district.unlocked = true;
+      unlocked.push(key);
+      removeBarriersForDistrict(key);
+    }
+  }
+
+  return unlocked;
 }
 
 // Force-unlock a district (for save restoration)
@@ -263,7 +293,7 @@ export function getUnlockedDistricts() {
 export function getLockedDistricts() {
   return Object.entries(DISTRICTS)
     .filter(([, d]) => !d.unlocked)
-    .map(([key, d]) => ({ key, name: d.name, dealsNeeded: d.unlockDeals }));
+    .map(([key, d]) => ({ key, name: d.name, dealsNeeded: d.unlockDeals, rankNeeded: d.unlockRank }));
 }
 
 // Get all active barrier boxes for player collision
@@ -285,6 +315,7 @@ export function getNearbyLockedDistrict(px, pz) {
         return {
           name: district.name,
           dealsNeeded: district.unlockDeals,
+          rankNeeded: district.unlockRank,
         };
       }
     }

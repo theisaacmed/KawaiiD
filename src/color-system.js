@@ -47,6 +47,12 @@ let npcList = [];
 let npcRelationshipsFn = null;   // callback → getRelationships() from npc.js
 let npcColorTimer = 0;
 
+// JP callback — set by main.js to award +2 JP per threshold crossing
+let onBuildingThresholdCb = null;
+export function setOnBuildingThresholdCallback(fn) { onBuildingThresholdCb = fn; }
+
+const COLOR_THRESHOLDS = [0.25, 0.50, 0.75, 1.0];
+
 // Ripple effects
 const ripples = [];
 
@@ -78,11 +84,12 @@ export function initColorSystem(scene, buildings, ground, windowMats, doorMats) 
     buildingColors.push({
       mesh,
       targetColor,
-      colorAmount: 0,      // current goal
-      displayAmount: 0,     // what's actually rendered (lerps toward colorAmount)
+      colorAmount: 0,        // current goal
+      displayAmount: 0,      // what's actually rendered (lerps toward colorAmount)
       material: mat,
       x: mesh.position.x,
       z: mesh.position.z,
+      thresholdsCrossed: new Set(), // tracks 0.25/0.50/0.75/1.0 crossings for JP
     });
   }
 }
@@ -110,7 +117,17 @@ export function spreadColor(npcPos, isSticker, npcName, itemType) {
     const dz = b.z - npcPos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
     if (dist < RADIUS) {
+      const prev = b.colorAmount;
       b.colorAmount = Math.min(1.0, b.colorAmount + increment);
+      // Award JP for each threshold first crossed in this spread
+      if (onBuildingThresholdCb && b.thresholdsCrossed) {
+        for (const t of COLOR_THRESHOLDS) {
+          if (prev < t && b.colorAmount >= t && !b.thresholdsCrossed.has(t)) {
+            b.thresholdsCrossed.add(t);
+            onBuildingThresholdCb(2); // +2 JP per threshold crossing
+          }
+        }
+      }
     }
   }
 
@@ -368,7 +385,7 @@ function updateNPCColors() {
   }
 }
 
-// Dynamically add buildings (used when Eastside unlocks)
+// Dynamically add buildings (used when districts unlock)
 export function addBuildings(meshes) {
   for (const mesh of meshes) {
     const targetColor = new THREE.Color(PALETTE[Math.floor(Math.random() * PALETTE.length)]);
@@ -383,7 +400,18 @@ export function addBuildings(meshes) {
       material: mat,
       x: mesh.position.x,
       z: mesh.position.z,
+      thresholdsCrossed: new Set(),
     });
+  }
+}
+
+// After restoring building colors from save, pre-mark thresholds so JP isn't re-awarded
+export function syncBuildingThresholds() {
+  for (const b of buildingColors) {
+    if (!b.thresholdsCrossed) b.thresholdsCrossed = new Set();
+    for (const t of COLOR_THRESHOLDS) {
+      if (b.colorAmount >= t) b.thresholdsCrossed.add(t);
+    }
   }
 }
 

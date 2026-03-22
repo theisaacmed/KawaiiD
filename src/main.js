@@ -4,30 +4,31 @@ import { createWorld } from './world.js';
 import { createRuins, updateRuinsGlow } from './ruins.js';
 import { createRoads, updateRoads } from './roads.js';
 import { createBuildings, getFountainData, showDistrictBuildings } from './buildings.js';
-import { createDistricts, checkDistrictUnlocks, restoreDistrictState, getDistrictState, isDistrictUnlocked } from './districts.js';
+import { createDistricts, checkDistrictUnlocks, checkDistrictUnlocksByRank, restoreDistrictState, getDistrictState, isDistrictUnlocked } from './districts.js';
 import { createWorldDetail, updateWorldDetail } from './world-detail.js';
 import { createRuinsDetail } from './ruins-detail.js';
 import { initParticles, updateParticles, setFountainPosition, spawnSearchDust } from './particles.js';
 import { initEnvironment, updateEnvironment } from './environment.js';
 import { createHUD, flashMoney, showFloatingMoney } from './hud.js';
 import { initInteraction, updateInteraction } from './interaction.js';
-import { createNPCs, updateNPCs, resetNPCPurchases, enableDistrictNPCs, enableNPCByName, checkReferrals, getNPCColorModifier, resetDailyDeals, initPathfinding, resetRoutinesForNewDay, getRelationships } from './npc.js';
+import { createNPCs, updateNPCs, resetNPCPurchases, enableDistrictNPCs, enableNPCByName, checkReferrals, getNPCColorModifier, getNPCAffinity, resetDailyDeals, initPathfinding, resetRoutinesForNewDay, getRelationships, setOnRelLevelUpCallback } from './npc.js';
 import { initDealing, isDealOpen, setOnDealCallback, setOnPhoneDealCallback } from './dealing.js';
 import { initPhone, updatePhone, setDealFunctions, onPhoneDealCompleted, isPhoneVisible, setGachaUnlockCallback, getPhoneStats, acceptMessage, declineMessage, openPhoneToMessage, getUnreadCount } from './phone.js';
-import { createACEOfficers, initACE, updateACE, getOfficers, setOnCaughtCallback } from './ace.js';
-import { initColorSystem, updateColorSystem, spreadColorBonus, addBuildings, getWorldColor, setNPCColorModifierFn, setNPCsForColorSystem } from './color-system.js';
+import { createACEOfficers, initACE, updateACE, getOfficers, setOnCaughtCallback, setOnEscapeCallback, isAnyOfficerWithinRange } from './ace.js';
+import { initColorSystem, updateColorSystem, spreadColorBonus, addBuildings, getWorldColor, setNPCColorModifierFn, setNPCsForColorSystem, setOnBuildingThresholdCallback, syncBuildingThresholds } from './color-system.js';
 import { initLighting, updateLighting } from './lighting.js';
 import {
   updateTime, setGameHour, setDayNumber, getDayNumber,
   registerPausePredicate, setSleepCallback, isSleepingNow, isNight,
 } from './time-system.js';
 import { initMinimap, updateMinimap } from './minimap.js';
-import { restoreInventory, addMoney } from './inventory.js';
+import { restoreInventory, addMoney, setMaxSlots } from './inventory.js';
 import { hasSave, loadSave, clearSave, applySave, initSaveSystem, triggerSave } from './save-system.js';
 import { initGacha, setRevealCallbacks, unlockGacha, isGachaUIOpen } from './gacha.js';
 import { showTitleScreen } from './title-screen.js';
 import { initPauseMenu, isPauseMenuOpen } from './pause-menu.js';
-import { initProgression, setVictoryCallback, checkDealMilestone, checkColorMilestone, getProgressionState, restoreProgressionState } from './progression.js';
+import { initProgression, setVictoryCallback, checkDealMilestone, checkColorMilestone, getProgressionState, restoreProgressionState, showRankMessage } from './progression.js';
+import { addJP, setOnRankUpCallback, getCurrentRankIndex, restoreJPState } from './jp-system.js';
 import {
   initAudio, updateAmbientDrone, updateFootsteps,
   startNightSounds, stopNightSounds,
@@ -44,13 +45,20 @@ import {
   setOpenPhoneToMsgFn, setUnreadCountFn, flushNotifQueue,
 } from './notifications.js';
 
-// --- District unlock helper ---
+// --- District unlock helpers ---
 function performDistrictUnlocks(totalDeals, scene, npcs) {
   const unlocked = checkDistrictUnlocks(totalDeals);
   for (const key of unlocked) {
-    // Show buildings for newly unlocked district
     showDistrictBuildings(key, scene);
-    // Enable NPCs for newly unlocked district
+    enableDistrictNPCs(npcs, key);
+  }
+  return unlocked;
+}
+
+function performRankUnlocks(rankIndex, scene, npcs) {
+  const unlocked = checkDistrictUnlocksByRank(rankIndex);
+  for (const key of unlocked) {
+    showDistrictBuildings(key, scene);
     enableDistrictNPCs(npcs, key);
   }
   return unlocked;
@@ -339,6 +347,10 @@ async function boot() {
         if (savedData.districts[key]) enableDistrictNPCs(npcs, key);
       }
     }
+    // After building colors are restored, pre-mark crossed thresholds so JP isn't re-awarded
+    syncBuildingThresholds();
+    // Restore inventory expansion from JP rank (Dealer rank = index 2 → 10 slots)
+    if (getCurrentRankIndex() >= 2) setMaxSlots(10);
   }
 
   // Init save system
@@ -373,17 +385,45 @@ async function boot() {
     }
   }
 
-  // Wire save triggers
+  // --- JP callbacks ---
+
+  // Rank-up: show narrative, unlock districts, expand inventory
+  setOnRankUpCallback((rankIndex, rank) => {
+    showRankMessage(rank.msg);
+    performRankUnlocks(rankIndex, scene, npcs);
+    // Dealer (rank index 2) → expand inventory to 10 slots
+    if (rankIndex === 2) setMaxSlots(10);
+  });
+
+  // Color threshold crossing → +2 JP
+  setOnBuildingThresholdCallback((amount) => addJP(amount));
+
+  // Relationship milestone → +15 JP
+  setOnRelLevelUpCallback((_npcName, _level) => addJP(15));
+
+  // ACE escape → +20 JP
+  setOnEscapeCallback(() => addJP(20));
+
+  // --- Wire save triggers ---
   setOnDealCallback((npcName, itemType, price) => {
     triggerSave('Saving...');
     const stats = getPhoneStats();
     checkDealMilestone(stats.totalDeals);
-    // Check district unlocks
+    // Check legacy deal-count district unlocks
     performDistrictUnlocks(stats.totalDeals, scene, npcs);
     // Check referral/social unlocks
     if (npcName) handleDealReferrals(npcName, stats.totalDeals);
+    // JP: base deal award
+    addJP(10);
+    // JP: love-affinity bonus
+    if (npcName && itemType && getNPCAffinity(npcName, itemType) >= 2) addJP(5);
+    // JP: risky deal bonus (officer within 30 units)
+    if (isAnyOfficerWithinRange(30)) addJP(10);
   });
-  setOnCaughtCallback(() => triggerSave('Saving...'));
+  setOnCaughtCallback(() => {
+    addJP(-15);
+    triggerSave('Saving...');
+  });
   setOnPhoneDealCallback((npcName, itemType, price) => {
     onPhoneDealCompleted(npcName, itemType, price);
     const stats = getPhoneStats();
@@ -391,6 +431,10 @@ async function boot() {
     performDistrictUnlocks(stats.totalDeals, scene, npcs);
     // Check referral/social unlocks
     if (npcName) handleDealReferrals(npcName, stats.totalDeals);
+    // JP awards for phone deals
+    addJP(10);
+    if (npcName && itemType && getNPCAffinity(npcName, itemType) >= 2) addJP(5);
+    if (isAnyOfficerWithinRange(30)) addJP(10);
   });
 
   // Handle resize
