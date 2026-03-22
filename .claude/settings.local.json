@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(wc -l /c/Users/Admin/Desktop/KawaiiD/src/*.js)",
+      "Bash(ls -lh /c/Users/Admin/Desktop/KawaiiD/src/*.js)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Bash(__NEW_LINE_b9e6c593ab474c19__ head:*)",
+      "Bash(grep \"export.*function createWorld\" /c/Users/Admin/Desktop/KawaiiD/src/*.js)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

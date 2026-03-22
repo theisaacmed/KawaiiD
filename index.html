@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KawaiiD</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      window.onerror = (msg, src, line, col, err) => {
+        document.body.style.background = '#111';
+        document.body.style.color = '#f66';
+        document.body.style.padding = '20px';
+        document.body.style.fontFamily = 'monospace';
+        document.body.style.whiteSpace = 'pre-wrap';
+        document.body.textContent = 'ERROR: ' + msg + '\n' + src + ':' + line + '\n' + (err && err.stack || '');
+      };
+      window.onunhandledrejection = (e) => {
+        document.body.style.background = '#111';
+        document.body.style.color = '#f66';
+        document.body.style.padding = '20px';
+        document.body.style.fontFamily = 'monospace';
+        document.body.style.whiteSpace = 'pre-wrap';
+        document.body.textContent = 'UNHANDLED REJECTION:\n' + (e.reason && e.reason.stack || e.reason || e);
+      };
+    </script>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
