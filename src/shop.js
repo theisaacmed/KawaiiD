@@ -443,3 +443,145 @@ function handleBuy() {
   }
   updateShopUI();
 }
+
+// ============================================================
+// Yuna's Ink Shop — sells color_ink once relationship >= 2
+// ============================================================
+
+const YUNA_POS = new THREE.Vector3(155, 0, 165);
+const YUNA_INTERACT_RADIUS = 3;
+const YUNA_INK_PRICE = 8;
+const YUNA_INK_DAILY_STOCK = 5;
+
+let yunaInkStock = YUNA_INK_DAILY_STOCK;
+let yunaShopPanel = null;
+let yunaShopOpen = false;
+
+const YUNA_INK_LINES = [
+  "These dyes come from flowers you'll never find in a catalog.",
+  "Color is just light that learned to stay. Take some with you.",
+  "I press the petals myself. $8 each — worth every petal.",
+  "My secret garden yields maybe five a day. Don't tell anyone.",
+];
+
+export function resetYunaInkStock() {
+  yunaInkStock = YUNA_INK_DAILY_STOCK;
+}
+
+export function getYunaInkStock() { return yunaInkStock; }
+
+export function restoreYunaInkStock(data) {
+  if (data !== undefined) yunaInkStock = data;
+}
+
+export function isYunaShopOpen() { return yunaShopOpen; }
+
+export function isNearYuna(playerPos) {
+  const dx = playerPos.x - YUNA_POS.x;
+  const dz = playerPos.z - YUNA_POS.z;
+  return Math.sqrt(dx * dx + dz * dz) < YUNA_INTERACT_RADIUS;
+}
+
+export function openYunaShop() {
+  if (yunaShopOpen) return;
+  yunaShopOpen = true;
+  document.exitPointerLock();
+
+  let inkQty = 0;
+
+  yunaShopPanel = document.createElement('div');
+  Object.assign(yunaShopPanel.style, {
+    position: 'fixed', top: '50%', left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '360px',
+    background: 'rgba(12,12,22,0.94)',
+    border: '1px solid rgba(200,80,220,0.3)',
+    borderRadius: '16px',
+    padding: '20px 24px',
+    fontFamily: 'monospace', fontSize: '14px', color: '#fff',
+    zIndex: '500',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    userSelect: 'none',
+  });
+
+  function render() {
+    const money = getMoney();
+    const canBuy = inkQty > 0 && money >= inkQty * YUNA_INK_PRICE && !isFull();
+    yunaShopPanel.innerHTML = `
+      <div style="font-size:18px;font-weight:bold;color:#d080ff;text-align:center;margin-bottom:6px">Yuna's Ink</div>
+      <div style="text-align:center;color:#999;font-size:12px;margin-bottom:14px;font-style:italic">
+        "${YUNA_INK_LINES[Math.floor(Math.random() * YUNA_INK_LINES.length)]}"
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(200,80,220,0.06);border:1px solid rgba(200,80,220,0.15);border-radius:8px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#ff80d0,#c030a0);box-shadow:0 0 8px rgba(200,50,180,0.5)"></div>
+          <div>
+            <div style="font-size:13px;font-weight:bold">Color Ink</div>
+            <div style="font-size:11px;color:#d080ff">$${YUNA_INK_PRICE} each · ${yunaInkStock} left today</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button id="yuna-minus" style="width:24px;height:24px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:#fff;font-size:14px;font-weight:bold;cursor:pointer;font-family:monospace">-</button>
+          <span id="yuna-qty" style="min-width:20px;text-align:center;font-size:15px;font-weight:bold">${inkQty}</span>
+          <button id="yuna-plus" style="width:24px;height:24px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:#fff;font-size:14px;font-weight:bold;cursor:pointer;font-family:monospace">+</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:15px;font-weight:bold;color:#6f6">Total: $${inkQty * YUNA_INK_PRICE}</span>
+        <span style="font-size:12px;color:#888">Balance: $${money}</span>
+      </div>
+      <div id="yuna-feedback" style="font-size:12px;text-align:center;min-height:16px;margin-bottom:8px;transition:opacity 0.5s;opacity:0"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="yuna-buy" style="padding:7px 18px;border-radius:6px;font-family:monospace;font-size:13px;font-weight:bold;cursor:${canBuy ? 'pointer' : 'default'};border:1px solid ${canBuy ? 'rgba(200,80,220,0.4)' : 'rgba(255,255,255,0.1)'};background:${canBuy ? 'rgba(200,80,220,0.15)' : 'rgba(255,255,255,0.03)'};color:${canBuy ? '#d080ff' : '#444'}" ${canBuy ? '' : 'disabled'}>Buy</button>
+        <button id="yuna-close" style="padding:7px 18px;border-radius:6px;font-family:monospace;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:#888">Close</button>
+      </div>
+    `;
+
+    yunaShopPanel.querySelector('#yuna-plus').addEventListener('click', () => {
+      if (inkQty < yunaInkStock) inkQty = Math.min(yunaInkStock, inkQty + 1);
+      render();
+    });
+    yunaShopPanel.querySelector('#yuna-minus').addEventListener('click', () => {
+      inkQty = Math.max(0, inkQty - 1);
+      render();
+    });
+    yunaShopPanel.querySelector('#yuna-buy').addEventListener('click', () => {
+      if (inkQty <= 0 || getMoney() < inkQty * YUNA_INK_PRICE) return;
+      let bought = 0;
+      for (let i = 0; i < inkQty; i++) {
+        if (isFull()) break;
+        if (addItem('material', 'color_ink')) {
+          yunaInkStock--;
+          deductMoney(YUNA_INK_PRICE);
+          bought++;
+        } else break;
+      }
+      inkQty = 0;
+      const fb = yunaShopPanel.querySelector('#yuna-feedback');
+      if (fb) {
+        fb.textContent = bought > 0 ? `Bought ${bought} ink!` : 'Inventory full!';
+        fb.style.color = bought > 0 ? '#d080ff' : '#c66';
+        fb.style.opacity = '1';
+        setTimeout(() => { fb.style.opacity = '0'; }, 2000);
+      }
+      render();
+    });
+    yunaShopPanel.querySelector('#yuna-close').addEventListener('click', closeYunaShop);
+  }
+
+  render();
+  document.body.appendChild(yunaShopPanel);
+
+  document.addEventListener('keydown', yunaEscHandler);
+}
+
+function yunaEscHandler(e) {
+  if (e.code === 'Escape') closeYunaShop();
+}
+
+function closeYunaShop() {
+  yunaShopOpen = false;
+  if (yunaShopPanel) { yunaShopPanel.remove(); yunaShopPanel = null; }
+  document.removeEventListener('keydown', yunaEscHandler);
+}

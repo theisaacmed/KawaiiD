@@ -16,7 +16,10 @@ const INTERACT_RADIUS = 2.5;
 let stationState = {
   isRunning: false,
   inputQueue: 0,
-  outputQueue: 0,
+  inputQueueColor: 0,    // how many queued pairs used a color shell
+  runningIsColor: false, // whether current item uses color shell
+  outputQueue: 0,        // total plushies ready
+  outputQueueHandmade: 0,// how many are full-color handmade ($30)
   progress: 0,
   batchProcessed: 0,
 };
@@ -55,7 +58,10 @@ export function getStuffingStationSaveData() {
 export function restoreStuffingStationState(data) {
   if (!data) return;
   stationState.inputQueue = data.inputQueue || 0;
+  stationState.inputQueueColor = data.inputQueueColor || 0;
+  stationState.runningIsColor = data.runningIsColor || false;
   stationState.outputQueue = data.outputQueue || 0;
+  stationState.outputQueueHandmade = data.outputQueueHandmade || 0;
   stationState.progress = data.progress || 0;
   stationState.isRunning = data.isRunning || false;
   stationState.batchProcessed = data.batchProcessed || 0;
@@ -212,9 +218,13 @@ function processOfflineTime(elapsed) {
     const timeLeft = effectiveTime * (1 - stationState.progress);
     if (remaining >= timeLeft) {
       remaining -= timeLeft;
-      if (stationState.outputQueue < OUTPUT_MAX) stationState.outputQueue++;
+      if (stationState.outputQueue < OUTPUT_MAX) {
+        stationState.outputQueue++;
+        if (stationState.runningIsColor) stationState.outputQueueHandmade++;
+      }
       stationState.progress = 0;
       stationState.isRunning = false;
+      stationState.runningIsColor = false;
       batch++;
     } else {
       stationState.progress += remaining / effectiveTime;
@@ -225,14 +235,18 @@ function processOfflineTime(elapsed) {
 
   while (stationState.inputQueue > 0 && remaining > 0 && stationState.outputQueue < OUTPUT_MAX) {
     const effectiveTime = getEffectiveTime(batch);
+    const isColor = stationState.inputQueueColor > 0;
+    if (isColor) stationState.inputQueueColor--;
     if (remaining >= effectiveTime) {
       remaining -= effectiveTime;
       stationState.inputQueue--;
       stationState.outputQueue++;
+      if (isColor) stationState.outputQueueHandmade++;
       batch++;
     } else {
       stationState.inputQueue--;
       stationState.isRunning = true;
+      stationState.runningIsColor = isColor;
       stationState.progress = remaining / effectiveTime;
       break;
     }
@@ -250,6 +264,8 @@ export function updateStuffingStation(dt) {
 
   if (!stationState.isRunning && stationState.inputQueue > 0 && stationState.outputQueue < OUTPUT_MAX) {
     stationState.inputQueue--;
+    stationState.runningIsColor = stationState.inputQueueColor > 0;
+    if (stationState.runningIsColor) stationState.inputQueueColor--;
     stationState.isRunning = true;
     stationState.progress = 0;
     playThunk();
@@ -269,6 +285,8 @@ export function updateStuffingStation(dt) {
       stationState.isRunning = false;
       stationState.batchProcessed++;
       stationState.outputQueue++;
+      if (stationState.runningIsColor) stationState.outputQueueHandmade++;
+      stationState.runningIsColor = false;
       playDing();
       if (hopperMesh) hopperMesh.rotation.z = 0;
     }
@@ -323,15 +341,18 @@ function closeUI() {
 }
 
 function renderUI() {
-  const hasShell = hasItem('material', 'plushie_shell');
+  const hasShellColor = hasItem('material', 'plushie_shell_color');
+  const hasShell = hasShellColor || hasItem('material', 'plushie_shell');
   const hasStuffing = hasItem('material', 'stuffing');
   const canLoad = hasShell && hasStuffing && stationState.inputQueue < MAX_INPUT;
   const canCollect = stationState.outputQueue > 0;
   const isProcessing = stationState.isRunning;
   const totalQueued = stationState.inputQueue + (isProcessing ? 1 : 0);
+  const colorQueued = stationState.inputQueueColor + (isProcessing && stationState.runningIsColor ? 1 : 0);
   const progressPct = isProcessing ? Math.min(stationState.progress * 100, 100) : 0;
   const isSlow = stationState.batchProcessed >= 3;
   const effectiveTime = isSlow ? BASE_TIME * 1.5 : BASE_TIME;
+  const grayOutput = stationState.outputQueue - stationState.outputQueueHandmade;
 
   let statusText = 'Idle';
   let statusColor = '#4a4';
@@ -339,11 +360,11 @@ function renderUI() {
     statusText = 'Output Full'; statusColor = '#f44';
   } else if (isProcessing) {
     statusText = `Stuffing... (${totalQueued} in queue)${isSlow ? ' [slow]' : ''}`;
-    statusColor = isSlow ? '#fa8' : '#c8f';
+    statusColor = isSlow ? '#fa8' : (stationState.runningIsColor ? '#f8a0ff' : '#c8f');
   }
 
   const missingMsg = !hasShell && !hasStuffing ? 'Need shell + stuffing' :
-    !hasShell ? 'Need plushie shell' :
+    !hasShell ? 'Need plushie shell (or color shell)' :
     !hasStuffing ? 'Need stuffing' : '';
 
   panel.innerHTML = `
@@ -363,16 +384,16 @@ function renderUI() {
           <div style="font-size:10px;color:#888;margin-bottom:6px">INPUT A</div>
           <div style="
             width:64px;height:64px;
-            border:2px ${hasShell ? 'solid rgba(255,140,200,0.4)' : 'dashed rgba(255,255,255,0.12)'};
+            border:2px ${hasShell ? (hasShellColor ? 'solid rgba(255,200,80,0.5)' : 'solid rgba(255,140,200,0.4)') : 'dashed rgba(255,255,255,0.12)'};
             border-radius:10px;background:rgba(255,255,255,0.04);
             display:flex;flex-direction:column;align-items:center;justify-content:center;
           ">
             ${hasShell ? `
-              <div style="width:22px;height:22px;border-radius:50% 50% 45% 45%;background:radial-gradient(circle at 40% 35%,#ffcce0,#f0a0c0);border:1px solid rgba(220,100,160,0.4)"></div>
-              <span style="font-size:10px;color:#aaa;margin-top:3px">✓</span>
+              <div style="width:22px;height:22px;border-radius:50% 50% 45% 45%;background:${hasShellColor ? 'radial-gradient(circle at 40% 35%,#ffe060,#ff90e0)' : 'radial-gradient(circle at 40% 35%,#ffcce0,#f0a0c0)'};border:1px solid ${hasShellColor ? 'rgba(255,200,80,0.6)' : 'rgba(220,100,160,0.4)'}"></div>
+              <span style="font-size:10px;color:${hasShellColor ? '#d080ff' : '#aaa'};margin-top:3px">${hasShellColor ? '✦' : '✓'}</span>
             ` : `<span style="font-size:10px;color:#555">None</span>`}
           </div>
-          <div style="font-size:10px;color:#555;margin-top:4px">Shell</div>
+          <div style="font-size:10px;color:#555;margin-top:4px">${hasShellColor ? 'Color Shell' : 'Shell'}</div>
         </div>
 
         <!-- + sign -->
@@ -417,11 +438,12 @@ function renderUI() {
             display:flex;flex-direction:column;align-items:center;justify-content:center;
           ">
             ${stationState.outputQueue > 0 ? `
-              <div style="width:28px;height:28px;border-radius:4px;background:linear-gradient(135deg,#f0a0e8,#c87aff);box-shadow:0 0 10px rgba(220,120,255,0.5)"></div>
+              <div style="width:28px;height:28px;border-radius:4px;background:${stationState.outputQueueHandmade > 0 ? 'linear-gradient(135deg,#f0a0e8,#c87aff)' : 'linear-gradient(135deg,#a0a0b0,#707080)'};box-shadow:${stationState.outputQueueHandmade > 0 ? '0 0 10px rgba(220,120,255,0.5)' : 'none'}"></div>
               <span style="font-size:10px;color:#aaa;margin-top:2px">${stationState.outputQueue}/${OUTPUT_MAX}</span>
+              ${stationState.outputQueueHandmade > 0 && grayOutput > 0 ? `<span style="font-size:9px;color:#888">${stationState.outputQueueHandmade}✦+${grayOutput}</span>` : ''}
             ` : `<span style="font-size:10px;color:#555">Empty</span>`}
           </div>
-          <div style="font-size:10px;color:#dd88ff;margin-top:4px">Plushie!</div>
+          <div style="font-size:10px;color:#dd88ff;margin-top:4px">${stationState.outputQueueHandmade > 0 ? 'Plushie ✦' : 'Plushie'}</div>
         </div>
       </div>
 
@@ -496,10 +518,16 @@ function renderUI() {
 
 function loadPair(count) {
   for (let i = 0; i < count; i++) {
-    if (!hasItem('material', 'plushie_shell') || !hasItem('material', 'stuffing')) break;
+    const hasColor = hasItem('material', 'plushie_shell_color');
+    const hasRegular = hasItem('material', 'plushie_shell');
+    if ((!hasColor && !hasRegular) || !hasItem('material', 'stuffing')) break;
     if (stationState.inputQueue >= MAX_INPUT) break;
-    if (removeItem('material', 'plushie_shell') && removeItem('material', 'stuffing')) {
+    // Prefer color shells when available
+    const useColor = hasColor;
+    const shellType = useColor ? 'plushie_shell_color' : 'plushie_shell';
+    if (removeItem('material', shellType) && removeItem('material', 'stuffing')) {
       stationState.inputQueue++;
+      if (useColor) stationState.inputQueueColor++;
       playThunk();
     }
   }
@@ -509,10 +537,15 @@ function loadPair(count) {
 
 function loadAllPairs() {
   let loaded = 0;
-  while (hasItem('material', 'plushie_shell') && hasItem('material', 'stuffing') &&
-         stationState.inputQueue < MAX_INPUT) {
-    if (removeItem('material', 'plushie_shell') && removeItem('material', 'stuffing')) {
+  while (stationState.inputQueue < MAX_INPUT) {
+    const hasColor = hasItem('material', 'plushie_shell_color');
+    const hasRegular = hasItem('material', 'plushie_shell');
+    if ((!hasColor && !hasRegular) || !hasItem('material', 'stuffing')) break;
+    const useColor = hasColor;
+    const shellType = useColor ? 'plushie_shell_color' : 'plushie_shell';
+    if (removeItem('material', shellType) && removeItem('material', 'stuffing')) {
       stationState.inputQueue++;
+      if (useColor) stationState.inputQueueColor++;
       loaded++;
     } else break;
   }
@@ -526,8 +559,11 @@ function collectPlushie(count) {
   for (let i = 0; i < count; i++) {
     if (stationState.outputQueue <= 0) break;
     if (isFull()) break;
-    if (addItem('plushie', 'handmade')) {
+    // Handmade first, then old
+    const subtype = stationState.outputQueueHandmade > 0 ? 'handmade' : 'old';
+    if (addItem('plushie', subtype)) {
       stationState.outputQueue--;
+      if (subtype === 'handmade') stationState.outputQueueHandmade--;
       collected++;
     } else break;
   }
@@ -538,8 +574,10 @@ function collectPlushie(count) {
 function collectAllPlushies() {
   let collected = 0;
   while (stationState.outputQueue > 0 && !isFull()) {
-    if (addItem('plushie', 'handmade')) {
+    const subtype = stationState.outputQueueHandmade > 0 ? 'handmade' : 'old';
+    if (addItem('plushie', subtype)) {
       stationState.outputQueue--;
+      if (subtype === 'handmade') stationState.outputQueueHandmade--;
       collected++;
     } else break;
   }

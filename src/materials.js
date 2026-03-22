@@ -2,14 +2,16 @@
 // Materials are a distinct inventory category from finished products (stickers, plushies, gacha)
 
 export const MATERIALS = {
-  sticker_paper: { name: 'Sticker Paper', stackMax: 20, price: 2, dailyStock: 30 },
-  fabric_roll:   { name: 'Fabric Roll',   stackMax: 10, price: 8, dailyStock: 10 },
-  stuffing:      { name: 'Stuffing',      stackMax: 15, price: 3, dailyStock: 15 },
-  capsule_shell: { name: 'Capsule Shell', stackMax: 10, price: 5, dailyStock: 10 },
-  thread_spool:  { name: 'Thread Spool',  stackMax: 20, price: 2, dailyStock: 20 },
-  fabric_scrap:    { name: 'Fabric Scrap',    stackMax: 20, price: 0, dailyStock: 0 },
-  plushie_pattern: { name: 'Plushie Pattern', stackMax: 15, price: 0, dailyStock: 0 },
-  plushie_shell:   { name: 'Plushie Shell',   stackMax: 10, price: 0, dailyStock: 0 },
+  sticker_paper:      { name: 'Sticker Paper',       stackMax: 20, price: 2, dailyStock: 30 },
+  fabric_roll:        { name: 'Fabric Roll',          stackMax: 10, price: 8, dailyStock: 10 },
+  stuffing:           { name: 'Stuffing',             stackMax: 15, price: 3, dailyStock: 15 },
+  capsule_shell:      { name: 'Capsule Shell',        stackMax: 10, price: 5, dailyStock: 10 },
+  thread_spool:       { name: 'Thread Spool',         stackMax: 20, price: 2, dailyStock: 20 },
+  fabric_scrap:       { name: 'Fabric Scrap',         stackMax: 20, price: 0, dailyStock: 0 },
+  plushie_pattern:    { name: 'Plushie Pattern',      stackMax: 15, price: 0, dailyStock: 0 },
+  plushie_shell:      { name: 'Plushie Shell',        stackMax: 10, price: 0, dailyStock: 0 },
+  plushie_shell_color:{ name: 'Color Plushie Shell',  stackMax: 10, price: 0, dailyStock: 0 },
+  color_ink:          { name: 'Color Ink',            stackMax: 15, price: 8, dailyStock: 5 },
 };
 
 // Returns inline CSS style object for material icons in inventory slots
@@ -76,6 +78,22 @@ export function getMaterialIconStyle(subtype) {
         background: 'radial-gradient(circle at 40% 35%, #ffcce0, #f0a0c0)',
         boxShadow: '0 0 8px rgba(240,120,180,0.3)',
         border: '1px solid rgba(220,100,160,0.4)',
+      };
+    case 'plushie_shell_color':
+      return {
+        width: '22px', height: '22px',
+        borderRadius: '50% 50% 45% 45%',
+        background: 'radial-gradient(circle at 40% 35%, #ffe060, #ff90e0)',
+        boxShadow: '0 0 10px rgba(255,160,100,0.5)',
+        border: '1px solid rgba(255,200,80,0.6)',
+      };
+    case 'color_ink':
+      return {
+        width: '22px', height: '22px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle at 38% 32%, #ff80d0, #c030a0)',
+        boxShadow: '0 0 10px rgba(200,50,180,0.5)',
+        border: '1px solid rgba(255,100,220,0.5)',
       };
     default:
       return {

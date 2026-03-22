@@ -35,7 +35,13 @@
       "Read(//c/nodejs/**)",
       "Bash(export PATH=\"/c/nodejs:$PATH\")",
       "Bash(npm --version)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\Admin\\\\Desktop\\\\KawaiiD && npx vite build --logLevel error 2>&1\")",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\Admin\\\\Desktop\\\\KawaiiD && git add src/scavenger-system.js src/interaction.js src/phone.js && git commit -m \"\"Add Pip the Ruins Kid — unlocks after 5 scavenges, finds stickers and plushies\"\"\")",
+      "Bash(git -C \"C:/Users/Admin/Desktop/KawaiiD\" add src/scavenger-system.js src/interaction.js src/phone.js)",
+      "Bash(git -C \"C:/Users/Admin/Desktop/KawaiiD\" commit -m \"Add Pip the Ruins Kid — unlocks after 5 scavenges, finds stickers and plushies\")",
+      "Bash(git -C \"C:/Users/Admin/Desktop/KawaiiD\" log --oneline -3)",
+      "Bash(npm.cmd run:*)"
     ]
   }
 }

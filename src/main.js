@@ -36,7 +36,7 @@ import {
   startNightSounds, stopNightSounds,
 } from './audio.js';
 import { initAdmin } from './admin.js';
-import { createKit, updateKit, resetKitStock, isShopOpen } from './shop.js';
+import { createKit, updateKit, resetKitStock, resetYunaInkStock, isShopOpen } from './shop.js';
 import { createApartment } from './apartment.js';
 import { initStationShop, isStationShopOpen, restoreStationShopState, applyRestoredPurchases } from './station-shop.js';
 import { initSmuggling, updateSmuggling, isSmuggleUIOpen } from './smuggling.js';
@@ -345,6 +345,7 @@ async function boot() {
     resetDailyDeals();
     resetRoutinesForNewDay();
     resetKitStock();
+    resetYunaInkStock();
     onNewDayScavenger();
     triggerSave('New day!');
   });

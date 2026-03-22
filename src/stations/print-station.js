@@ -15,9 +15,12 @@ const INTERACT_RADIUS = 2.5;
 // --- State ---
 let stationState = {
   isRunning: false,
-  inputQueue: 0,    // number of sticker paper sheets queued
-  outputQueue: 0,   // number of fresh stickers ready
-  progress: 0,      // 0-1 progress on current print
+  inputQueue: 0,         // total sticker paper sheets queued
+  inkQueue: 0,           // how many of those have ink loaded with them
+  runningIsInked: false, // whether the currently-printing item had ink
+  outputQueue: 0,        // total stickers ready to collect
+  outputQueueFresh: 0,   // how many of those are fresh (inked) stickers
+  progress: 0,           // 0-1 progress on current print
 };
 
 let stationMesh = null;
@@ -58,7 +61,10 @@ export function getPrintStationState() {
 export function restorePrintStationState(data) {
   if (!data) return;
   stationState.inputQueue = data.inputQueue || 0;
+  stationState.inkQueue = data.inkQueue || 0;
+  stationState.runningIsInked = data.runningIsInked || false;
   stationState.outputQueue = data.outputQueue || 0;
+  stationState.outputQueueFresh = data.outputQueueFresh || 0;
   stationState.progress = data.progress || 0;
   stationState.isRunning = data.isRunning || false;
 
@@ -198,42 +204,62 @@ function updateStatusLight() {
 
 // --- Offline Processing ---
 
+function startNextItem() {
+  stationState.isRunning = true;
+  stationState.progress = 0;
+  if (stationState.inkQueue > 0) {
+    stationState.inkQueue--;
+    stationState.runningIsInked = true;
+  } else {
+    stationState.runningIsInked = false;
+  }
+}
+
+function finishCurrentItem() {
+  if (stationState.outputQueue < OUTPUT_MAX) {
+    stationState.outputQueue++;
+    if (stationState.runningIsInked) stationState.outputQueueFresh++;
+  }
+  stationState.progress = 0;
+  stationState.isRunning = false;
+  stationState.runningIsInked = false;
+}
+
 function processOfflineTime(elapsed) {
-  // Calculate how many prints could complete
-  if (stationState.isRunning || stationState.inputQueue > 0) {
-    // Account for current progress
-    let remaining = elapsed;
+  if (!stationState.isRunning && stationState.inputQueue === 0) return;
 
-    // Finish current print
-    if (stationState.isRunning && stationState.progress > 0) {
-      const timeLeft = PRINT_TIME * (1 - stationState.progress);
-      if (remaining >= timeLeft) {
-        remaining -= timeLeft;
-        if (stationState.outputQueue < OUTPUT_MAX) {
-          stationState.outputQueue++;
-        }
-        stationState.progress = 0;
-        stationState.isRunning = false;
-      } else {
-        stationState.progress += remaining / PRINT_TIME;
-        return;
-      }
-    }
+  let remaining = elapsed;
 
-    // Process remaining input queue
-    while (stationState.inputQueue > 0 && remaining >= PRINT_TIME) {
-      if (stationState.outputQueue >= OUTPUT_MAX) break;
-      remaining -= PRINT_TIME;
-      stationState.inputQueue--;
-      stationState.outputQueue++;
+  // Finish current print
+  if (stationState.isRunning && stationState.progress > 0) {
+    const timeLeft = PRINT_TIME * (1 - stationState.progress);
+    if (remaining >= timeLeft) {
+      remaining -= timeLeft;
+      finishCurrentItem();
+    } else {
+      stationState.progress += remaining / PRINT_TIME;
+      return;
     }
+  }
 
-    // Partial progress on next item
-    if (stationState.inputQueue > 0 && remaining > 0 && stationState.outputQueue < OUTPUT_MAX) {
-      stationState.inputQueue--;
-      stationState.isRunning = true;
-      stationState.progress = remaining / PRINT_TIME;
-    }
+  // Process remaining input queue
+  while (stationState.inputQueue > 0 && remaining >= PRINT_TIME) {
+    if (stationState.outputQueue >= OUTPUT_MAX) break;
+    remaining -= PRINT_TIME;
+    stationState.inputQueue--;
+    const isInked = stationState.inkQueue > 0;
+    if (isInked) stationState.inkQueue--;
+    stationState.outputQueue++;
+    if (isInked) stationState.outputQueueFresh++;
+  }
+
+  // Partial progress on next item
+  if (stationState.inputQueue > 0 && remaining > 0 && stationState.outputQueue < OUTPUT_MAX) {
+    stationState.inputQueue--;
+    stationState.runningIsInked = stationState.inkQueue > 0;
+    if (stationState.runningIsInked) stationState.inkQueue--;
+    stationState.isRunning = true;
+    stationState.progress = remaining / PRINT_TIME;
   }
 }
 
@@ -241,10 +267,8 @@ function processOfflineTime(elapsed) {
 
 export function updatePrintStation(dt) {
   if (!stationState.isRunning && stationState.inputQueue > 0 && stationState.outputQueue < OUTPUT_MAX) {
-    // Start printing next item from queue
     stationState.inputQueue--;
-    stationState.isRunning = true;
-    stationState.progress = 0;
+    startNextItem();
     playThunk();
   }
 
@@ -257,19 +281,9 @@ export function updatePrintStation(dt) {
     }
 
     if (stationState.progress >= 1) {
-      // Print complete
-      stationState.progress = 0;
-      stationState.isRunning = false;
-      stationState.outputQueue++;
+      finishCurrentItem();
       playDing();
-
-      // Reset mesh position
       if (stationMesh) stationMesh.position.y = 0;
-
-      // Check if output is full
-      if (stationState.outputQueue >= OUTPUT_MAX) {
-        stationState.isRunning = false;
-      }
     }
 
     updateStatusLight();
@@ -337,14 +351,17 @@ function closeUI() {
 
 function renderUI() {
   const hasPaper = hasItem('material', 'sticker_paper');
+  const hasInk = hasItem('material', 'color_ink');
   const canLoad = hasPaper && (stationState.inputQueue + stationState.outputQueue + (stationState.isRunning ? 1 : 0)) < OUTPUT_MAX + 5;
   const canCollect = stationState.outputQueue > 0;
   const isProcessing = stationState.isRunning;
   const totalQueued = stationState.inputQueue + (isProcessing ? 1 : 0);
+  const inkedQueued = stationState.inkQueue + (isProcessing && stationState.runningIsInked ? 1 : 0);
+  const grayOutputCount = stationState.outputQueue - stationState.outputQueueFresh;
 
   // Progress bar
   const progressPct = isProcessing ? Math.min(stationState.progress * 100, 100) : 0;
-  const progressColor = isProcessing ? '#6cf' : '#333';
+  const progressColor = isProcessing ? (stationState.runningIsInked ? '#f8a0ff' : '#6cf') : '#333';
 
   // Status text
   let statusText = 'Idle';
@@ -354,7 +371,7 @@ function renderUI() {
     statusColor = '#f44';
   } else if (isProcessing) {
     statusText = `Printing... (${totalQueued} in queue)`;
-    statusColor = '#fc4';
+    statusColor = stationState.runningIsInked ? '#f8a' : '#fc4';
   }
 
   panel.innerHTML = `
@@ -363,7 +380,10 @@ function renderUI() {
         <span style="font-size:18px;font-weight:bold;letter-spacing:0.5px">Print Station</span>
         <button id="ps-close" style="background:none;border:none;color:#666;font-size:20px;cursor:pointer;padding:2px 6px;line-height:1">&times;</button>
       </div>
-      <div style="color:${statusColor};font-size:12px;margin-bottom:14px">${statusText}</div>
+      <div style="color:${statusColor};font-size:12px;margin-bottom:6px">${statusText}</div>
+      <div style="font-size:11px;color:${hasInk ? '#d080ff' : '#555'};margin-bottom:10px">
+        ${hasInk ? `Ink: ready — loaded sheets get color` : 'No ink — prints will be gray ($9)'}
+      </div>
     </div>
 
     <div style="padding:0 24px">
@@ -381,8 +401,8 @@ function renderUI() {
             position:relative;
           ">
             ${totalQueued > 0 ? `
-              <div style="width:22px;height:22px;borderRadius:2px;background:linear-gradient(135deg,#f0f0f0,#d8d8d8);border:1px solid rgba(255,255,255,0.3)"></div>
-              <span style="font-size:11px;color:#aaa;margin-top:4px">${totalQueued}</span>
+              <div style="width:22px;height:22px;border-radius:2px;background:linear-gradient(135deg,#f0f0f0,#d8d8d8);border:1px solid rgba(255,255,255,0.3)"></div>
+              <span style="font-size:11px;color:#aaa;margin-top:4px">${totalQueued}${inkedQueued > 0 ? ` <span style="color:#d080ff">(${inkedQueued}✦)</span>` : ''}</span>
             ` : `
               <span style="font-size:11px;color:#555">Empty</span>
             `}
@@ -414,8 +434,9 @@ function renderUI() {
             display:flex;flex-direction:column;align-items:center;justify-content:center;
           ">
             ${stationState.outputQueue > 0 ? `
-              <div style="width:28px;height:28px;borderRadius:4px;background:linear-gradient(135deg,#f0a0e8,#c87aff);boxShadow:0 0 10px rgba(220,120,255,0.4)"></div>
-              <span style="font-size:11px;color:#aaa;margin-top:2px">${stationState.outputQueue}/${OUTPUT_MAX}</span>
+              <div style="width:28px;height:28px;border-radius:4px;background:${stationState.outputQueueFresh > 0 ? 'linear-gradient(135deg,#f0a0e8,#c87aff)' : 'linear-gradient(135deg,#a0a0a8,#707078)'};box-shadow:${stationState.outputQueueFresh > 0 ? '0 0 10px rgba(220,120,255,0.4)' : 'none'}"></div>
+              <span style="font-size:10px;color:#aaa;margin-top:2px">${stationState.outputQueue}/${OUTPUT_MAX}</span>
+              ${stationState.outputQueueFresh > 0 && grayOutputCount > 0 ? `<span style="font-size:9px;color:#888">${stationState.outputQueueFresh}✦+${grayOutputCount}</span>` : ''}
             ` : `
               <span style="font-size:11px;color:#555">Empty</span>
             `}
@@ -502,6 +523,10 @@ function loadPaper(count) {
     if ((stationState.inputQueue + stationState.outputQueue + (stationState.isRunning ? 1 : 0)) >= OUTPUT_MAX + 5) break;
     if (removeItem('material', 'sticker_paper')) {
       stationState.inputQueue++;
+      // Consume ink if available for this sheet
+      if (hasItem('material', 'color_ink') && removeItem('material', 'color_ink')) {
+        stationState.inkQueue++;
+      }
       playThunk();
     }
   }
@@ -509,8 +534,7 @@ function loadPaper(count) {
   // Auto-start if not running
   if (!stationState.isRunning && stationState.inputQueue > 0 && stationState.outputQueue < OUTPUT_MAX) {
     stationState.inputQueue--;
-    stationState.isRunning = true;
-    stationState.progress = 0;
+    startNextItem();
   }
 
   updateStatusLight();
@@ -523,6 +547,9 @@ function loadAllPaper() {
          (stationState.inputQueue + stationState.outputQueue + (stationState.isRunning ? 1 : 0)) < OUTPUT_MAX + 5) {
     if (removeItem('material', 'sticker_paper')) {
       stationState.inputQueue++;
+      if (hasItem('material', 'color_ink') && removeItem('material', 'color_ink')) {
+        stationState.inkQueue++;
+      }
       loaded++;
     } else break;
   }
@@ -533,8 +560,7 @@ function loadAllPaper() {
     // Auto-start if not running
     if (!stationState.isRunning && stationState.inputQueue > 0 && stationState.outputQueue < OUTPUT_MAX) {
       stationState.inputQueue--;
-      stationState.isRunning = true;
-      stationState.progress = 0;
+      startNextItem();
     }
   }
 
@@ -547,8 +573,11 @@ function collectSticker(count) {
   for (let i = 0; i < count; i++) {
     if (stationState.outputQueue <= 0) break;
     if (isFull()) break;
-    if (addItem('sticker', 'fresh')) {
+    // Give fresh stickers first (inked), then old (gray)
+    const subtype = stationState.outputQueueFresh > 0 ? 'fresh' : 'old';
+    if (addItem('sticker', subtype)) {
       stationState.outputQueue--;
+      if (subtype === 'fresh') stationState.outputQueueFresh--;
       collected++;
     } else break;
   }
@@ -564,8 +593,10 @@ function collectSticker(count) {
 function collectAllStickers() {
   let collected = 0;
   while (stationState.outputQueue > 0 && !isFull()) {
-    if (addItem('sticker', 'fresh')) {
+    const subtype = stationState.outputQueueFresh > 0 ? 'fresh' : 'old';
+    if (addItem('sticker', subtype)) {
       stationState.outputQueue--;
+      if (subtype === 'fresh') stationState.outputQueueFresh--;
       collected++;
     } else break;
   }

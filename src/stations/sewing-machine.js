@@ -16,7 +16,10 @@ const INTERACT_RADIUS = 2.5;
 let stationState = {
   isRunning: false,
   inputQueue: 0,
-  outputQueue: 0,
+  inkQueue: 0,           // inked pairs in input queue
+  runningIsInked: false, // whether current sew has ink
+  outputQueue: 0,        // total shells ready
+  outputQueueColor: 0,   // how many are color shells
   progress: 0,
   batchProcessed: 0,
 };
@@ -55,7 +58,10 @@ export function getSewingMachineSaveData() {
 export function restoreSewingMachineState(data) {
   if (!data) return;
   stationState.inputQueue = data.inputQueue || 0;
+  stationState.inkQueue = data.inkQueue || 0;
+  stationState.runningIsInked = data.runningIsInked || false;
   stationState.outputQueue = data.outputQueue || 0;
+  stationState.outputQueueColor = data.outputQueueColor || 0;
   stationState.progress = data.progress || 0;
   stationState.isRunning = data.isRunning || false;
   stationState.batchProcessed = data.batchProcessed || 0;
@@ -209,9 +215,13 @@ function processOfflineTime(elapsed) {
     const timeLeft = effectiveTime * (1 - stationState.progress);
     if (remaining >= timeLeft) {
       remaining -= timeLeft;
-      if (stationState.outputQueue < OUTPUT_MAX) stationState.outputQueue++;
+      if (stationState.outputQueue < OUTPUT_MAX) {
+        stationState.outputQueue++;
+        if (stationState.runningIsInked) stationState.outputQueueColor++;
+      }
       stationState.progress = 0;
       stationState.isRunning = false;
+      stationState.runningIsInked = false;
       batch++;
     } else {
       stationState.progress += remaining / effectiveTime;
@@ -222,14 +232,18 @@ function processOfflineTime(elapsed) {
 
   while (stationState.inputQueue > 0 && remaining > 0 && stationState.outputQueue < OUTPUT_MAX) {
     const effectiveTime = getEffectiveTime(batch);
+    const isInked = stationState.inkQueue > 0;
+    if (isInked) stationState.inkQueue--;
     if (remaining >= effectiveTime) {
       remaining -= effectiveTime;
       stationState.inputQueue--;
       stationState.outputQueue++;
+      if (isInked) stationState.outputQueueColor++;
       batch++;
     } else {
       stationState.inputQueue--;
       stationState.isRunning = true;
+      stationState.runningIsInked = isInked;
       stationState.progress = remaining / effectiveTime;
       break;
     }
@@ -247,6 +261,8 @@ export function updateSewingMachine(dt) {
 
   if (!stationState.isRunning && stationState.inputQueue > 0 && stationState.outputQueue < OUTPUT_MAX) {
     stationState.inputQueue--;
+    stationState.runningIsInked = stationState.inkQueue > 0;
+    if (stationState.runningIsInked) stationState.inkQueue--;
     stationState.isRunning = true;
     stationState.progress = 0;
     playThunk();
@@ -266,6 +282,8 @@ export function updateSewingMachine(dt) {
       stationState.isRunning = false;
       stationState.batchProcessed++;
       stationState.outputQueue++;
+      if (stationState.runningIsInked) stationState.outputQueueColor++;
+      stationState.runningIsInked = false;
       playDing();
       if (needleMesh) needleMesh.position.y = 0.91;
     }
@@ -322,10 +340,12 @@ function closeUI() {
 function renderUI() {
   const hasPattern = hasItem('material', 'plushie_pattern');
   const hasThread = hasItem('material', 'thread_spool');
+  const hasInk = hasItem('material', 'color_ink');
   const canLoad = hasPattern && hasThread && stationState.inputQueue < MAX_INPUT;
   const canCollect = stationState.outputQueue > 0;
   const isProcessing = stationState.isRunning;
   const totalQueued = stationState.inputQueue + (isProcessing ? 1 : 0);
+  const inkedQueued = stationState.inkQueue + (isProcessing && stationState.runningIsInked ? 1 : 0);
   const progressPct = isProcessing ? Math.min(stationState.progress * 100, 100) : 0;
   const isSlow = stationState.batchProcessed >= 3;
   const effectiveTime = isSlow ? BASE_TIME * 1.5 : BASE_TIME;
@@ -336,7 +356,7 @@ function renderUI() {
     statusText = 'Output Full'; statusColor = '#f44';
   } else if (isProcessing) {
     statusText = `Sewing... (${totalQueued} in queue)${isSlow ? ' [slow]' : ''}`;
-    statusColor = isSlow ? '#fa8' : '#c8f';
+    statusColor = isSlow ? '#fa8' : (stationState.runningIsInked ? '#f8a0ff' : '#c8f');
   }
 
   const missingMsg = !hasPattern && !hasThread ? 'Need pattern + thread' :
@@ -349,7 +369,10 @@ function renderUI() {
         <span style="font-size:18px;font-weight:bold;letter-spacing:0.5px">Sewing Machine</span>
         <button id="sm-close" style="background:none;border:none;color:#666;font-size:20px;cursor:pointer;padding:2px 6px;line-height:1">&times;</button>
       </div>
-      <div style="color:${statusColor};font-size:12px;margin-bottom:14px">${statusText}</div>
+      <div style="color:${statusColor};font-size:12px;margin-bottom:6px">${statusText}</div>
+      <div style="font-size:11px;color:${hasInk ? '#d080ff' : '#555'};margin-bottom:10px">
+        ${hasInk ? `Ink: ready — loaded pairs get color ($30 plushie)` : 'No ink — shells will be gray ($17 plushie)'}
+      </div>
     </div>
 
     <div style="padding:0 24px">
@@ -392,6 +415,26 @@ function renderUI() {
           <div style="font-size:10px;color:#555;margin-top:4px">Thread</div>
         </div>
 
+        <!-- + sign -->
+        <div style="font-size:16px;color:#444;padding-top:10px">+</div>
+
+        <!-- Input C: Ink (optional) -->
+        <div style="text-align:center">
+          <div style="font-size:10px;color:#888;margin-bottom:6px">INK</div>
+          <div style="
+            width:48px;height:48px;
+            border:2px ${hasInk ? 'solid rgba(200,80,220,0.5)' : 'dashed rgba(255,255,255,0.08)'};
+            border-radius:10px;background:rgba(255,255,255,0.03);
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+          ">
+            ${hasInk ? `
+              <div style="width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#ff80d0,#c030a0)"></div>
+              <span style="font-size:9px;color:#d080ff;margin-top:2px">✓</span>
+            ` : `<span style="font-size:9px;color:#444">opt.</span>`}
+          </div>
+          <div style="font-size:9px;color:#555;margin-top:4px">${inkedQueued > 0 ? `${inkedQueued}✦` : 'none'}</div>
+        </div>
+
         <!-- Arrow + Load -->
         <div style="text-align:center">
           <div style="font-size:20px;color:#555;margin-bottom:6px">&rarr;</div>
@@ -414,8 +457,9 @@ function renderUI() {
             display:flex;flex-direction:column;align-items:center;justify-content:center;
           ">
             ${stationState.outputQueue > 0 ? `
-              <div style="width:22px;height:22px;border-radius:50% 50% 45% 45%;background:radial-gradient(circle at 40% 35%,#ffcce0,#f0a0c0);border:1px solid rgba(220,100,160,0.4)"></div>
+              <div style="width:22px;height:22px;border-radius:50% 50% 45% 45%;background:${stationState.outputQueueColor > 0 ? 'radial-gradient(circle at 40% 35%,#ffe060,#ff90e0)' : 'radial-gradient(circle at 40% 35%,#ffcce0,#f0a0c0)'};border:1px solid ${stationState.outputQueueColor > 0 ? 'rgba(255,200,80,0.6)' : 'rgba(220,100,160,0.4)'}"></div>
               <span style="font-size:10px;color:#aaa;margin-top:2px">${stationState.outputQueue}/${OUTPUT_MAX}</span>
+              ${stationState.outputQueueColor > 0 ? `<span style="font-size:9px;color:#d080ff">${stationState.outputQueueColor}✦</span>` : ''}
             ` : `<span style="font-size:10px;color:#555">Empty</span>`}
           </div>
           <div style="font-size:10px;color:#555;margin-top:4px">Shell</div>
@@ -461,7 +505,7 @@ function renderUI() {
       </div>
 
       <div style="font-size:11px;color:#555;text-align:center;margin-bottom:4px">
-        Pattern + Thread &rarr; Plushie Shell (${effectiveTime.toFixed(1)}s)
+        Pattern + Thread [+ Ink] &rarr; ${hasInk ? 'Color Shell ✦' : 'Plushie Shell'} (${effectiveTime.toFixed(1)}s)
       </div>
     </div>
 
@@ -498,6 +542,9 @@ function loadPair(count) {
     if (stationState.inputQueue >= MAX_INPUT) break;
     if (removeItem('material', 'plushie_pattern') && removeItem('material', 'thread_spool')) {
       stationState.inputQueue++;
+      if (hasItem('material', 'color_ink') && removeItem('material', 'color_ink')) {
+        stationState.inkQueue++;
+      }
       playThunk();
     }
   }
@@ -511,6 +558,9 @@ function loadAllPairs() {
          stationState.inputQueue < MAX_INPUT) {
     if (removeItem('material', 'plushie_pattern') && removeItem('material', 'thread_spool')) {
       stationState.inputQueue++;
+      if (hasItem('material', 'color_ink') && removeItem('material', 'color_ink')) {
+        stationState.inkQueue++;
+      }
       loaded++;
     } else break;
   }
@@ -524,8 +574,11 @@ function collectShell(count) {
   for (let i = 0; i < count; i++) {
     if (stationState.outputQueue <= 0) break;
     if (isFull()) break;
-    if (addItem('material', 'plushie_shell')) {
+    // Color shells first, then regular
+    const subtype = stationState.outputQueueColor > 0 ? 'plushie_shell_color' : 'plushie_shell';
+    if (addItem('material', subtype)) {
       stationState.outputQueue--;
+      if (subtype === 'plushie_shell_color') stationState.outputQueueColor--;
       collected++;
     } else break;
   }
@@ -536,8 +589,10 @@ function collectShell(count) {
 function collectAllShells() {
   let collected = 0;
   while (stationState.outputQueue > 0 && !isFull()) {
-    if (addItem('material', 'plushie_shell')) {
+    const subtype = stationState.outputQueueColor > 0 ? 'plushie_shell_color' : 'plushie_shell';
+    if (addItem('material', subtype)) {
       stationState.outputQueue--;
+      if (subtype === 'plushie_shell_color') stationState.outputQueueColor--;
       collected++;
     } else break;
   }

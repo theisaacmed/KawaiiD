@@ -325,6 +325,11 @@ function depositPipFinds() {
     }
   }
 
+  // 10% chance Pip also finds a color ink hidden in the ruins
+  if (Math.random() < 0.1) {
+    addItem('material', 'color_ink');
+  }
+
   const line = PIP_DEPOSIT_LINES[Math.floor(Math.random() * PIP_DEPOSIT_LINES.length)];
   showNotification({
     id: `pip_deposit_${day}`,

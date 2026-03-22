@@ -22,29 +22,31 @@ const ORDER_TIERS = [
   {
     id: 'small',
     label: 'Small',
-    cost: 30,
+    cost: 55,
     minRelLevel: 0,
     items: [
       { type: 'material', sub: 'sticker_paper', qty: 10 },
       { type: 'material', sub: 'fabric_roll',   qty: 3  },
+      { type: 'material', sub: 'color_ink',     qty: 5  },
     ],
   },
   {
     id: 'medium',
     label: 'Medium',
-    cost: 60,
+    cost: 110,
     minRelLevel: 0,
     items: [
       { type: 'material', sub: 'sticker_paper', qty: 20 },
       { type: 'material', sub: 'fabric_roll',   qty: 5  },
       { type: 'material', sub: 'stuffing',       qty: 5  },
       { type: 'material', sub: 'thread_spool',   qty: 3  },
+      { type: 'material', sub: 'color_ink',     qty: 10 },
     ],
   },
   {
     id: 'large',
     label: 'Large',
-    cost: 120,
+    cost: 220,
     minRelLevel: 0,
     items: [
       { type: 'material', sub: 'sticker_paper', qty: 40 },
@@ -52,6 +54,7 @@ const ORDER_TIERS = [
       { type: 'material', sub: 'stuffing',       qty: 10 },
       { type: 'material', sub: 'thread_spool',   qty: 5  },
       { type: 'material', sub: 'capsule_shell',  qty: 5  },
+      { type: 'material', sub: 'color_ink',     qty: 20 },
     ],
   },
   // Premium tiers — unlocked at relationship level 4+

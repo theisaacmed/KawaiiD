@@ -8,7 +8,7 @@ import { getGachaState, restoreGachaState } from './gacha.js';
 import { getDistrictState } from './districts.js';
 import { getProgressionState } from './progression.js';
 import { getReferralState, restoreReferralState, getRelationships, restoreRelationships, getAffinityOverrides, restoreAffinityOverrides, getRoutineSaveData, restoreRoutineState } from './npc.js';
-import { getKitStock, restoreKitStock } from './shop.js';
+import { getKitStock, restoreKitStock, getYunaInkStock, restoreYunaInkStock } from './shop.js';
 import { getStationSaveData, restorePrintStationState } from './stations/print-station.js';
 import { getCuttingTableSaveData, restoreCuttingTableState } from './stations/cutting-table.js';
 import { getSewingMachineSaveData, restoreSewingMachineState } from './stations/sewing-machine.js';
@@ -95,6 +95,7 @@ function gatherSaveData() {
 
   // Kit's shop daily stock
   data.kitStock = getKitStock();
+  data.yunaInkStock = getYunaInkStock();
 
   // NPC deal counts + gacha purchases
   if (npcsRef) {
@@ -305,6 +306,7 @@ export function applySave(data, player, npcs, piles) {
 
   // Kit's shop stock
   if (data.kitStock) restoreKitStock(data.kitStock);
+  if (data.yunaInkStock !== undefined) restoreYunaInkStock(data.yunaInkStock);
 
   // Print station state
   if (data.printStation) restorePrintStationState(data.printStation);

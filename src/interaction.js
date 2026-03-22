@@ -12,7 +12,7 @@ import { spawnSearchDust } from './particles.js';
 import { canSleep, startSleep, isSleepingNow } from './time-system.js';
 import { isNearGachaMachine, isGachaUnlocked, openUI as openGachaUI, isGachaUIOpen } from './gacha.js';
 import { playSearchScrape, playItemFound } from './audio.js';
-import { isNearKit, isKitAvailable, openShop, isShopOpen } from './shop.js';
+import { isNearKit, isKitAvailable, openShop, isShopOpen, isNearYuna, isYunaShopOpen, openYunaShop } from './shop.js';
 import { isNearPrintStation, isPrintStationOpen, openUI as openPrintStationUI } from './stations/print-station.js';
 import { isNearCuttingTable, isCuttingTableOpen, openCuttingTableUI } from './stations/cutting-table.js';
 import { isNearSewingMachine, isSewingMachineOpen, openSewingMachineUI } from './stations/sewing-machine.js';
@@ -89,7 +89,7 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
   createSleepConfirm();
 
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen() && !isStationShopOpen() && !isSmuggleUIOpen() && !isWorkshopStorageOpen() && !isDecorUIOpen()) {
+    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isYunaShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen() && !isStationShopOpen() && !isSmuggleUIOpen() && !isWorkshopStorageOpen() && !isDecorUIOpen()) {
       // Close phone if open
       if (isPhoneVisible()) closePhone();
 
@@ -148,6 +148,15 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
       if (isKitAvailable() && isNearKit(playerRef.position)) {
         openShop();
         return;
+      }
+
+      // Check if near Yuna's flower shop and relationship >= 2 (ink sales)
+      if (isNearYuna(playerRef.position)) {
+        const yunaRel = getRelationship('Yuna');
+        if (Math.floor(yunaRel.level) >= 2) {
+          openYunaShop();
+          return;
+        }
       }
 
       // Check if near Gus (smuggling orders)
@@ -361,8 +370,8 @@ function completeSearch() {
     // 5% — capsule shell (rare)
     type = 'material'; subtype = 'capsule_shell';
   } else {
-    // 5% — thread spool
-    type = 'material'; subtype = 'thread_spool';
+    // 5% — color ink (very rare, natural dyes in the ruins)
+    type = 'material'; subtype = 'color_ink';
   }
 
   let added = false;
@@ -446,6 +455,8 @@ export function updateInteraction(dt) {
   const nearPrintStation = isNearPrintStation(playerRef.position);
   const nearGacha = isGachaUnlocked() && isNearGachaMachine(playerRef.position);
   const nearKit = isKitAvailable() && isNearKit(playerRef.position);
+  const yunaRel = getRelationship('Yuna');
+  const nearYunaShop = isNearYuna(playerRef.position) && Math.floor(yunaRel.level) >= 2;
   const nearGus = isNearGus(playerRef.position);
   const nearCrate = isNearCrate(playerRef.position);
   const nearRuinsKid = isNearRuinsKid(playerRef.position);
@@ -464,6 +475,8 @@ export function updateInteraction(dt) {
     showPrompt('Press E to use print station');
   } else if (nearGacha && !searching) {
     showPrompt('Press E to use gacha machine');
+  } else if (nearYunaShop && !searching) {
+    showPrompt("Press E to buy Yuna's ink");
   } else if (nearKit && !searching) {
     showPrompt('Press E to shop');
   } else if (nearCrate && !searching) {
