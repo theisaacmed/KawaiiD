@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { addItem, isFull, hasItem, hasAnyPlushie } from './inventory.js';
 import { showPrompt, hidePrompt, showProgress, hideProgress, showInventoryFull } from './hud.js';
-import { getNearestNPC, npcLine, resetNPCPurchases } from './npc.js';
+import { getNearestNPC, npcLine, resetNPCPurchases, getRelationship } from './npc.js';
 import { openDealPanel, isDealOpen, setLocationRefuseCallback } from './dealing.js';
 import { getActiveWaypointNearPlayer, completeWaypoint, isPhoneVisible, closePhone } from './phone.js';
 import { spawnSearchDust } from './particles.js';
