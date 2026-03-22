@@ -2,6 +2,7 @@
 // The apartment building at (12, 14) becomes a walkable interior with stations
 
 import * as THREE from 'three';
+import { initDecor } from './apartment-decor.js';
 
 let apartmentGroup = null;
 let sceneRef = null;
@@ -74,6 +75,9 @@ export function createApartment(scene) {
   }
 
   scene.add(apartmentGroup);
+
+  // Decoration spots (placed items, color progression)
+  initDecor(scene);
 }
 
 export function getApartmentGroup() {

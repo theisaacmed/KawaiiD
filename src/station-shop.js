@@ -11,6 +11,7 @@ import { setStationEnabled as enableCutting }  from './stations/cutting-table.js
 import { setStationEnabled as enableSewing }   from './stations/sewing-machine.js';
 import { setStationEnabled as enableStuffing } from './stations/stuffing-station.js';
 import { unlockGacha } from './gacha.js';
+import { purchaseWorkshop, applyWorkshopMk2 } from './workshop.js';
 
 // ========== CATALOG ==========
 
@@ -99,11 +100,47 @@ export const STATION_CATALOG = [
   {
     id: 'workshop_property',
     name: 'Workshop Space',
-    desc: 'Rent a proper workshop. Expands everything.',
+    desc: 'Rent a proper workshop in Industrial. 30-slot storage + 2x all stations.',
     price: 1000,
-    rankRequired: 4,
-    rankName: 'Smuggler',
+    rankRequired: 5,
+    rankName: 'Distributor',
     requires: null,
+  },
+  {
+    id: 'wk_mk2_print',
+    name: 'Workshop Print Mk2',
+    desc: '35% faster workshop print station.',
+    price: 500,
+    rankRequired: 5,
+    rankName: 'Distributor',
+    requires: 'workshop_property',
+  },
+  {
+    id: 'wk_mk2_stuffing',
+    name: 'Workshop Stuffing Mk2',
+    desc: '35% faster workshop stuffing station.',
+    price: 500,
+    rankRequired: 5,
+    rankName: 'Distributor',
+    requires: 'workshop_property',
+  },
+  {
+    id: 'wk_mk2_cutting',
+    name: 'Workshop Cutting Mk2',
+    desc: '35% faster workshop cutting table.',
+    price: 500,
+    rankRequired: 5,
+    rankName: 'Distributor',
+    requires: 'workshop_property',
+  },
+  {
+    id: 'wk_mk2_sewing',
+    name: 'Workshop Sewing Mk2',
+    desc: '35% faster workshop sewing machine.',
+    price: 500,
+    rankRequired: 5,
+    rankName: 'Distributor',
+    requires: 'workshop_property',
   },
 ];
 
@@ -419,12 +456,16 @@ function buyStation(id) {
 
 function _applyPurchase(id, withEffect) {
   switch (id) {
-    case 'print_station':    enablePrint(true);    break;
-    case 'cutting_table':    enableCutting(true);  break;
-    case 'sewing_machine':   enableSewing(true);   break;
-    case 'stuffing_station': enableStuffing(true); break;
-    case 'gacha_machine':    unlockGacha();        break;
-    // mk2 upgrades and workshop_property noted but no mesh change yet
+    case 'print_station':    enablePrint(true);                break;
+    case 'cutting_table':    enableCutting(true);              break;
+    case 'sewing_machine':   enableSewing(true);               break;
+    case 'stuffing_station': enableStuffing(true);             break;
+    case 'gacha_machine':    unlockGacha();                    break;
+    case 'workshop_property': purchaseWorkshop();              break;
+    case 'wk_mk2_print':    applyWorkshopMk2('print');        break;
+    case 'wk_mk2_stuffing': applyWorkshopMk2('stuffing');     break;
+    case 'wk_mk2_cutting':  applyWorkshopMk2('cutting');      break;
+    case 'wk_mk2_sewing':   applyWorkshopMk2('sewing');       break;
     default: break;
   }
 }

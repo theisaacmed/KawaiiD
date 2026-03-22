@@ -19,6 +19,9 @@ import { getStationShopSaveData } from './station-shop.js';
 import { getSmugglingState, restoreSmugglingState } from './smuggling.js';
 import { getScavengerSaveData, restoreScavenger } from './scavenger-system.js';
 import { getStoryEventsSaveData, restoreStoryEvents } from './story-events.js';
+import { getWorkshopState, restoreWorkshopState } from './workshop.js';
+import { getDecorState, restoreDecorState } from './apartment-decor.js';
+import { getTutorialState, restoreTutorialState } from './tutorial.js';
 
 const SAVE_KEY = 'kawaiid_save';
 const AUTO_SAVE_INTERVAL = 60000; // 60 seconds
@@ -177,6 +180,15 @@ function gatherSaveData() {
   // Story events triggered state
   data.storyEvents = getStoryEventsSaveData();
 
+  // Workshop property state
+  data.workshop = getWorkshopState();
+
+  // Apartment decoration state
+  data.apartmentDecor = getDecorState();
+
+  // Tutorial state
+  data.tutorial = getTutorialState();
+
   return data;
 }
 
@@ -319,6 +331,15 @@ export function applySave(data, player, npcs, piles) {
 
   // Story events triggered state (visual sync done in main.js after load)
   if (data.storyEvents) restoreStoryEvents(data.storyEvents);
+
+  // Workshop property state
+  if (data.workshop) restoreWorkshopState(data.workshop);
+
+  // Apartment decoration state
+  if (data.apartmentDecor) restoreDecorState(data.apartmentDecor);
+
+  // Tutorial state
+  if (data.tutorial) restoreTutorialState(data.tutorial);
 
   // ACE officers — restore waypoint index (mode will sync from game hour)
   if (data.aceOfficers && officersRef) {

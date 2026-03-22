@@ -41,6 +41,8 @@ import { initStationShop, isStationShopOpen, restoreStationShopState, applyResto
 import { initSmuggling, updateSmuggling, getSmugglingState, restoreSmugglingState, isSmuggleUIOpen } from './smuggling.js';
 import { initScavenger, updateScavenger, onNewDayScavenger, getScavengerSaveData, restoreScavenger } from './scavenger-system.js';
 import { initStoryEvents, setStoryCallbacks, syncStoryEffects, onStoryTrigger, getStoryEventsSaveData, restoreStoryEvents } from './story-events.js';
+import { initWorkshop, updateWorkshop, isWorkshopStorageOpen } from './workshop.js';
+import { initTutorial, updateTutorial, getTutorialState, restoreTutorialState, isTutorialComplete, onTutorialDealComplete } from './tutorial.js';
 import { initPrintStation, updatePrintStation, isPrintStationOpen } from './stations/print-station.js';
 import { initCuttingTable, updateCuttingTable, isCuttingTableOpen } from './stations/cutting-table.js';
 import { initSewingMachine, updateSewingMachine, isSewingMachineOpen } from './stations/sewing-machine.js';
@@ -197,6 +199,7 @@ async function boot() {
   registerPausePredicate(() => isStuffingStationOpen());
   registerPausePredicate(() => isStationShopOpen());
   registerPausePredicate(() => isSmuggleUIOpen());
+  registerPausePredicate(() => isWorkshopStorageOpen());
 
   // Kit supplier NPC
   createKit(scene);
@@ -222,6 +225,9 @@ async function boot() {
   initCuttingTable(scene, player);
   initSewingMachine(scene, player);
   initStuffingStation(scene, player);
+
+  // Workshop property (Industrial district second production location)
+  initWorkshop(scene, player);
 
   // ACE patrol officers
   createACEOfficers(scene);
@@ -382,10 +388,14 @@ async function boot() {
     // Restore story events state then sync visual effects
     if (savedData.storyEvents) restoreStoryEvents(savedData.storyEvents);
     syncStoryEffects(getReferralState());
+    // Workshop restore is handled in save-system.js applySave (via restoreWorkshopState)
   } else {
     // New game — apply any already-restored purchases (none, but future-proof)
     applyRestoredPurchases();
   }
+
+  // Tutorial — init after state is restored so new vs continue is known
+  initTutorial(scene, !savedData);
 
   // Init save system
   initSaveSystem(player, npcs, piles, getOfficers());
@@ -440,6 +450,7 @@ async function boot() {
 
   // --- Wire save triggers ---
   setOnDealCallback((npcName, itemType, price) => {
+    onTutorialDealComplete();
     triggerSave('Saving...');
     const stats = getPhoneStats();
     checkDealMilestone(stats.totalDeals);
@@ -495,6 +506,8 @@ async function boot() {
     updateACE(dt);
     updateKit();
     updateSmuggling();
+    updateWorkshop();
+    updateTutorial(dt, player.position, piles);
     updateScavenger(dt);
     updatePrintStation(dt);
     updateCuttingTable(dt);

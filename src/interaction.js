@@ -20,6 +20,8 @@ import { isNearStuffingStation, isStuffingStationOpen, openStuffingStationUI } f
 import { isNearStationShop, isStationShopOpen, openStationShopUI } from './station-shop.js';
 import { isNearGus, isGusAvailable, openOrderUI, isSmuggleUIOpen, isNearCrate, collectCrate, closeOrderUI } from './smuggling.js';
 import { isAshOnDuty } from './scavenger-system.js';
+import { isNearWorkshopBuilding, isWorkshopPurchased, openStorageUI, isWorkshopStorageOpen } from './workshop.js';
+import { getNearestDecorSpot, openDecorUI, isDecorUIOpen } from './apartment-decor.js';
 
 const SEARCH_RADIUS = 3;
 const SEARCH_DURATION = 3; // seconds
@@ -87,13 +89,26 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
   createSleepConfirm();
 
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen() && !isStationShopOpen() && !isSmuggleUIOpen()) {
+    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen() && !isStationShopOpen() && !isSmuggleUIOpen() && !isWorkshopStorageOpen() && !isDecorUIOpen()) {
       // Close phone if open
       if (isPhoneVisible()) closePhone();
 
       // Handle sleep confirmation dialog
       if (sleepConfirmVisible) {
         confirmSleep(true);
+        return;
+      }
+
+      // Check if near Industrial workshop building
+      if (isWorkshopPurchased() && isNearWorkshopBuilding(playerRef.position)) {
+        openStorageUI();
+        return;
+      }
+
+      // Check if near an apartment decoration spot
+      const decorSpot = getNearestDecorSpot(playerRef.position);
+      if (decorSpot) {
+        openDecorUI(decorSpot.id);
         return;
       }
 
