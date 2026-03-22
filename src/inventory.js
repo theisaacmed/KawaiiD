@@ -36,8 +36,9 @@ function getStackKey(type, subtype) {
 function slotsMatch(slot, type, subtype) {
   if (slot.type !== type) return false;
   if (type === 'material') return slot.subtype === subtype;
-  // Fresh vs old stickers stack separately
+  // Sticker and plushie subtypes stack separately (old vs fresh/handmade)
   if (type === 'sticker') return (slot.subtype || null) === (subtype || null);
+  if (type === 'plushie') return (slot.subtype || null) === (subtype || null);
   return true;
 }
 
@@ -45,11 +46,13 @@ function slotsMatch(slot, type, subtype) {
 // Returns true if added, false if inventory full
 // For gacha: addItem('gacha', 'plushie') — second arg is contained item
 // For materials: addItem('material', 'sticker_paper') — second arg is subtype
+// For sticker/plushie: addItem('sticker', 'fresh') / addItem('plushie', 'old') — second arg is quality subtype
 export function addItem(type, subtypeOrContains) {
   const isMaterial = type === 'material';
   const isSticker = type === 'sticker';
-  const subtype = (isMaterial || isSticker) ? subtypeOrContains : undefined;
-  const contains = (!isMaterial && !isSticker && type === 'gacha') ? subtypeOrContains : undefined;
+  const isPlushie = type === 'plushie';
+  const subtype = (isMaterial || isSticker || isPlushie) ? subtypeOrContains : undefined;
+  const contains = (!isMaterial && !isSticker && !isPlushie && type === 'gacha') ? subtypeOrContains : undefined;
   const stackKey = getStackKey(type, subtype);
   const maxStack = MAX_STACK[stackKey] || Infinity;
 
@@ -64,7 +67,7 @@ export function addItem(type, subtypeOrContains) {
   // Try to create a new slot
   if (state.slots.length < MAX_SLOTS) {
     const newSlot = { type, count: 1 };
-    if ((isMaterial || isSticker) && subtype) newSlot.subtype = subtype;
+    if ((isMaterial || isSticker || isPlushie) && subtype) newSlot.subtype = subtype;
     if (type === 'gacha' && contains) newSlot.contains = contains;
     state.slots.push(newSlot);
     notify();
@@ -177,6 +180,26 @@ export function setMaxSlots(n) {
 export function clearInventory() {
   state.slots.length = 0;
   notify();
+}
+
+// Returns true if any plushie of any quality subtype exists
+export function hasAnyPlushie() {
+  return state.slots.some(s => s.type === 'plushie' && s.count > 0);
+}
+
+// Remove one plushie of any quality subtype (prefers old, then handmade, then no-subtype for saves)
+export function removeAnyPlushie() {
+  for (const subtype of ['old', 'handmade', undefined]) {
+    const idx = state.slots.findIndex(s => s.type === 'plushie' &&
+      (slot => (slot.subtype || null) === (subtype || null))(s) && s.count > 0);
+    if (idx !== -1) {
+      state.slots[idx].count--;
+      if (state.slots[idx].count <= 0) state.slots.splice(idx, 1);
+      notify();
+      return true;
+    }
+  }
+  return false;
 }
 
 // Deduct money (floor at 0)

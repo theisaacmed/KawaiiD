@@ -5,7 +5,7 @@
 // Deposits at 4 PM, wages deducted at 6 AM
 
 import * as THREE from 'three';
-import { addItem, getMoney, deductMoney, hasItem, removeItem } from './inventory.js';
+import { addItem, getMoney, deductMoney, hasItem, removeItem, hasAnyPlushie, removeAnyPlushie } from './inventory.js';
 import { getCurrentRankIndex } from './jp-system.js';
 import { getGameHour, getDayNumber } from './time-system.js';
 import { showNotification } from './notifications.js';
@@ -74,10 +74,10 @@ export function onPileSearched() {
   }
 }
 
-// One-time recruitment — player gives Pip a plushie
+// One-time recruitment — player gives Pip a plushie (any quality)
 export function recruitPip() {
-  if (pipRecruited || !hasItem('plushie')) return false;
-  removeItem('plushie');
+  if (pipRecruited || !hasAnyPlushie()) return false;
+  removeAnyPlushie();
   pipRecruited = true;
   pipHired = true;
   lastPipWageDay = getDayNumber();
@@ -265,7 +265,7 @@ function depositMaterials() {
     if (Math.random() < 0.55) {
       addItem('material', 'sticker_paper');
     } else {
-      addItem('sticker');
+      addItem('sticker', 'old');
     }
   }
 
@@ -314,14 +314,14 @@ function depositPipFinds() {
   if (day <= lastPipDepositDay) return;
   lastPipDepositDay = day;
 
-  // 2–4 items: 60% sticker, 40% plushie
+  // 2–4 items: 60% old sticker, 40% old plushie (scavenged, worn)
   const count = 2 + Math.floor(Math.random() * 3);
 
   for (let i = 0; i < count; i++) {
     if (Math.random() < 0.6) {
-      addItem('sticker');
+      addItem('sticker', 'old');
     } else {
-      addItem('plushie');
+      addItem('plushie', 'old');
     }
   }
 

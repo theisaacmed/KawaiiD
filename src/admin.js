@@ -219,8 +219,8 @@ function wireEvents() {
   btn('adm-speed3', () => { speedMult = 5; refreshStats(); });
 
   // Inventory
-  btn('adm-sticker', () => { addItem('sticker'); refreshStats(); });
-  btn('adm-plushie', () => { addItem('plushie'); refreshStats(); });
+  btn('adm-sticker', () => { addItem('sticker', 'fresh'); refreshStats(); });
+  btn('adm-plushie', () => { addItem('plushie', 'handmade'); refreshStats(); });
   btn('adm-gacha-s', () => { addItem('gacha', 'sticker'); refreshStats(); });
   btn('adm-gacha-p', () => { addItem('gacha', 'plushie'); refreshStats(); });
   btn('adm-clear-inv', () => { clearInventory(); refreshStats(); });

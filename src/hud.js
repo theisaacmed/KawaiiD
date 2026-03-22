@@ -231,11 +231,45 @@ function renderSlots() {
           borderRadius: '4px',
           background: isFresh
             ? 'linear-gradient(135deg, #ff90f0, #d080ff)'
-            : 'linear-gradient(135deg, #e87bda, #b56eff)',
+            : 'linear-gradient(135deg, #a86cb8, #7040a0)',
           boxShadow: isFresh
             ? '0 0 12px rgba(255,140,255,0.5)'
-            : '0 0 8px rgba(200,100,255,0.3)',
+            : '0 0 6px rgba(140,80,200,0.25)',
         });
+        // Quality badge
+        const badge = document.createElement('span');
+        Object.assign(badge.style, {
+          position: 'absolute', top: '1px', left: '3px',
+          fontSize: '8px', fontFamily: 'monospace', fontWeight: 'bold',
+          color: isFresh ? '#f0c0ff' : '#9090aa',
+          textShadow: '0 1px 2px rgba(0,0,0,0.9)',
+          lineHeight: '1', pointerEvents: 'none',
+        });
+        badge.textContent = isFresh ? '★' : '○';
+        el.appendChild(badge);
+      } else if (s.type === 'plushie') {
+        const isHandmade = s.subtype === 'handmade';
+        Object.assign(icon.style, {
+          width: '28px', height: '28px',
+          borderRadius: '50%',
+          background: isHandmade
+            ? 'linear-gradient(135deg, #7bc8e8, #6b9fff)'
+            : 'linear-gradient(135deg, #5a8898, #4a6878)',
+          boxShadow: isHandmade
+            ? '0 0 10px rgba(100,180,255,0.4)'
+            : '0 0 6px rgba(80,130,170,0.2)',
+        });
+        // Quality badge
+        const badge = document.createElement('span');
+        Object.assign(badge.style, {
+          position: 'absolute', top: '1px', left: '3px',
+          fontSize: '8px', fontFamily: 'monospace', fontWeight: 'bold',
+          color: isHandmade ? '#a0d8ff' : '#8090a0',
+          textShadow: '0 1px 2px rgba(0,0,0,0.9)',
+          lineHeight: '1', pointerEvents: 'none',
+        });
+        badge.textContent = isHandmade ? '★' : '○';
+        el.appendChild(badge);
       } else if (s.type === 'gacha') {
         Object.assign(icon.style, {
           width: '28px', height: '28px',
@@ -307,10 +341,21 @@ function onDragStart(e) {
       borderRadius: '4px',
       background: isFresh
         ? 'linear-gradient(135deg, #ff90f0, #d080ff)'
-        : 'linear-gradient(135deg, #e87bda, #b56eff)',
+        : 'linear-gradient(135deg, #a86cb8, #7040a0)',
       boxShadow: isFresh
         ? '0 0 16px rgba(255,140,255,0.6)'
-        : '0 0 16px rgba(200,100,255,0.5)',
+        : '0 0 12px rgba(140,80,200,0.4)',
+    });
+  } else if (slot.type === 'plushie') {
+    const isHandmade = slot.subtype === 'handmade';
+    Object.assign(ghost.style, {
+      borderRadius: '50%',
+      background: isHandmade
+        ? 'linear-gradient(135deg, #7bc8e8, #6b9fff)'
+        : 'linear-gradient(135deg, #5a8898, #4a6878)',
+      boxShadow: isHandmade
+        ? '0 0 16px rgba(100,180,255,0.5)'
+        : '0 0 10px rgba(80,130,170,0.3)',
     });
   } else if (slot.type === 'gacha') {
     Object.assign(ghost.style, {

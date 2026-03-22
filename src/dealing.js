@@ -225,7 +225,10 @@ let rejectTimeout = null;
 
 function renderConsidering(itemType) {
   const npc = activeNPC;
-  const itemLabel = itemType === 'gacha' ? 'gacha capsule' : itemType;
+  const sub = offeredItem ? offeredItem.subtype : undefined;
+  const itemLabel = itemType === 'gacha' ? 'gacha capsule' :
+    itemType === 'sticker' ? (sub === 'fresh' ? 'fresh sticker' : 'old sticker') :
+    itemType === 'plushie' ? (sub === 'handmade' ? 'handmade plushie' : 'old plushie') : itemType;
   const affinity = getNPCAffinity(npc.name, itemType);
   const affinityIcon = getAffinityIcon(affinity);
 
@@ -312,9 +315,12 @@ function renderReject(itemType) {
 
 function renderOffer(affinity) {
   const npc = activeNPC;
-  const isFreshSticker = offeredItem.type === 'sticker' && offeredItem.subtype === 'fresh';
   const itemLabel = offeredItem.type === 'gacha' ? 'gacha capsule' :
-    (offeredItem.type === 'sticker' ? (isFreshSticker ? 'fresh sticker' : 'old sticker') : 'plushie');
+    offeredItem.type === 'sticker'
+      ? (offeredItem.subtype === 'fresh' ? 'fresh sticker' : 'old sticker')
+      : offeredItem.type === 'plushie'
+        ? (offeredItem.subtype === 'handmade' ? 'handmade plushie' : 'old plushie')
+        : offeredItem.type;
   const aff = affinity !== undefined ? affinity : getNPCAffinity(npc.name, offeredItem.type);
   const affinityIcon = getAffinityIcon(aff);
   const acceptLine = getAffinityAcceptLine(aff);

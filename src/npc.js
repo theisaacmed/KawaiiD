@@ -335,12 +335,15 @@ export function calcDealPrice(npc, itemType, itemSubtype) {
   const affinity = getNPCAffinity(npc.name, itemType);
   const rel = getRelationship(npc.name);
 
-  // Base price — fresh stickers are worth more ($10-15 vs $8-12 for old)
+  // Base price — quality tier determines value
+  // old sticker: $8-10, fresh sticker: $12-15
+  // old plushie: $15-20, handmade plushie: $25-35
   let basePrice;
   if (itemType === 'sticker') {
-    basePrice = itemSubtype === 'fresh' ? 12.5 : 10;
-  } else if (itemType === 'plushie') basePrice = 25;
-  else basePrice = 22; // gacha
+    basePrice = itemSubtype === 'fresh' ? 13 : 9;
+  } else if (itemType === 'plushie') {
+    basePrice = itemSubtype === 'handmade' ? 30 : 17;
+  } else basePrice = 22; // gacha
 
   // Affinity multiplier
   let affinityMult;
@@ -2188,11 +2191,11 @@ const NPC_DATA = [
   },
 ];
 
-// Base values for negotiation
+// Base values for negotiation (old/scavenged tier — manufactured items worth more)
 export const BASE_VALUES = {
-  sticker: 10,
-  plushie: 25,
-  gacha: 24,  // base; actual per-capsule value randomized in 18-30 range
+  sticker: 9,       // old sticker; fresh sticker base is 13
+  plushie: 17,      // old plushie; handmade plushie base is 30
+  gacha: 24,        // base; actual per-capsule value randomized in 18-30 range
 };
 
 const TALK_RADIUS = 3;

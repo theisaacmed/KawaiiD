@@ -526,7 +526,7 @@ function collectPlushie(count) {
   for (let i = 0; i < count; i++) {
     if (stationState.outputQueue <= 0) break;
     if (isFull()) break;
-    if (addItem('plushie')) {
+    if (addItem('plushie', 'handmade')) {
       stationState.outputQueue--;
       collected++;
     } else break;
@@ -538,7 +538,7 @@ function collectPlushie(count) {
 function collectAllPlushies() {
   let collected = 0;
   while (stationState.outputQueue > 0 && !isFull()) {
-    if (addItem('plushie')) {
+    if (addItem('plushie', 'handmade')) {
       stationState.outputQueue--;
       collected++;
     } else break;

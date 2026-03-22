@@ -3,7 +3,7 @@
 // Waypoint meetups: NPC always accepts when you reach their requested meetup point
 
 import * as THREE from 'three';
-import { addItem, isFull, hasItem } from './inventory.js';
+import { addItem, isFull, hasItem, hasAnyPlushie } from './inventory.js';
 import { showPrompt, hidePrompt, showProgress, hideProgress, showInventoryFull } from './hud.js';
 import { getNearestNPC, npcLine, resetNPCPurchases } from './npc.js';
 import { openDealPanel, isDealOpen, setLocationRefuseCallback } from './dealing.js';
@@ -167,7 +167,7 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
       // Check if near Pip (Ruins Kid scavenger)
       if (isNearRuinsKid(playerRef.position)) {
         if (!isPipRecruited()) {
-          if (hasItem('plushie')) {
+          if (hasAnyPlushie()) {
             recruitPip();
           } else {
             showRefusal("Got a spare plushie? Give me one and I'll help out.");
@@ -342,11 +342,11 @@ function completeSearch() {
   let type, subtype, count = 1;
 
   if (roll < 0.25) {
-    // 25% — finished sticker
-    type = 'sticker';
+    // 25% — old sticker (scavenged, worth less than manufactured)
+    type = 'sticker'; subtype = 'old';
   } else if (roll < 0.45) {
-    // 20% — finished plushie
-    type = 'plushie';
+    // 20% — old plushie (scavenged, worn)
+    type = 'plushie'; subtype = 'old';
   } else if (roll < 0.65) {
     // 20% — sticker paper (2-4 sheets)
     type = 'material'; subtype = 'sticker_paper';
@@ -373,7 +373,7 @@ function completeSearch() {
       else break;
     }
   } else {
-    added = addItem(type);
+    added = addItem(type, subtype);
   }
 
   if (added) {
@@ -470,7 +470,7 @@ export function updateInteraction(dt) {
     showPrompt('Press E to collect delivery');
   } else if (nearRuinsKid && !searching) {
     if (!isPipRecruited()) {
-      showPrompt(hasItem('plushie') ? 'Press E to give plushie to Pip' : 'Press E to talk to Pip');
+      showPrompt(hasAnyPlushie() ? 'Press E to give plushie to Pip' : 'Press E to talk to Pip');
     } else {
       showPrompt(isPipHired() ? 'Press E to let Pip go' : 'Press E to hire Pip ($20/day)');
     }
