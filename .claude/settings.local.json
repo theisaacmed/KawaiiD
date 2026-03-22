@@ -41,7 +41,28 @@
       "Bash(git -C \"C:/Users/Admin/Desktop/KawaiiD\" add src/scavenger-system.js src/interaction.js src/phone.js)",
       "Bash(git -C \"C:/Users/Admin/Desktop/KawaiiD\" commit -m \"Add Pip the Ruins Kid — unlocks after 5 scavenges, finds stickers and plushies\")",
       "Bash(git -C \"C:/Users/Admin/Desktop/KawaiiD\" log --oneline -3)",
-      "Bash(npm.cmd run:*)"
+      "Bash(npm.cmd run:*)",
+      "Bash(ls '/c/Program Files \\(x86\\)/nodejs/')",
+      "Bash(cmd /c \"where node 2>&1 && node --version && npm --version\")",
+      "Bash(cmd /c \"node --version && npm --version\")",
+      "Bash(cmd /c \"node --version\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(gh repo:*)",
+      "Bash(where git:*)",
+      "Bash(git --version)",
+      "Bash(winget install:*)",
+      "Bash(winpty gh:*)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" --version)",
+      "Bash(echo \"PATH: $PATH\")",
+      "Bash(/c/nodejs/npx vercel:*)",
+      "Bash(cmd /c \"npm run build\")",
+      "Bash(powershell.exe -Command \"npm run build\")",
+      "Bash(powershell.exe -Command \"Get-Command node,npm -ErrorAction SilentlyContinue | Select-Object Name,Source\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem ''C:\\\\Program Files\\\\nodejs'' -ErrorAction SilentlyContinue; Get-ChildItem ''C:\\\\Users\\\\Admin\\\\AppData\\\\Roaming\\\\nvm'' -ErrorAction SilentlyContinue; Get-ChildItem ''C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\nvm'' -ErrorAction SilentlyContinue\")",
+      "Bash(ls /c/Users/Admin/scoop/apps/nodejs*/current/node.exe)",
+      "Bash(ls /c/Users/Admin/AppData/Local/Programs/node*)",
+      "Bash(ls /c/Users/Admin/Desktop/KawaiiD/node_modules/.bin/vite*)",
+      "Bash(./node_modules/.bin/vite build:*)"
     ]
   }
 }
