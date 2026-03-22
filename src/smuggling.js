@@ -23,6 +23,7 @@ const ORDER_TIERS = [
     id: 'small',
     label: 'Small',
     cost: 30,
+    minRelLevel: 0,
     items: [
       { type: 'material', sub: 'sticker_paper', qty: 10 },
       { type: 'material', sub: 'fabric_roll',   qty: 3  },
@@ -32,6 +33,7 @@ const ORDER_TIERS = [
     id: 'medium',
     label: 'Medium',
     cost: 60,
+    minRelLevel: 0,
     items: [
       { type: 'material', sub: 'sticker_paper', qty: 20 },
       { type: 'material', sub: 'fabric_roll',   qty: 5  },
@@ -43,12 +45,39 @@ const ORDER_TIERS = [
     id: 'large',
     label: 'Large',
     cost: 120,
+    minRelLevel: 0,
     items: [
       { type: 'material', sub: 'sticker_paper', qty: 40 },
       { type: 'material', sub: 'fabric_roll',   qty: 10 },
       { type: 'material', sub: 'stuffing',       qty: 10 },
       { type: 'material', sub: 'thread_spool',   qty: 5  },
       { type: 'material', sub: 'capsule_shell',  qty: 5  },
+    ],
+  },
+  // Premium tiers — unlocked at relationship level 4+
+  {
+    id: 'premium_a',
+    label: 'Premium A',
+    cost: 200,
+    minRelLevel: 4,
+    items: [
+      { type: 'material', sub: 'fabric_roll',      qty: 20 },
+      { type: 'material', sub: 'stuffing',          qty: 15 },
+      { type: 'material', sub: 'capsule_shell',     qty: 10 },
+      { type: 'material', sub: 'plushie_pattern',   qty: 5  },
+    ],
+  },
+  {
+    id: 'premium_b',
+    label: 'Premium B',
+    cost: 350,
+    minRelLevel: 4,
+    items: [
+      { type: 'material', sub: 'fabric_roll',      qty: 30 },
+      { type: 'material', sub: 'stuffing',          qty: 25 },
+      { type: 'material', sub: 'capsule_shell',     qty: 20 },
+      { type: 'material', sub: 'plushie_pattern',   qty: 10 },
+      { type: 'material', sub: 'plushie_shell',     qty: 5  },
     ],
   },
 ];
@@ -68,6 +97,7 @@ let crateMesh = null;
 
 // ---- Public state queries ----
 export function isSmuggleUIOpen() { return orderPanelOpen; }
+export function isOrderInTransit() { return activeOrder !== null; }
 export function isNearGus(playerPos) {
   const dx = playerPos.x - GUS_POS.x;
   const dz = playerPos.z - GUS_POS.z;
@@ -225,9 +255,26 @@ export function openOrderUI() {
     orderPanel.appendChild(notice);
   }
 
-  // Tiers
+  // Tiers — filter by relationship level
   const balance = getMoney();
+  const rel = getRelationship('Gus');
+  const relLevel = Math.floor(rel.level || 0);
+
+  // Section label for premium tiers if unlocked
+  let addedPremiumLabel = false;
   for (const tier of ORDER_TIERS) {
+    if ((tier.minRelLevel || 0) > relLevel) continue;
+    if ((tier.minRelLevel || 0) >= 4 && !addedPremiumLabel) {
+      addedPremiumLabel = true;
+      const premLabel = document.createElement('div');
+      Object.assign(premLabel.style, {
+        fontSize: '11px', color: '#7af', letterSpacing: '0.05em',
+        marginBottom: '6px', marginTop: '4px',
+        textTransform: 'uppercase',
+      });
+      premLabel.textContent = '— Premium (Trust level 4) —';
+      orderPanel.appendChild(premLabel);
+    }
     const card = _makeTierCard(tier, balance);
     orderPanel.appendChild(card);
   }
