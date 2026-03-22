@@ -51,6 +51,8 @@ import {
   initNotifications, setNotifBlockedCheck, setQuickAcceptFn, setQuickDeclineFn,
   setOpenPhoneToMsgFn, setUnreadCountFn, flushNotifQueue,
 } from './notifications.js';
+import { initMultiplayer, updateMultiplayer, sendDealComplete, isMultiplayerActive } from './multiplayer.js';
+import { showHUDBadge, removeHUDBadge } from './multiplayer-ui.js';
 
 // --- District unlock helpers ---
 function performDistrictUnlocks(totalDeals, scene, npcs) {
@@ -232,6 +234,21 @@ async function boot() {
   // ACE patrol officers
   createACEOfficers(scene);
   initACE(player);
+
+  // Multiplayer
+  initMultiplayer(scene, {
+    onRoomCreated: () => {},
+    onJoined: () => { showHUDBadge(); },
+    onGuestJoined: () => { showHUDBadge(); },
+    onPeerDisconnected: () => { removeHUDBadge(); },
+    onDealComplete: (msg) => {
+      if (msg.buildingColors && Array.isArray(msg.buildingColors)) {
+        for (const { index, colorAmount } of msg.buildingColors) {
+          spreadColorBonus({ x: 0, z: 0 }, colorAmount);
+        }
+      }
+    },
+  });
 
   // HUD
   createHUD();
@@ -464,6 +481,10 @@ async function boot() {
     if (npcName && itemType && getNPCAffinity(npcName, itemType) >= 2) addJP(5);
     // JP: risky deal bonus (officer within 30 units)
     if (isAnyOfficerWithinRange(30)) addJP(10);
+    // Notify co-op partner
+    if (isMultiplayerActive()) {
+      sendDealComplete({ npcName, itemType });
+    }
   });
   setOnCaughtCallback(() => {
     addJP(-15);
@@ -550,6 +571,9 @@ async function boot() {
     if (Math.floor(elapsed * 10) % 6 === 0) {
       checkColorMilestone(worldColor);
     }
+
+    // Multiplayer sync
+    updateMultiplayer(camera.position, camera.rotation.y);
 
     // Flush queued notifications when blocking events end
     flushNotifQueue();

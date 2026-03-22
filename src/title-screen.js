@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { playUIClick } from './audio.js';
+import { showMultiplayerLobby } from './multiplayer-ui.js';
 
 export function showTitleScreen(hasSaveFn, clearSaveFn, renderer, scene) {
   return new Promise((resolve) => {
@@ -139,6 +140,10 @@ export function showTitleScreen(hasSaveFn, clearSaveFn, renderer, scene) {
     const controlsBtn = makeBtn('Controls', false);
     controlsBtn.addEventListener('click', () => showControls());
     btnContainer.appendChild(controlsBtn);
+
+    const multiBtn = makeBtn('Multiplayer', false);
+    multiBtn.addEventListener('click', () => showMultiplayerLobby(() => {}));
+    btnContainer.appendChild(multiBtn);
 
     overlay.appendChild(btnContainer);
 
