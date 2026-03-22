@@ -12,7 +12,7 @@
 import * as THREE from 'three';
 import { getSlots, getMoney } from './inventory.js';
 import { getWorldColor } from './color-system.js';
-import { isNPCActive, getDayNumber } from './time-system.js';
+import { isNPCActive, getDayNumber, getGameHour } from './time-system.js';
 import { isDistrictUnlocked, DISTRICTS as PHONE_DISTRICTS } from './districts.js';
 import { getRelationship, getNPCAffinity, getAffinityIcon, getNPCMood, getDexDailyMessage } from './npc.js';
 import { playPhoneBuzz } from './audio.js';
@@ -299,7 +299,7 @@ export function acceptMessage(msgId) {
     npcName: msg.npcName,
     sprite,
     pos: msg.meetupPos,
-    timeLeft: 180, // 3 minutes
+    timeLeft: Math.max(60, (18 - getGameHour()) * 60), // real seconds until 6 PM game time (1 game hour = 60 real seconds)
     messageId: msg.id,
   });
 

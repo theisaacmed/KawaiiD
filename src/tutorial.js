@@ -100,14 +100,8 @@ export function updateTutorial(dt, playerPos, piles) {
     }
   }
 
-  // Step 1: watch for player entering ruins AND searching a rubble pile
-  if (tutorialStep === 1 && playerPos && playerPos.z < -20) {
-    // Ruins are south (negative Z in this world based on RUINS_WAYPOINT z=34)
-    // Actually ruins are at positive Z (south), check RUINS_Z_START ≈ 28
-    // Ruins are at z > 28 per createRuins; positive Z is south.
-  }
-  // Step 1: positive-Z ruins check
-  if (tutorialStep === 1 && playerPos && playerPos.z > 28) {
+  // Step 1: watch for player entering ruins (z < -150) AND searching a rubble pile
+  if (tutorialStep === 1 && playerPos && playerPos.z < -150) {
     if (piles && piles.some(p => p.searched)) {
       advanceStep(2);
     }
