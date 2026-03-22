@@ -10,6 +10,7 @@ import { createRuinsDetail } from './ruins-detail.js';
 import { initParticles, updateParticles, setFountainPosition, spawnSearchDust } from './particles.js';
 import { initEnvironment, updateEnvironment } from './environment.js';
 import { createHUD, flashMoney, showFloatingMoney } from './hud.js';
+import { initActiveDealsHUD } from './active-deals-hud.js';
 import { initInteraction, updateInteraction } from './interaction.js';
 import { createNPCs, updateNPCs, resetNPCPurchases, enableDistrictNPCs, enableNPCByName, checkReferrals, getNPCColorModifier, getNPCAffinity, resetDailyDeals, initPathfinding, resetRoutinesForNewDay, getRelationships, getRelationship, setOnRelLevelUpCallback, getReferralState } from './npc.js';
 import { initDealing, isDealOpen, setOnDealCallback, setOnPhoneDealCallback } from './dealing.js';
@@ -281,6 +282,7 @@ async function boot() {
   initMinimap(player, npcs);
 
   // Phone system
+  initActiveDealsHUD();
   initPhone(scene, npcs, player);
   setDealFunctions(isDealOpen);
 
