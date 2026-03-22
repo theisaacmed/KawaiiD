@@ -16,6 +16,9 @@ import { getStuffingStationSaveData, restoreStuffingStationState } from './stati
 import { getNotifState, restoreNotifState } from './notifications.js';
 import { getJPState, restoreJPState } from './jp-system.js';
 import { getStationShopSaveData } from './station-shop.js';
+import { getSmugglingState, restoreSmugglingState } from './smuggling.js';
+import { getScavengerSaveData, restoreScavenger } from './scavenger-system.js';
+import { getStoryEventsSaveData, restoreStoryEvents } from './story-events.js';
 
 const SAVE_KEY = 'kawaiid_save';
 const AUTO_SAVE_INTERVAL = 60000; // 60 seconds
@@ -165,6 +168,15 @@ function gatherSaveData() {
   // Station shop purchases
   data.stationShop = getStationShopSaveData();
 
+  // Smuggling order state
+  data.smuggling = getSmugglingState();
+
+  // Scavenger hire state
+  data.scavenger = getScavengerSaveData();
+
+  // Story events triggered state
+  data.storyEvents = getStoryEventsSaveData();
+
   return data;
 }
 
@@ -298,6 +310,15 @@ export function applySave(data, player, npcs, piles) {
 
   // Joy Points and rank
   if (data.jp) restoreJPState(data.jp);
+
+  // Smuggling order state
+  if (data.smuggling) restoreSmugglingState(data.smuggling);
+
+  // Scavenger hire state
+  if (data.scavenger) restoreScavenger(data.scavenger);
+
+  // Story events triggered state (visual sync done in main.js after load)
+  if (data.storyEvents) restoreStoryEvents(data.storyEvents);
 
   // ACE officers — restore waypoint index (mode will sync from game hour)
   if (data.aceOfficers && officersRef) {

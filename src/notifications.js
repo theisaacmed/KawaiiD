@@ -224,6 +224,13 @@ function getNotifType(msg) {
 
 // --- Create & Show Toast ---
 export function showNotification(msg) {
+  // Accept plain strings: "[Name] text" or just "text"
+  if (typeof msg === 'string') {
+    const match = msg.match(/^\[([^\]]+)\]\s*(.*)$/);
+    msg = match
+      ? { npcName: match[1], text: match[2] }
+      : { npcName: '', text: msg };
+  }
   // Check if blocked (chase, sleep, title, rank-up)
   if (isBlockedFn()) {
     notifQueue.push(msg);

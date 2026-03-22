@@ -19,6 +19,7 @@ import { playPhoneBuzz } from './audio.js';
 import { renderMap } from './map-renderer.js';
 import { showNotification, updateNotifBadge as updateNotifBadgeNew, getNPCColor, getNotificationHistory, markHistoryRead } from './notifications.js';
 import { getJP, getRankName, getJPProgress, getNextRank, RANKS } from './jp-system.js';
+import { isAshHired, isAshHireUnlocked, hireAsh, fireAsh } from './scavenger-system.js';
 
 // Deal panel functions — set by main.js to avoid circular dependencies
 let isDealOpenFn = () => false;
@@ -1125,11 +1126,28 @@ function renderContactsTab() {
           </div>
           <div>Deals: <span style="color:#ccc">${rel.totalDeals}</span> &middot; Spent: <span style="color:#6f6">$${rel.totalSpent}</span></div>
         </div>
+        ${npc.name === 'Ash' && isAshHireUnlocked() ? `
+        <div style="margin-top:8px">
+          ${isAshHired()
+            ? `<button class="ash-hire-btn" data-action="fire" style="background:rgba(255,100,100,0.1);border:1px solid rgba(255,100,100,0.3);border-radius:6px;padding:5px 12px;color:#f88;font-family:monospace;font-size:11px;cursor:pointer">Fire Ash ($15/day)</button>`
+            : `<button class="ash-hire-btn" data-action="hire" style="background:rgba(100,200,150,0.1);border:1px solid rgba(100,200,150,0.3);border-radius:6px;padding:5px 12px;color:#6f9;font-family:monospace;font-size:11px;cursor:pointer">Hire Ash ($15/day)</button>`
+          }
+          ${isAshHired() ? '<span style="color:#555;font-size:10px;margin-left:8px">Scavenging 6AM–4PM</span>' : ''}
+        </div>` : ''}
       </div>
     `;
   }
 
   content.innerHTML = html || '<div style="text-align:center;padding:60px 20px;color:#444">No contacts yet.</div>';
+
+  // Attach hire/fire handlers
+  content.querySelectorAll('.ash-hire-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.action === 'hire') hireAsh();
+      else fireAsh();
+      renderContactsTab(); // refresh to show updated state
+    });
+  });
 }
 
 // --- Stats Tab ---

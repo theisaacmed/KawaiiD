@@ -18,6 +18,8 @@ import { isNearCuttingTable, isCuttingTableOpen, openCuttingTableUI } from './st
 import { isNearSewingMachine, isSewingMachineOpen, openSewingMachineUI } from './stations/sewing-machine.js';
 import { isNearStuffingStation, isStuffingStationOpen, openStuffingStationUI } from './stations/stuffing-station.js';
 import { isNearStationShop, isStationShopOpen, openStationShopUI } from './station-shop.js';
+import { isNearGus, isGusAvailable, openOrderUI, isSmuggleUIOpen, isNearCrate, collectCrate, closeOrderUI } from './smuggling.js';
+import { isAshOnDuty } from './scavenger-system.js';
 
 const SEARCH_RADIUS = 3;
 const SEARCH_DURATION = 3; // seconds
@@ -85,7 +87,7 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
   createSleepConfirm();
 
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen() && !isStationShopOpen()) {
+    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen() && !isStationShopOpen() && !isSmuggleUIOpen()) {
       // Close phone if open
       if (isPhoneVisible()) closePhone();
 
@@ -133,6 +135,20 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
         return;
       }
 
+      // Check if near Gus (smuggling orders)
+      if (isNearGus(playerRef.position)) {
+        if (isGusAvailable()) {
+          openOrderUI();
+        }
+        return;
+      }
+
+      // Check if near delivery crate
+      if (isNearCrate(playerRef.position)) {
+        collectCrate();
+        return;
+      }
+
       // Check if near bed
       if (isNearBed()) {
         showSleepConfirm();
@@ -153,6 +169,11 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
       // Try NPC street encounter
       const nearNPC = getNearestNPC(npcs, playerRef.position);
       if (nearNPC) {
+        // Ash on scavenger duty — unavailable for deals
+        if (nearNPC.name === 'Ash' && isAshOnDuty()) {
+          showRefusal("I'm out on a run. Catch me after 4 PM.");
+          return;
+        }
         // Street encounter — chance of refusal
         if (nearNPC.purchaseCount >= nearNPC.maxPurchases) {
           showRefusal(nearNPC.limitLine);
@@ -391,6 +412,8 @@ export function updateInteraction(dt) {
   const nearPrintStation = isNearPrintStation(playerRef.position);
   const nearGacha = isGachaUnlocked() && isNearGachaMachine(playerRef.position);
   const nearKit = isKitAvailable() && isNearKit(playerRef.position);
+  const nearGus = isNearGus(playerRef.position);
+  const nearCrate = isNearCrate(playerRef.position);
   const waypoint = getActiveWaypointNearPlayer(playerRef.position);
   const nearNPC = getNearestNPC(npcs, playerRef.position);
   const nearPile = getNearestSearchable();
@@ -408,6 +431,10 @@ export function updateInteraction(dt) {
     showPrompt('Press E to use gacha machine');
   } else if (nearKit && !searching) {
     showPrompt('Press E to shop');
+  } else if (nearCrate && !searching) {
+    showPrompt('Press E to collect delivery');
+  } else if (nearGus && !searching) {
+    showPrompt(isGusAvailable() ? 'Press E to order supplies' : 'Need higher trust with Gus');
   } else if (nearBed && !searching) {
     showPrompt('Press E to sleep');
   } else if (waypoint && !searching) {

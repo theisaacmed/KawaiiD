@@ -11,7 +11,7 @@ import { initParticles, updateParticles, setFountainPosition, spawnSearchDust } 
 import { initEnvironment, updateEnvironment } from './environment.js';
 import { createHUD, flashMoney, showFloatingMoney } from './hud.js';
 import { initInteraction, updateInteraction } from './interaction.js';
-import { createNPCs, updateNPCs, resetNPCPurchases, enableDistrictNPCs, enableNPCByName, checkReferrals, getNPCColorModifier, getNPCAffinity, resetDailyDeals, initPathfinding, resetRoutinesForNewDay, getRelationships, setOnRelLevelUpCallback } from './npc.js';
+import { createNPCs, updateNPCs, resetNPCPurchases, enableDistrictNPCs, enableNPCByName, checkReferrals, getNPCColorModifier, getNPCAffinity, resetDailyDeals, initPathfinding, resetRoutinesForNewDay, getRelationships, getRelationship, setOnRelLevelUpCallback, getReferralState } from './npc.js';
 import { initDealing, isDealOpen, setOnDealCallback, setOnPhoneDealCallback } from './dealing.js';
 import { initPhone, updatePhone, setDealFunctions, onPhoneDealCompleted, isPhoneVisible, setGachaUnlockCallback, getPhoneStats, acceptMessage, declineMessage, openPhoneToMessage, getUnreadCount } from './phone.js';
 import { createACEOfficers, initACE, updateACE, getOfficers, setOnCaughtCallback, setOnEscapeCallback, isAnyOfficerWithinRange } from './ace.js';
@@ -38,6 +38,9 @@ import { initAdmin } from './admin.js';
 import { createKit, updateKit, resetKitStock, isShopOpen } from './shop.js';
 import { createApartment } from './apartment.js';
 import { initStationShop, isStationShopOpen, restoreStationShopState, applyRestoredPurchases } from './station-shop.js';
+import { initSmuggling, updateSmuggling, getSmugglingState, restoreSmugglingState, isSmuggleUIOpen } from './smuggling.js';
+import { initScavenger, updateScavenger, onNewDayScavenger, getScavengerSaveData, restoreScavenger } from './scavenger-system.js';
+import { initStoryEvents, setStoryCallbacks, syncStoryEffects, onStoryTrigger, getStoryEventsSaveData, restoreStoryEvents } from './story-events.js';
 import { initPrintStation, updatePrintStation, isPrintStationOpen } from './stations/print-station.js';
 import { initCuttingTable, updateCuttingTable, isCuttingTableOpen } from './stations/cutting-table.js';
 import { initSewingMachine, updateSewingMachine, isSewingMachineOpen } from './stations/sewing-machine.js';
@@ -193,9 +196,18 @@ async function boot() {
   registerPausePredicate(() => isSewingMachineOpen());
   registerPausePredicate(() => isStuffingStationOpen());
   registerPausePredicate(() => isStationShopOpen());
+  registerPausePredicate(() => isSmuggleUIOpen());
 
   // Kit supplier NPC
   createKit(scene);
+  initSmuggling(scene);
+
+  // Scavenger hire system
+  initScavenger(npcs);
+
+  // Story events
+  initStoryEvents(scene);
+  setStoryCallbacks(addJP, getRelationship);
 
   // Apartment interior (workshop)
   createApartment(scene);
@@ -308,6 +320,7 @@ async function boot() {
     resetDailyDeals();
     resetRoutinesForNewDay();
     resetKitStock();
+    onNewDayScavenger();
     triggerSave('New day!');
   });
 
@@ -362,6 +375,13 @@ async function boot() {
     // Restore station purchases (enables/shows purchased station meshes)
     if (savedData.stationShop) restoreStationShopState(savedData.stationShop);
     applyRestoredPurchases();
+    // Restore smuggling state
+    if (savedData.smuggling) restoreSmugglingState(savedData.smuggling);
+    // Restore scavenger state
+    if (savedData.scavenger) restoreScavenger(savedData.scavenger);
+    // Restore story events state then sync visual effects
+    if (savedData.storyEvents) restoreStoryEvents(savedData.storyEvents);
+    syncStoryEffects(getReferralState());
   } else {
     // New game — apply any already-restored purchases (none, but future-proof)
     applyRestoredPurchases();
@@ -391,11 +411,8 @@ async function boot() {
         // Enable the newly referred NPC
         enableNPCByName(npcs, result.npc);
       }
-      // TODO: Send phone notification about the social/referral event
-      // For now, show as a progression-style message
-      if (result.message) {
-        console.log('[Social]', result.message);
-      }
+      // Fire story events if social flags were set this deal
+      onStoryTrigger(result, getReferralState());
     }
   }
 
@@ -477,6 +494,8 @@ async function boot() {
     updateNPCs(npcs, player.position, dt);
     updateACE(dt);
     updateKit();
+    updateSmuggling();
+    updateScavenger(dt);
     updatePrintStation(dt);
     updateCuttingTable(dt);
     updateSewingMachine(dt);
