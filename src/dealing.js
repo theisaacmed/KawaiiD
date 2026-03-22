@@ -7,6 +7,7 @@ import { spreadColor } from './color-system.js';
 import { triggerReveal } from './gacha.js';
 import { playDealComplete } from './audio.js';
 import { getGameHour } from './time-system.js';
+import { isTutorialDealStep } from './tutorial.js';
 
 // Callbacks — set by main.js to avoid circular dependencies
 let onDealCallback = null;
@@ -148,8 +149,10 @@ function handleItemDrop(slotIndex, itemType, itemSubtype) {
   setTimeout(() => {
     if (phase !== 'considering' || !isOpen || !activeNPC) return;
 
-    // Roll acceptance probability
-    const result = rollAcceptance(activeNPC, itemType, sessionRejections);
+    // Roll acceptance probability (forced during tutorial first deal)
+    const result = isTutorialDealStep()
+      ? { accepted: true, modifier: 1 }
+      : rollAcceptance(activeNPC, itemType, sessionRejections);
 
     if (!result.accepted) {
       // Rejection

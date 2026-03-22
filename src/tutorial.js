@@ -44,6 +44,9 @@ let skipBtn = null;
 
 export function isTutorialComplete() { return tutorialComplete; }
 
+// Returns true while the player needs to complete the first deal with Mei.
+export function isTutorialDealStep() { return !tutorialComplete && tutorialStep === 3; }
+
 export function getTutorialState() {
   return { step: tutorialStep, complete: tutorialComplete };
 }
