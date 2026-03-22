@@ -209,7 +209,7 @@ async function boot() {
   initSmuggling(scene);
 
   // Scavenger hire system
-  initScavenger(npcs);
+  initScavenger(scene, npcs);
 
   // Story events
   initStoryEvents(scene);

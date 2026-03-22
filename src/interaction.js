@@ -19,7 +19,7 @@ import { isNearSewingMachine, isSewingMachineOpen, openSewingMachineUI } from '.
 import { isNearStuffingStation, isStuffingStationOpen, openStuffingStationUI } from './stations/stuffing-station.js';
 import { isNearStationShop, isStationShopOpen, openStationShopUI } from './station-shop.js';
 import { isNearGus, isGusAvailable, openOrderUI, isSmuggleUIOpen, isNearCrate, collectCrate, closeOrderUI } from './smuggling.js';
-import { isAshOnDuty } from './scavenger-system.js';
+import { isAshOnDuty, isNearRuinsKid, isRuinsKidHired, isRuinsKidHireUnlocked, hireRuinsKid, fireRuinsKid } from './scavenger-system.js';
 import { isNearWorkshopBuilding, isWorkshopPurchased, openStorageUI, isWorkshopStorageOpen } from './workshop.js';
 import { getNearestDecorSpot, openDecorUI, isDecorUIOpen } from './apartment-decor.js';
 
@@ -161,6 +161,16 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
       // Check if near delivery crate
       if (isNearCrate(playerRef.position)) {
         collectCrate();
+        return;
+      }
+
+      // Check if near Ruins Kid (scavenger hire)
+      if (isNearRuinsKid(playerRef.position) && isRuinsKidHireUnlocked()) {
+        if (isRuinsKidHired()) {
+          fireRuinsKid();
+        } else {
+          hireRuinsKid();
+        }
         return;
       }
 
@@ -429,6 +439,7 @@ export function updateInteraction(dt) {
   const nearKit = isKitAvailable() && isNearKit(playerRef.position);
   const nearGus = isNearGus(playerRef.position);
   const nearCrate = isNearCrate(playerRef.position);
+  const nearRuinsKid = isNearRuinsKid(playerRef.position);
   const waypoint = getActiveWaypointNearPlayer(playerRef.position);
   const nearNPC = getNearestNPC(npcs, playerRef.position);
   const nearPile = getNearestSearchable();
@@ -448,6 +459,8 @@ export function updateInteraction(dt) {
     showPrompt('Press E to shop');
   } else if (nearCrate && !searching) {
     showPrompt('Press E to collect delivery');
+  } else if (nearRuinsKid && isRuinsKidHireUnlocked() && !searching) {
+    showPrompt(isRuinsKidHired() ? 'Press E to fire Ruins Kid' : 'Press E to hire Ruins Kid ($20/day)');
   } else if (nearGus && !searching) {
     showPrompt(isGusAvailable() ? 'Press E to order supplies' : 'Need higher trust with Gus');
   } else if (nearBed && !searching) {
