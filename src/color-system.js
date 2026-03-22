@@ -75,9 +75,13 @@ export function initColorSystem(scene, buildings, ground, windowMats, doorMats) 
   windowMatsList = windowMats || [];
   doorMatsList = doorMats || [];
 
-  // Assign each building a unique material with a random target color
+  // Assign each building a unique material with a target color.
+  // Named buildings use their NPC's signature color; others get a random palette color.
   for (const mesh of buildings) {
-    const targetColor = new THREE.Color(PALETTE[Math.floor(Math.random() * PALETTE.length)]);
+    const sigColor = mesh.userData.namedSigColor;
+    const targetColor = sigColor
+      ? new THREE.Color(sigColor)
+      : new THREE.Color(PALETTE[Math.floor(Math.random() * PALETTE.length)]);
     const mat = new THREE.MeshLambertMaterial({ color: 0x707070 });
     mesh.material = mat;
 
@@ -89,6 +93,7 @@ export function initColorSystem(scene, buildings, ground, windowMats, doorMats) 
       material: mat,
       x: mesh.position.x,
       z: mesh.position.z,
+      namedId: mesh.userData.namedId || null, // for map lookup
       thresholdsCrossed: new Set(), // tracks 0.25/0.50/0.75/1.0 crossings for JP
     });
   }
@@ -388,7 +393,10 @@ function updateNPCColors() {
 // Dynamically add buildings (used when districts unlock)
 export function addBuildings(meshes) {
   for (const mesh of meshes) {
-    const targetColor = new THREE.Color(PALETTE[Math.floor(Math.random() * PALETTE.length)]);
+    const sigColor = mesh.userData.namedSigColor;
+    const targetColor = sigColor
+      ? new THREE.Color(sigColor)
+      : new THREE.Color(PALETTE[Math.floor(Math.random() * PALETTE.length)]);
     const mat = new THREE.MeshLambertMaterial({ color: 0x707070 });
     mesh.material = mat;
 
@@ -400,6 +408,7 @@ export function addBuildings(meshes) {
       material: mat,
       x: mesh.position.x,
       z: mesh.position.z,
+      namedId: mesh.userData.namedId || null,
       thresholdsCrossed: new Set(),
     });
   }

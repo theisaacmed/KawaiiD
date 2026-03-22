@@ -28,6 +28,7 @@ import { initGacha, setRevealCallbacks, unlockGacha, isGachaUIOpen } from './gac
 import { showTitleScreen } from './title-screen.js';
 import { initPauseMenu, isPauseMenuOpen } from './pause-menu.js';
 import { initProgression, setVictoryCallback, checkDealMilestone, checkColorMilestone, getProgressionState, restoreProgressionState, showRankMessage } from './progression.js';
+import { spawnPropsIfNeeded, restoreAllProps } from './named-buildings.js';
 import { addJP, setOnRankUpCallback, getCurrentRankIndex, restoreJPState } from './jp-system.js';
 import {
   initAudio, updateAmbientDrone, updateFootsteps,
@@ -349,6 +350,8 @@ async function boot() {
     }
     // After building colors are restored, pre-mark crossed thresholds so JP isn't re-awarded
     syncBuildingThresholds();
+    // Restore named building props for existing relationship levels
+    restoreAllProps(scene, getRelationships());
     // Restore inventory expansion from JP rank (Dealer rank = index 2 → 10 slots)
     if (getCurrentRankIndex() >= 2) setMaxSlots(10);
   }
@@ -398,8 +401,11 @@ async function boot() {
   // Color threshold crossing → +2 JP
   setOnBuildingThresholdCallback((amount) => addJP(amount));
 
-  // Relationship milestone → +15 JP
-  setOnRelLevelUpCallback((_npcName, _level) => addJP(15));
+  // Relationship milestone → +15 JP + spawn building props
+  setOnRelLevelUpCallback((npcName, level) => {
+    addJP(15);
+    spawnPropsIfNeeded(scene, npcName, level);
+  });
 
   // ACE escape → +20 JP
   setOnEscapeCallback(() => addJP(20));

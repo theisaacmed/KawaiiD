@@ -7,20 +7,47 @@
 import { findPath, applySidewalkOffset, buildGraph } from './npc-pathfinding.js';
 import { getGameHour, getDayNumber } from './time-system.js';
 import { isDistrictUnlocked } from './districts.js';
+import { getNamedBuildingPosition } from './named-buildings.js';
+
+// Helper: pull {x, z} from a named building position, fallback to given values
+function nb(id, fallbackX, fallbackZ) {
+  const pos = getNamedBuildingPosition(id);
+  return pos ? { x: pos.x, z: pos.z } : { x: fallbackX, z: fallbackZ };
+}
 
 // ========== TOWN NPC SCHEDULES ==========
 // time: hour (float), location: {x, z}, activity: string, dealOk: bool
 // dealRefuseLine: what NPC says if you try to deal at wrong time/place
 
+// Named building positions — referenced lazily so they're ready at call time
+function _meiApt()    { return nb('mei_apartment',   48, 25); }
+function _lunaTown()  { return nb('luna_townhouse',  -12, 25); }
+function _kitShop()   { return nb('kit_shop',        -22, 14); }
+function _fountain()  { return nb('fountain_square',  0,  20); }
+function _naoCafe()   { return nb('nao_cafe',         12, 88); }
+function _marco()     { return nb('marco_restaurant', 50, 90); }
+function _harper()    { return nb('harper_office',   -35, 90); }
+function _tomas()     { return nb('tomas_cottage',   155, -38); }
+function _playground(){ return nb('playground',      125,   5); }
+function _taroFact()  { return nb('taro_factory',     -5, -88); }
+function _vexSquat()  { return nb('vex_squat',        55, -85); }
+function _yunaSh()    { return nb('yuna_flower_shop',155, 135); }
+function _kaiShack()  { return nb('kai_shack',       100, 150); }
+function _soraB()     { return nb('sora_building',   172,  75); }
+function _kenjiOff()  { return nb('kenji_office',    168,  55); }
+function _danteT()    { return nb('dante_tower',    -160, 100); }
+function _quinnApt()  { return nb('quinn_apartment',-140, 140); }
+function _gusOff()    { return nb('gus_dock_office', -55, 198); }
+
 const ROUTINES = {
   Mei: [
-    { time: 6.0,  x: 40,  z: 25,  activity: 'sleeping', dealOk: false },
-    { time: 7.0,  x: -25, z: 15,  activity: 'working', dealOk: false, dealRefuseLine: "I'm at work... maybe at lunch?" },
-    { time: 12.0, x: 5,   z: 28,  activity: 'sitting', dealOk: true },  // park bench near fountain
-    { time: 13.0, x: -25, z: 15,  activity: 'working', dealOk: false, dealRefuseLine: "Not at the shop. Find me at lunch." },
+    { time: 6.0,  ..._meiApt(),  activity: 'sleeping', dealOk: false },
+    { time: 7.0,  ..._kitShop(), activity: 'working', dealOk: false, dealRefuseLine: "I'm at work... maybe at lunch?" },
+    { time: 12.0, ..._fountain(), activity: 'sitting', dealOk: true },  // fountain square at lunch
+    { time: 13.0, ..._kitShop(), activity: 'working', dealOk: false, dealRefuseLine: "Not at the shop. Find me at lunch." },
     { time: 17.0, x: -15, z: 95,  activity: 'socializing', dealOk: true, requiresDistrict: 'downtown' }, // Ren's place
-    { time: 17.0, x: 40,  z: 25,  activity: 'walking', dealOk: false, altIfLocked: true }, // go home if downtown locked
-    { time: 20.0, x: 40,  z: 25,  activity: 'sleeping', dealOk: false },
+    { time: 17.0, ..._meiApt(),   activity: 'walking', dealOk: false, altIfLocked: true }, // go home if downtown locked
+    { time: 20.0, ..._meiApt(),   activity: 'sleeping', dealOk: false },
   ],
 
   Hiro: [
@@ -28,20 +55,20 @@ const ROUTINES = {
     { time: 6.5,  x: 50,  z: -10, activity: 'working', dealOk: false, dealRefuseLine: "Not here. Meet me at the alley at noon." },
     { time: 12.0, x: -20, z: 8,   activity: 'eating', dealOk: true },   // alley behind market
     { time: 13.0, x: 50,  z: -10, activity: 'working', dealOk: false, dealRefuseLine: "I said not here. Noon at the alley." },
-    { time: 17.0, x: 45,  z: 88,  activity: 'eating', dealOk: true, requiresDistrict: 'downtown' }, // Marco's restaurant
+    { time: 17.0, ..._marco(),    activity: 'eating', dealOk: true, requiresDistrict: 'downtown' }, // Marco's restaurant
     { time: 17.0, x: 25,  z: -5,  activity: 'walking', dealOk: false, altIfLocked: true },
     { time: 19.0, x: 25,  z: -5,  activity: 'sleeping', dealOk: false },
   ],
 
   Luna: [
-    { time: 7.0,  x: -8,  z: 22,  activity: 'sleeping', dealOk: false },
+    { time: 7.0,  ..._lunaTown(), activity: 'sleeping', dealOk: false },
     { time: 8.0,  x: -15, z: 35,  activity: 'working', dealOk: true },  // wellness center
-    { time: 10.0, x: 2,   z: 22,  activity: 'socializing', dealOk: true }, // fountain / town square
-    { time: 12.0, x: 5,   z: 88,  activity: 'eating', dealOk: true, requiresDistrict: 'downtown' }, // Nao's café
-    { time: 12.0, x: 2,   z: 22,  activity: 'socializing', dealOk: true, altIfLocked: true },
-    { time: 14.0, x: 2,   z: 22,  activity: 'socializing', dealOk: true }, // back to fountain
-    { time: 17.0, x: -8,  z: 22,  activity: 'walking', dealOk: true },
-    { time: 18.0, x: -8,  z: 22,  activity: 'sleeping', dealOk: false },
+    { time: 10.0, ..._fountain(), activity: 'socializing', dealOk: true }, // fountain / town square
+    { time: 12.0, ..._naoCafe(),  activity: 'eating', dealOk: true, requiresDistrict: 'downtown' }, // Nao's café
+    { time: 12.0, ..._fountain(), activity: 'socializing', dealOk: true, altIfLocked: true },
+    { time: 14.0, ..._fountain(), activity: 'socializing', dealOk: true }, // back to fountain
+    { time: 17.0, ..._lunaTown(), activity: 'walking', dealOk: true },
+    { time: 18.0, ..._lunaTown(), activity: 'sleeping', dealOk: false },
   ],
 
   Ash: [

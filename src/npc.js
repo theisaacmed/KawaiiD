@@ -2016,7 +2016,7 @@ const NPC_DATA = [
   // ===================== PORT (2 NPCs — unlocks at 50 deals) =====================
   {
     name: 'Gus',
-    position: new THREE.Vector3(-75, 0, 195),
+    position: new THREE.Vector3(-55, 0, 198),
     wants: ['plushie', 'gacha'],
     gachaPreference: 'curious',
     personality: 'tough',
@@ -2067,7 +2067,7 @@ const NPC_DATA = [
       { start: 6, end: 14, pos: new THREE.Vector3(-80, 0, 198) },
       { start: 14, end: 18, pos: new THREE.Vector3(-55, 0, 200) },
     ],
-    homePos: new THREE.Vector3(-75, 0, 195),
+    homePos: new THREE.Vector3(-55, 0, 198),
     district: 'port',
   },
   {

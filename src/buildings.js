@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { isDistrictUnlocked } from './districts.js';
 import { getRoadSegments } from './roads.js';
 import { generateBuilding } from './building-generator.js';
+import { NAMED_BUILDINGS } from './named-buildings.js';
 
 // Window and door materials — updated by color system
 const windowMats = [];
@@ -29,7 +30,7 @@ const TOWN_BUILDINGS = [
   { x: -12, z: -8, w: 8, d: 7, h: 7, btype: 'shop' },
   { x: -12, z: 3, w: 8, d: 7, h: 9, btype: 'apartment' },
   { x: -11, z: 14, w: 7, d: 7, h: 8, btype: 'residential' },
-  { x: -12, z: 25, w: 8, d: 7, h: 10, btype: 'apartment' },
+  { x: -12, z: 25, w: 8, d: 7, h: 10, btype: 'luna_townhouse', named: 'luna_townhouse', namedSigColor: 0xAFA9EC },
   { x: -11, z: 36, w: 7, d: 7, h: 7, btype: 'shop' },
   { x: -12, z: 46, w: 8, d: 6, h: 9, btype: 'residential' },
 
@@ -71,7 +72,7 @@ const TOWN_BUILDINGS = [
   { x: 48, z: -8, w: 8, d: 7, h: 8, btype: 'residential' },
   { x: 48, z: 3, w: 8, d: 7, h: 10, btype: 'apartment' },
   { x: 48, z: 14, w: 8, d: 7, h: 7, btype: 'shop' },
-  { x: 48, z: 25, w: 8, d: 7, h: 9, btype: 'residential' },
+  { x: 48, z: 25, w: 8, d: 7, h: 10, btype: 'mei_apartment', named: 'mei_apartment', namedSigColor: 0xED93B1 },
   { x: 48, z: 36, w: 8, d: 7, h: 8, btype: 'apartment' },
   { x: 48, z: 46, w: 8, d: 6, h: 7, btype: 'residential' },
 
@@ -83,6 +84,9 @@ const TOWN_BUILDINGS = [
 
   // ====== CORNER STORE at Main/Cross intersection ======
   { x: 25, z: 32, w: 8, d: 6, h: 7, btype: 'cornerstore' },
+
+  // === Named buildings — mid-block fills ===
+  { x: -22, z: 14, w: 7, d: 6, h: 8, btype: 'kit_shop', named: 'kit_shop', namedSigColor: 0x9FE1CB },
 ];
 
 // DOWNTOWN (north-center) — dense commercial/office district
@@ -94,13 +98,13 @@ const DOWNTOWN_BUILDINGS = [
   { x: -12, z: 124, w: 9, d: 8, h: 13, btype: 'office' },
   { x: -12, z: 136, w: 10, d: 8, h: 10, landmark: 'market', btype: 'market' },
   // === Main St east side (X ~ 12), Z: 88-140 ===
-  { x: 12, z: 88, w: 9, d: 8, h: 10, btype: 'restaurant' },
+  { x: 12, z: 88, w: 9, d: 8, h: 10, btype: 'nao_cafe', named: 'nao_cafe', namedSigColor: 0xFAC775 },
   { x: 12, z: 100, w: 9, d: 8, h: 15, btype: 'office' },
   { x: 8, z: 112, w: 5, d: 5, h: 12, landmark: 'clocktower', btype: 'clocktower' },
   { x: 12, z: 124, w: 9, d: 8, h: 12, btype: 'dt_shop' },
   { x: 12, z: 136, w: 9, d: 8, h: 11, btype: 'restaurant' },
   // === Secondary street west (X ~ -35), Z: 88-130 ===
-  { x: -35, z: 90, w: 9, d: 8, h: 11, btype: 'office' },
+  { x: -35, z: 90, w: 9, d: 8, h: 11, btype: 'harper_office', named: 'harper_office', namedSigColor: 0x85B7EB },
   { x: -35, z: 102, w: 9, d: 8, h: 13, btype: 'commercial' },
   { x: -35, z: 114, w: 9, d: 8, h: 10, btype: 'dt_shop' },
   { x: -35, z: 126, w: 9, d: 8, h: 12, btype: 'office' },
@@ -109,7 +113,7 @@ const DOWNTOWN_BUILDINGS = [
   { x: 32, z: 102, w: 9, d: 8, h: 14, btype: 'office' },
   { x: 32, z: 114, w: 9, d: 8, h: 11, btype: 'commercial' },
   { x: 32, z: 126, w: 9, d: 8, h: 12, btype: 'dt_shop' },
-  { x: 50, z: 90, w: 9, d: 8, h: 13, btype: 'restaurant' },
+  { x: 50, z: 90, w: 9, d: 8, h: 11, btype: 'marco_restaurant', named: 'marco_restaurant', namedSigColor: 0xF0997B },
   { x: 50, z: 102, w: 9, d: 8, h: 11, btype: 'office' },
   { x: 50, z: 114, w: 9, d: 8, h: 10, btype: 'dt_shop' },
   { x: 50, z: 126, w: 9, d: 8, h: 14, btype: 'office' },
@@ -122,7 +126,7 @@ const NORTHTOWN_BUILDINGS = [
   { x: 118, z: 135, w: 8, d: 7, h: 8, btype: 'nt_residential' },
   { x: 130, z: 135, w: 7, d: 7, h: 5, landmark: 'chapel', btype: 'chapel' },
   { x: 142, z: 135, w: 8, d: 7, h: 8, btype: 'nt_residential' },
-  { x: 155, z: 135, w: 8, d: 7, h: 9, btype: 'nt_residential' },
+  { x: 155, z: 135, w: 8, d: 7, h: 7, btype: 'yuna_shop', named: 'yuna_shop', namedSigColor: 0xFAC775 },
   // === Row 2 ===
   { x: 108, z: 152, w: 8, d: 7, h: 8, btype: 'nt_residential' },
   { x: 121, z: 152, w: 8, d: 7, h: 9, btype: 'nt_residential' },
@@ -133,16 +137,16 @@ const NORTHTOWN_BUILDINGS = [
   { x: 125, z: 172, w: 8, d: 7, h: 7, btype: 'nt_residential' },
   { x: 140, z: 172, w: 8, d: 7, h: 8, btype: 'nt_residential' },
   { x: 155, z: 165, w: 8, d: 7, h: 7, btype: 'shop' },
-  { x: 100, z: 150, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: 100, z: 150, w: 7, d: 6, h: 5, btype: 'kai_shack', named: 'kai_shack', namedSigColor: 0x85B7EB },
 ];
 
-// BURBS (southeast) — suburban houses, playground, fancy house
+// BURBS (southeast) — suburban houses, playground, school
 const BURBS_BUILDINGS = [
   // === Block 1: south row ===
   { x: 120, z: -40, w: 9, d: 7, h: 6, btype: 'suburb_house' },
   { x: 138, z: -42, w: 9, d: 8, h: 6, btype: 'suburb_house' },
-  { x: 155, z: -38, w: 9, d: 7, h: 7, btype: 'suburb_house' },
-  { x: 175, z: -42, w: 11, d: 9, h: 8, landmark: 'nicehouse', btype: 'fancy_house' },
+  { x: 155, z: -38, w: 9, d: 7, h: 6, btype: 'tomas_cottage', named: 'tomas_cottage', namedSigColor: 0xF5C4B3 },
+  { x: 175, z: -42, w: 14, d: 10, h: 9, btype: 'the_school', named: 'the_school', namedSigColor: 0x85B7EB },
   // === Block 2: middle row ===
   { x: 122, z: -18, w: 9, d: 7, h: 6, btype: 'suburb_house' },
   { x: 140, z: -15, w: 9, d: 7, h: 7, btype: 'suburb_house' },
@@ -163,12 +167,12 @@ const BURBS_BUILDINGS = [
 const UPTOWN_BUILDINGS = [
   // === South row ===
   { x: 155, z: 58, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
-  { x: 168, z: 55, w: 9, d: 7, h: 14, btype: 'uptown_office' },
+  { x: 168, z: 55, w: 9, d: 7, h: 14, btype: 'kenji_office', named: 'kenji_office', namedSigColor: 0xAFA9EC },
   { x: 182, z: 58, w: 10, d: 8, h: 16, landmark: 'hotel', btype: 'hotel' },
   { x: 195, z: 55, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
   // === Middle row ===
   { x: 158, z: 78, w: 9, d: 7, h: 13, btype: 'uptown_office' },
-  { x: 172, z: 75, w: 10, d: 8, h: 15, landmark: 'rooftopgarden', btype: 'uptown_office' },
+  { x: 172, z: 75, w: 10, d: 8, h: 15, btype: 'sora_building', named: 'sora_building', namedSigColor: 0xFAC775 },
   { x: 188, z: 78, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
   // === North row ===
   { x: 155, z: 98, w: 9, d: 7, h: 14, btype: 'uptown_office' },
@@ -180,8 +184,8 @@ const UPTOWN_BUILDINGS = [
 
 // TOWER (west) — tallest in game, twin towers, dark canyons
 const TOWER_BUILDINGS = [
-  // === Twin Towers (landmark) ===
-  { x: -160, z: 100, w: 10, d: 9, h: 28, landmark: 'twintower1', btype: 'tower_corp' },
+  // === Twin Towers — Tower A is Dante's lobby ===
+  { x: -160, z: 100, w: 10, d: 9, h: 28, btype: 'dante_tower', named: 'dante_tower', namedSigColor: 0xF0997B },
   { x: -145, z: 100, w: 10, d: 9, h: 28, landmark: 'twintower2', btype: 'tower_corp' },
   // === Other mega buildings ===
   { x: -125, z: 102, w: 9, d: 9, h: 22, btype: 'tower_corp' },
@@ -189,7 +193,7 @@ const TOWER_BUILDINGS = [
   { x: -148, z: 122, w: 10, d: 9, h: 24, btype: 'tower_corp' },
   { x: -128, z: 118, w: 10, d: 9, h: 26, btype: 'tower_corp' },
   { x: -158, z: 142, w: 9, d: 10, h: 22, btype: 'tower_corp' },
-  { x: -140, z: 140, w: 10, d: 9, h: 30, btype: 'tower_corp' },
+  { x: -140, z: 140, w: 10, d: 9, h: 30, btype: 'quinn_apt', named: 'quinn_apt', namedSigColor: 0xAFA9EC },
   { x: -122, z: 138, w: 9, d: 9, h: 20, btype: 'tower_corp' },
   { x: -135, z: 130, w: 6, d: 6, h: 6, btype: 'tower_service' },
 ];
@@ -198,10 +202,10 @@ const TOWER_BUILDINGS = [
 const INDUSTRIAL_BUILDINGS = [
   // === Row 1 ===
   { x: -20, z: -85, w: 12, d: 9, h: 8, btype: 'ind_warehouse' },
-  { x: -5, z: -88, w: 14, d: 11, h: 10, landmark: 'factory', btype: 'ind_factory' },
+  { x: -5, z: -88, w: 14, d: 11, h: 10, btype: 'taro_factory', named: 'taro_factory', namedSigColor: 0xF5C4B3 },
   { x: 15, z: -85, w: 12, d: 9, h: 8, btype: 'ind_warehouse' },
-  { x: 35, z: -88, w: 14, d: 11, h: 7, landmark: 'warehouse', btype: 'ind_warehouse' },
-  { x: 55, z: -85, w: 12, d: 9, h: 8, btype: 'ind_warehouse' },
+  { x: 35, z: -88, w: 14, d: 11, h: 8, btype: 'workshop_property', named: 'workshop_property', namedSigColor: 0xF5C4B3 },
+  { x: 55, z: -85, w: 10, d: 9, h: 7, btype: 'vex_squat', named: 'vex_squat', namedSigColor: 0xED93B1 },
   // === Row 2 ===
   { x: -22, z: -110, w: 12, d: 10, h: 7, btype: 'ind_warehouse' },
   { x: -5, z: -112, w: 14, d: 9, h: 8, btype: 'ind_workshop' },
@@ -218,9 +222,9 @@ const INDUSTRIAL_BUILDINGS = [
 // PORT (northwest coast) — docks, warehouses, lighthouse
 const PORT_BUILDINGS = [
   { x: -100, z: 195, w: 14, d: 10, h: 8, btype: 'port_warehouse' },
-  { x: -75, z: 195, w: 12, d: 9, h: 7, btype: 'port_warehouse' },
+  { x: -75, z: 195, w: 12, d: 9, h: 7, btype: 'shipping_yard', named: 'shipping_yard', namedSigColor: 0x85B7EB },
   { x: -95, z: 225, w: 5, d: 5, h: 3, landmark: 'lighthouse', btype: 'port_warehouse' },
-  { x: -55, z: 198, w: 9, d: 7, h: 7, btype: 'port_office' },
+  { x: -55, z: 198, w: 9, d: 7, h: 7, btype: 'gus_office', named: 'gus_office', namedSigColor: 0x85B7EB },
   { x: -110, z: 210, w: 9, d: 7, h: 6, btype: 'port_shed' },
   { x: -60, z: 215, w: 9, d: 7, h: 6, btype: 'port_shed' },
   { x: -85, z: 210, w: 10, d: 7, h: 6, btype: 'port_warehouse' },
@@ -406,6 +410,10 @@ function createBuilding(scene, b, idx, district) {
   if (generated) {
     const { mainMesh, group, windowMats: wMats, doorMats: dMats, w, h, d } = generated;
 
+    // Named building: stamp signature color on the mesh for the color system
+    if (b.namedSigColor) mainMesh.userData.namedSigColor = b.namedSigColor;
+    if (b.named) mainMesh.userData.namedId = b.named;
+
     // Track the main body mesh for the color system
     allBuildings.push({ mesh: mainMesh, district, block: b });
     allBuildingBlocks.push({ x: b.x, z: b.z, w: w, d: d, h: h, district });
@@ -438,6 +446,10 @@ function createBuilding(scene, b, idx, district) {
   mesh.position.set(b.x, b.h / 2, b.z);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
+
+  // Named building: stamp signature color on the mesh for the color system
+  if (b.namedSigColor) mesh.userData.namedSigColor = b.namedSigColor;
+  if (b.named) mesh.userData.namedId = b.named;
 
   mesh.visible = true;
 
@@ -955,6 +967,348 @@ function addBuildingTypeDetail(scene, b, idx) {
     );
     shedDoor.position.set(b.x, 0.75, b.z + b.d / 2 + 0.02);
     scene.add(shedDoor);
+  }
+
+  // ========== NAMED BUILDINGS — unique visual details ==========
+
+  if (btype === 'mei_apartment') {
+    // Cheerful residential: pitched roof, extra windows
+    const roofGeo = new THREE.ConeGeometry(Math.max(b.w, b.d) * 0.55, b.h * 0.2, 4);
+    const roof = new THREE.Mesh(roofGeo, new THREE.MeshLambertMaterial({ color: 0x707070 }));
+    roof.position.set(b.x, b.h + b.h * 0.1, b.z);
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    scene.add(roof);
+  }
+
+  if (btype === 'luna_townhouse') {
+    // Calm townhouse: pitched roof with slight overhang
+    const roofGeo = new THREE.ConeGeometry(Math.max(b.w, b.d) * 0.6, b.h * 0.22, 4);
+    const roof = new THREE.Mesh(roofGeo, new THREE.MeshLambertMaterial({ color: 0x686868 }));
+    roof.position.set(b.x, b.h + b.h * 0.11, b.z);
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    scene.add(roof);
+  }
+
+  if (btype === 'kit_shop') {
+    // Supply shop: wide storefront window + sign + awning
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x4A5050 });
+    const win = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.75, 1.6, 0.05), winMat);
+    win.position.set(b.x, 1.1, b.z + b.d / 2 + 0.03);
+    scene.add(win);
+    const signMat = new THREE.MeshLambertMaterial({ color: 0x607060 });
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.6, 0.45, 0.06), signMat);
+    sign.position.set(b.x, 2.35, b.z + b.d / 2 + 0.03);
+    scene.add(sign);
+    const awningMat = new THREE.MeshLambertMaterial({ color: 0x6A8A70 });
+    const awning = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.7, 0.06, 1.0), awningMat);
+    awning.position.set(b.x, 2.7, b.z + b.d / 2 + 0.4);
+    awning.rotation.x = -0.12;
+    awning.castShadow = true;
+    scene.add(awning);
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0x9FE1CB) });
+  }
+
+  if (btype === 'nao_cafe') {
+    // Wider ground floor with distinctive awning + outdoor tables suggestion
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x554A35 });
+    const win = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.85, 1.8, 0.05), winMat);
+    win.position.set(b.x, 1.1, b.z + b.d / 2 + 0.03);
+    scene.add(win);
+    const awningMat = new THREE.MeshLambertMaterial({ color: 0x8A7040 });
+    const awning = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.9, 0.06, 1.6), awningMat);
+    awning.position.set(b.x, 3.0, b.z + b.d / 2 + 0.7);
+    awning.rotation.x = -0.1;
+    awning.castShadow = true;
+    scene.add(awning);
+    // Small café sign (rectangle)
+    const signMat = new THREE.MeshLambertMaterial({ color: 0x7A6035 });
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.55, 0.5, 0.06), signMat);
+    sign.position.set(b.x, 2.5, b.z + b.d / 2 + 0.03);
+    scene.add(sign);
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0xFAC775) });
+  }
+
+  if (btype === 'marco_restaurant') {
+    // Italian-style restaurant: arched entrance suggestion + awning
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x554040 });
+    const win = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.8, 1.6, 0.05), winMat);
+    win.position.set(b.x, 1.1, b.z + b.d / 2 + 0.03);
+    scene.add(win);
+    const awningMat = new THREE.MeshLambertMaterial({ color: 0x7A4030 });
+    const awning = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.85, 0.06, 1.4), awningMat);
+    awning.position.set(b.x, 2.9, b.z + b.d / 2 + 0.6);
+    awning.rotation.x = -0.1;
+    awning.castShadow = true;
+    scene.add(awning);
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0xF0997B) });
+  }
+
+  if (btype === 'harper_office') {
+    // News office: grid-style windows, antenna suggestion
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x445566 });
+    const floors = Math.floor(b.h / 2);
+    const perFloor = 3;
+    for (let f = 0; f < floors; f++) {
+      for (let w = 0; w < perFloor; w++) {
+        const wm = winMat.clone();
+        const win = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.9, 0.04), wm);
+        win.position.set(b.x - b.w * 0.3 + w * (b.w * 0.3), 1.2 + f * 2.0, b.z + b.d / 2 + 0.02);
+        scene.add(win);
+        windowMats.push({ material: wm, x: b.x, z: b.z });
+      }
+    }
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0x85B7EB) });
+  }
+
+  if (btype === 'tomas_cottage') {
+    // Cozy cottage: pitched roof, garden fence
+    const roofGeo = new THREE.ConeGeometry(Math.max(b.w, b.d) * 0.58, b.h * 0.3, 4);
+    const roof = new THREE.Mesh(roofGeo, new THREE.MeshLambertMaterial({ color: 0x5A5A5A }));
+    roof.position.set(b.x, b.h + b.h * 0.15, b.z);
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    scene.add(roof);
+    // Garden path
+    const pathMat = new THREE.MeshLambertMaterial({ color: 0x6E6858 });
+    const path = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.02, 2.0), pathMat);
+    path.position.set(b.x, 0.01, b.z + b.d / 2 + 1.5);
+    scene.add(path);
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0xF5C4B3) });
+  }
+
+  if (btype === 'the_school') {
+    // Institutional building: flat roof, columns at entrance, steps
+    const colMat = new THREE.MeshLambertMaterial({ color: 0x888888 });
+    for (const cx of [-2.5, -0.8, 0.8, 2.5]) {
+      const col = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 4, 7), colMat);
+      col.position.set(b.x + cx, 2.0, b.z + b.d / 2 + 0.5);
+      col.castShadow = true;
+      scene.add(col);
+    }
+    // Roof ledge
+    const ledge = new THREE.Mesh(new THREE.BoxGeometry(b.w + 0.4, 0.3, b.d + 0.4), new THREE.MeshLambertMaterial({ color: 0x6A6A6A }));
+    ledge.position.set(b.x, b.h + 0.15, b.z);
+    scene.add(ledge);
+    // Steps
+    const stepsMat = new THREE.MeshLambertMaterial({ color: 0x7A7A7A });
+    for (let s = 0; s < 3; s++) {
+      const step = new THREE.Mesh(new THREE.BoxGeometry(4, 0.15, 0.5), stepsMat);
+      step.position.set(b.x, s * 0.15, b.z + b.d / 2 + 1.5 - s * 0.5);
+      scene.add(step);
+    }
+    // Flagpole
+    const poleMat = new THREE.MeshLambertMaterial({ color: 0x909090 });
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 4, 5), poleMat);
+    pole.position.set(b.x + b.w * 0.4, b.h + 2, b.z);
+    scene.add(pole);
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0x85B7EB) });
+  }
+
+  if (btype === 'taro_factory' || btype === 'workshop_property') {
+    // Factory/workshop: vents on roof, rolling door
+    const ventMat = new THREE.MeshLambertMaterial({ color: 0x505050 });
+    for (let i = 0; i < 3; i++) {
+      const vent = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.9), ventMat);
+      vent.position.set(b.x - 3 + i * 3, b.h + 0.35, b.z);
+      scene.add(vent);
+    }
+    const rollMat = new THREE.MeshLambertMaterial({ color: 0x484848 });
+    const rollDoor = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.5, 3, 0.05), rollMat);
+    rollDoor.position.set(b.x, 1.5, b.z + b.d / 2 + 0.02);
+    scene.add(rollDoor);
+    if (btype === 'workshop_property') {
+      // "FOR SALE" suggestion — lighter panel on the wall
+      const panelMat = new THREE.MeshLambertMaterial({ color: 0x909080 });
+      const panel = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.8, 0.06), panelMat);
+      panel.position.set(b.x + b.w * 0.25, 2.5, b.z + b.d / 2 + 0.04);
+      scene.add(panel);
+    }
+  }
+
+  if (btype === 'vex_squat') {
+    // Squat: corrugated walls, dark look, improvised entrance
+    const lineMat = new THREE.MeshLambertMaterial({ color: 0x505050 });
+    for (let i = 0; i < 5; i++) {
+      const line = new THREE.Mesh(new THREE.BoxGeometry(b.w + 0.02, 0.04, 0.05), lineMat);
+      line.position.set(b.x, 0.5 + i * 0.7, b.z + b.d / 2 + 0.03);
+      scene.add(line);
+    }
+    // Makeshift door (offset)
+    const doorMat2 = new THREE.MeshLambertMaterial({ color: 0x404040 });
+    const door2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.7, 0.04), doorMat2);
+    door2.position.set(b.x - b.w * 0.2, 0.85, b.z + b.d / 2 + 0.02);
+    scene.add(door2);
+  }
+
+  if (btype === 'yuna_shop') {
+    // Flower shop: wide display window, warm wooden sign
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x504A30 });
+    const win = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.8, 1.6, 0.05), winMat);
+    win.position.set(b.x, 1.1, b.z + b.d / 2 + 0.03);
+    scene.add(win);
+    const signMat = new THREE.MeshLambertMaterial({ color: 0x7A6A30 });
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.55, 0.45, 0.06), signMat);
+    sign.position.set(b.x, 2.4, b.z + b.d / 2 + 0.03);
+    scene.add(sign);
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0xFAC775) });
+  }
+
+  if (btype === 'kai_shack') {
+    // Small dock shack: low pitched roof, rope coil suggestion
+    const roofGeo = new THREE.ConeGeometry(Math.max(b.w, b.d) * 0.55, b.h * 0.28, 4);
+    const roof = new THREE.Mesh(roofGeo, new THREE.MeshLambertMaterial({ color: 0x505050 }));
+    roof.position.set(b.x, b.h + b.h * 0.14, b.z);
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    scene.add(roof);
+    // Single weathered window
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x4A4A40 });
+    const win = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.04), winMat);
+    win.position.set(b.x - 0.5, 1.6, b.z + b.d / 2 + 0.02);
+    scene.add(win);
+    // Rope coil on ground (torus)
+    const ropeMat = new THREE.MeshLambertMaterial({ color: 0x8A7060 });
+    const coil = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.06, 5, 10), ropeMat);
+    coil.rotation.x = -Math.PI / 2;
+    coil.position.set(b.x + b.w * 0.25, 0.06, b.z + b.d / 2 + 0.7);
+    scene.add(coil);
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x4A4A40 }), x: b.x, z: b.z, targetColor: new THREE.Color(0x85B7EB) });
+  }
+
+  if (btype === 'sora_building') {
+    // Upscale residential: sleek lines, setback upper floor, wide windows
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x555A45 });
+    const floors = Math.floor(b.h / 1.4);
+    const perFloor = Math.max(2, Math.floor(b.w / 1.2));
+    for (let f = 0; f < floors; f++) {
+      for (let w = 0; w < perFloor; w++) {
+        const wm = winMat.clone();
+        const win = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.85, 0.04), wm);
+        win.position.set(b.x - b.w / 2 + 0.5 + w * (b.w - 1) / Math.max(1, perFloor - 1), 1.0 + f * 1.4, b.z + b.d / 2 + 0.02);
+        scene.add(win);
+        windowMats.push({ material: wm, x: b.x, z: b.z });
+      }
+    }
+    // Setback top floor
+    const setbackH = b.h * 0.18;
+    const setback = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.7, setbackH, b.d * 0.7), new THREE.MeshLambertMaterial({ color: 0x606060 }));
+    setback.position.set(b.x, b.h + setbackH / 2, b.z);
+    setback.castShadow = true;
+    scene.add(setback);
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0xFAC775) });
+  }
+
+  if (btype === 'kenji_office') {
+    // Finance office: grid windows, clean flat roof with ledge
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x4A5060 });
+    const floors = Math.floor(b.h / 1.5);
+    const perFloor = Math.max(2, Math.floor(b.w / 1.1));
+    for (let f = 0; f < floors; f++) {
+      for (let w = 0; w < perFloor; w++) {
+        const wm = winMat.clone();
+        const win = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.8, 0.04), wm);
+        win.position.set(b.x - b.w / 2 + 0.45 + w * (b.w - 0.9) / Math.max(1, perFloor - 1), 1.0 + f * 1.5, b.z + b.d / 2 + 0.02);
+        scene.add(win);
+        windowMats.push({ material: wm, x: b.x, z: b.z });
+      }
+    }
+    const ledge = new THREE.Mesh(new THREE.BoxGeometry(b.w + 0.4, 0.2, b.d + 0.4), new THREE.MeshLambertMaterial({ color: 0x5E5E68 }));
+    ledge.position.set(b.x, b.h + 0.1, b.z);
+    scene.add(ledge);
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0xAFA9EC) });
+  }
+
+  if (btype === 'dante_tower') {
+    // Tower A — Dante's lobby: lobby glass entrance at ground, dense window grid
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x4A4A50 });
+    const floors = Math.floor(b.h / 1.2);
+    const perFloor = Math.max(3, Math.floor(b.w / 1.0));
+    for (let f = 0; f < floors; f++) {
+      for (let w = 0; w < perFloor; w++) {
+        const wm = winMat.clone();
+        const win = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 0.04), wm);
+        win.position.set(b.x - b.w / 2 + 0.5 + w * (b.w - 1) / Math.max(1, perFloor - 1), 1.0 + f * 1.2, b.z + b.d / 2 + 0.02);
+        scene.add(win);
+        windowMats.push({ material: wm, x: b.x, z: b.z });
+      }
+    }
+    // Lobby glass entrance (ground floor, wider)
+    const lobbyMat = new THREE.MeshLambertMaterial({ color: 0x555560 });
+    const lobby = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.7, 2.5, 0.06), lobbyMat);
+    lobby.position.set(b.x, 1.25, b.z + b.d / 2 + 0.03);
+    scene.add(lobby);
+    // Canopy
+    const canopyMat = new THREE.MeshLambertMaterial({ color: 0x585858 });
+    const canopy = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.7, 0.1, 1.5), canopyMat);
+    canopy.position.set(b.x, 2.8, b.z + b.d / 2 + 0.7);
+    canopy.castShadow = true;
+    scene.add(canopy);
+    // AC units on roof
+    const acMat = new THREE.MeshLambertMaterial({ color: 0x505050 });
+    const ac = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.8, 1.5), acMat);
+    ac.position.set(b.x + b.w * 0.2, b.h + 0.4, b.z - b.d * 0.2);
+    scene.add(ac);
+  }
+
+  if (btype === 'quinn_apt') {
+    // Quinn's tower: same as tower_corp but with a distinctive top floor
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x4A4A50 });
+    const floors = Math.floor(b.h / 1.2);
+    const perFloor = Math.max(3, Math.floor(b.w / 1.0));
+    for (let f = 0; f < floors; f++) {
+      for (let w = 0; w < perFloor; w++) {
+        const wm = winMat.clone();
+        const win = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 0.04), wm);
+        win.position.set(b.x - b.w / 2 + 0.5 + w * (b.w - 1) / Math.max(1, perFloor - 1), 1.0 + f * 1.2, b.z + b.d / 2 + 0.02);
+        scene.add(win);
+        windowMats.push({ material: wm, x: b.x, z: b.z });
+      }
+    }
+    // Distinctive top: slightly narrowed setback
+    const topH = 3.5;
+    const top = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.8, topH, b.d * 0.8), new THREE.MeshLambertMaterial({ color: 0x555560 }));
+    top.position.set(b.x, b.h + topH / 2, b.z);
+    top.castShadow = true;
+    scene.add(top);
+    const acMat = new THREE.MeshLambertMaterial({ color: 0x505050 });
+    const ac = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.8, 1.5), acMat);
+    ac.position.set(b.x + b.w * 0.2, b.h + 0.4, b.z - b.d * 0.2);
+    scene.add(ac);
+  }
+
+  if (btype === 'gus_office') {
+    // Dock office: corrugated walls, small windows, functional
+    const lineMat = new THREE.MeshLambertMaterial({ color: 0x5E5E5E });
+    for (let i = 0; i < 4; i++) {
+      const line = new THREE.Mesh(new THREE.BoxGeometry(b.w + 0.02, 0.04, 0.05), lineMat);
+      line.position.set(b.x, 0.5 + i * 0.8, b.z + b.d / 2 + 0.03);
+      scene.add(line);
+    }
+    const winMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+    for (let i = 0; i < 3; i++) {
+      const wm = winMat.clone();
+      const win = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.55, 0.04), wm);
+      win.position.set(b.x - 1.5 + i * 1.5, 2.0, b.z + b.d / 2 + 0.02);
+      scene.add(win);
+      windowMats.push({ material: wm, x: b.x, z: b.z });
+    }
+    doorMats.push({ material: new THREE.MeshLambertMaterial({ color: 0x5A5A5A }), x: b.x, z: b.z, targetColor: new THREE.Color(0x85B7EB) });
+  }
+
+  if (btype === 'shipping_yard') {
+    // Shipping yard warehouse: corrugated + big rolling door
+    const lineMat = new THREE.MeshLambertMaterial({ color: 0x5A5A5A });
+    for (let i = 0; i < 5; i++) {
+      const line = new THREE.Mesh(new THREE.BoxGeometry(b.w + 0.02, 0.04, 0.05), lineMat);
+      line.position.set(b.x, 0.4 + i * 0.7, b.z + b.d / 2 + 0.03);
+      scene.add(line);
+    }
+    const rollMat = new THREE.MeshLambertMaterial({ color: 0x484848 });
+    const rollDoor = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.45, 2.8, 0.05), rollMat);
+    rollDoor.position.set(b.x, 1.4, b.z + b.d / 2 + 0.02);
+    scene.add(rollDoor);
   }
 
   // ========== ACE HQ ==========
@@ -2031,8 +2385,8 @@ function validateAndFixPlacements(districtSets) {
   for (let i = 0; i < allPlaced.length; i++) {
     const b = allPlaced[i];
 
-    // Never move the player's apartment
-    if (b.landmark === 'apartment' || b.btype === 'player_apartment') continue;
+    // Never move the player's apartment or named buildings
+    if (b.landmark === 'apartment' || b.btype === 'player_apartment' || b.named) continue;
 
     let attempts = 0;
     const maxAttempts = 3;
