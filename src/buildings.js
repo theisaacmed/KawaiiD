@@ -1455,7 +1455,7 @@ function createLandmarks(scene) {
   createPropagandaPoster(scene, -140, 140);
 
   // ========== INDUSTRIAL ==========
-  createSmokestack(scene, -5, -88, 10);
+  // Note: factory template buildings already include smokestacks via templateFactory
   createLoadingDock(scene, 35, -88);
   // Chain-link fences around some properties
   createChainLinkFence(scene, -20, -85, 12, 'x');
@@ -1927,12 +1927,12 @@ function createPropagandaPoster(scene, x, z) {
   // Flat poster on nearest building wall
   const posterMat = new THREE.MeshLambertMaterial({ color: 0x883333 });
   const poster = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.03), posterMat);
-  poster.position.set(x + 0.5, 1.8, z + 0.5);
+  poster.position.set(x, 1.8, z + 0.5);
   scene.add(poster);
   // ACE text strip
   const textMat = new THREE.MeshBasicMaterial({ color: 0xAA4444 });
   const text = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.2, 0.04), textMat);
-  text.position.set(x + 0.5, 2.2, z + 0.52);
+  text.position.set(x, 2.2, z + 0.52);
   scene.add(text);
 }
 

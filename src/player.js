@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getBarrierBoxes } from './districts.js';
 import { isNoclip, getSpeedMult } from './admin.js';
+import { getAllBuildingBlocks } from './buildings.js';
 
 const PLAYER_HEIGHT = 1.7;
 const WALK_SPEED = 5;
@@ -142,6 +143,25 @@ export class Player {
         const oldInsideZ = this.position.z >= bMinZ && this.position.z <= bMaxZ;
         if (!oldInsideX) this.velocity.x = 0;
         if (!oldInsideZ) this.velocity.z = 0;
+      }
+    }
+
+    // Check building collisions (sliding AABB — same as barrier logic)
+    const bldgs = getAllBuildingBlocks();
+    const candX = this.position.x + this.velocity.x * dt;
+    const candZ = this.position.z + this.velocity.z * dt;
+    for (const b of bldgs) {
+      const minX = b.x - b.w / 2 - PLAYER_RADIUS;
+      const maxX = b.x + b.w / 2 + PLAYER_RADIUS;
+      const minZ = b.z - b.d / 2 - PLAYER_RADIUS;
+      const maxZ = b.z + b.d / 2 + PLAYER_RADIUS;
+      const inX = candX >= minX && candX <= maxX;
+      const inZ = candZ >= minZ && candZ <= maxZ;
+      if (inX && inZ) {
+        const wasInX = this.position.x >= minX && this.position.x <= maxX;
+        const wasInZ = this.position.z >= minZ && this.position.z <= maxZ;
+        if (!wasInX) this.velocity.x = 0;
+        if (!wasInZ) this.velocity.z = 0;
       }
     }
 

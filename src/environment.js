@@ -76,7 +76,7 @@ function createPosters(scene, buildings) {
     else if (pb.side === 'x+') { px += hw + 0.02; backing.rotation.y = -Math.PI / 2; }
     else if (pb.side === 'x-') { px -= hw + 0.02; backing.rotation.y = Math.PI / 2; }
 
-    py = Math.max(1.5, py * 0.7);
+    py = 2.2;
     backing.position.set(px, py, pz);
     scene.add(backing);
 
