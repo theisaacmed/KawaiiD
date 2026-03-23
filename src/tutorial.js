@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { unlockPhone } from './phone.js';
 
-// Ruins entrance area (RUINS_Z_START = -150)
+// Ruins entrance area (RUINS_Z_START = -75, scaled 40% from original -150)
 const RUINS_WAYPOINT = new THREE.Vector3(0, 0, -90);
 // Mei's world position
 const MEI_POS = new THREE.Vector3(-6, 0, 9);
@@ -119,8 +119,8 @@ export function updateTutorial(dt, playerPos, piles) {
     }
   }
 
-  // Step 1: watch for player entering ruins (z < -150) AND searching a rubble pile
-  if (tutorialStep === 1 && playerPos && playerPos.z < -150) {
+  // Step 1: watch for player entering ruins (z < -75) AND searching a rubble pile
+  if (tutorialStep === 1 && playerPos && playerPos.z < -75) {
     if (piles && piles.some(p => p.searched)) {
       advanceStep(2);
     }
