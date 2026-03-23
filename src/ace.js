@@ -307,6 +307,8 @@ let currentMode = 'day';
 let proximityStarted = false;
 
 export function createACEOfficers(scene) {
+  // DEV MODE: ACE patrols disabled
+  return [];
   createACEHud();
   for (let i = 0; i < CHECKPOINTS.length; i++) {
     const cp = CHECKPOINTS[i];

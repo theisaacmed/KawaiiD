@@ -247,10 +247,10 @@ export function createWorld(scene) {
   }
 
   // ========== LIGHTS ==========
-  const ambient = new THREE.AmbientLight(0x808080, 0.6);
+  const ambient = new THREE.AmbientLight(0x808080, 0.9);
   scene.add(ambient);
 
-  const sun = new THREE.DirectionalLight(0xc0c0c0, 0.8);
+  const sun = new THREE.DirectionalLight(0xc0c0c0, 1.0);
   sun.position.set(30, 60, 18);
   sun.castShadow = true;
   sun.shadow.mapSize.width = 2048;

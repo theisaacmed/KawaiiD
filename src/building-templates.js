@@ -19,11 +19,11 @@ function getGeoCache() {
 }
 
 // Base gray materials — cloned per building instance by the generator
-const WALL_GRAY = 0x787878;
-const ROOF_GRAY = 0x606060;
-const DARK_GRAY = 0x5A5A5A;
-const WINDOW_GRAY = 0x555555;
-const DOOR_GRAY = 0x5A5A5A;
+const WALL_GRAY = 0x888888;
+const ROOF_GRAY = 0x707070;
+const DARK_GRAY = 0x6A6A6A;
+const WINDOW_GRAY = 0x666666;
+const DOOR_GRAY = 0x6A6A6A;
 
 // Helper: create a box mesh with position and optional rotation
 function box(w, h, d, color, x, y, z) {

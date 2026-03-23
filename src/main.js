@@ -522,7 +522,8 @@ async function boot() {
     updateTime(dt);
     player.update(dt);
     updateNPCs(npcs, player.position, dt);
-    updateACE(dt);
+    // DEV MODE: ACE disabled
+    // updateACE(dt);
     updateKit();
     updateSmuggling();
     updateStoryEvents(dt);

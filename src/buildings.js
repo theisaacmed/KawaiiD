@@ -2535,6 +2535,8 @@ export function createBuildings(scene) {
     try {
       console.log(`Generating ${district}: ${buildings.length} buildings`);
       for (const b of buildings) {
+        // DEV MODE: skip procedural/filler buildings, keep only named story buildings
+        if (!b.named) continue;
         createBuilding(scene, b, globalIdx, district);
         globalIdx++;
       }
