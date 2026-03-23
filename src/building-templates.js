@@ -19,7 +19,7 @@ function getGeoCache() {
 }
 
 // Base gray materials — cloned per building instance by the generator
-const WALL_GRAY = 0x707070;
+const WALL_GRAY = 0x787878;
 const ROOF_GRAY = 0x606060;
 const DARK_GRAY = 0x5A5A5A;
 const WINDOW_GRAY = 0x555555;
@@ -409,11 +409,11 @@ export function templateMarketStall(w, h, d) {
   const poleH = h * 0.8;
   const poleR = 0.08;
   for (const [px, pz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-    group.add(cyl(poleR, poleH, 0x606060, px * (w / 2 - 0.2), poleH / 2, pz * (d / 2 - 0.2)));
+    group.add(cyl(poleR, poleH, 0x787878, px * (w / 2 - 0.2), poleH / 2, pz * (d / 2 - 0.2)));
   }
 
   // Flat roof plane
-  const roof = box(w + 0.3, 0.1, d + 0.3, ROOF_GRAY, 0, poleH, 0);
+  const roof = box(w + 0.3, 0.1, d + 0.3, 0x888888, 0, poleH, 0);
   group.add(roof);
 
   // Stall tables (2 flat boxes)

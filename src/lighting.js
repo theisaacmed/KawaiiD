@@ -9,7 +9,7 @@ import { getDaylightFactor, getTimePeriod, getGameHour, getDayNumber, isNight } 
 const DAWN_SUN_COLOR = new THREE.Color(0xFFA040);
 const DAWN_SKY = new THREE.Color(0xE8A060);
 const DAWN_FOG = new THREE.Color(0xC8986A);
-const DAWN_AMBIENT = 0.35;
+const DAWN_AMBIENT = 0.5;
 const DAWN_SUN_INTENSITY = 0.5;
 
 // Daytime (8 AM – 4 PM): bright, neutral (handled by color-system)
