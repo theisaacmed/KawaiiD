@@ -3,19 +3,17 @@
 
 import * as THREE from 'three';
 
-const RUINS_Z_START = -150;
-
 function createBrokenFences(scene) {
   const fenceMat = new THREE.MeshLambertMaterial({ color: 0x4A4A40 });
   const pieces = [
-    { x: -40, z: -155, w: 1.5, h: 0.6, tilt: 0.3 },
-    { x: -20, z: -165, w: 2, h: 0.8, tilt: -0.4 },
-    { x: 30, z: -160, w: 1.8, h: 0.5, tilt: 0.5 },
-    { x: 60, z: -170, w: 1.2, h: 0.7, tilt: -0.2 },
-    { x: -70, z: -180, w: 1.5, h: 0.4, tilt: 0.6 },
-    { x: 50, z: -190, w: 2, h: 0.5, tilt: -0.3 },
-    { x: -55, z: -200, w: 1.8, h: 0.6, tilt: 0.4 },
-    { x: 80, z: -175, w: 1.5, h: 0.5, tilt: -0.5 },
+    { x: -24, z: -93,  w: 1.5, h: 0.6, tilt: 0.3 },
+    { x: -12, z: -99,  w: 2,   h: 0.8, tilt: -0.4 },
+    { x: 18,  z: -96,  w: 1.8, h: 0.5, tilt: 0.5 },
+    { x: 36,  z: -102, w: 1.2, h: 0.7, tilt: -0.2 },
+    { x: -42, z: -108, w: 1.5, h: 0.4, tilt: 0.6 },
+    { x: 30,  z: -114, w: 2,   h: 0.5, tilt: -0.3 },
+    { x: -33, z: -120, w: 1.8, h: 0.6, tilt: 0.4 },
+    { x: 48,  z: -105, w: 1.5, h: 0.5, tilt: -0.5 },
   ];
 
   for (const p of pieces) {
@@ -34,7 +32,7 @@ function createRuinedFurniture(scene) {
 
   // Rusted bench
   const benchGroup = new THREE.Group();
-  benchGroup.position.set(-30, 0, -170);
+  benchGroup.position.set(-18, 0, -102);
   const benchSeat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.08, 0.5), rustMat);
   benchSeat.position.set(0, 0.35, 0);
   benchSeat.rotation.z = 0.15;
@@ -46,7 +44,7 @@ function createRuinedFurniture(scene) {
 
   // Cracked fountain
   const fountainGroup = new THREE.Group();
-  fountainGroup.position.set(40, 0, -185);
+  fountainGroup.position.set(24, 0, -111);
   const basin = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.3, 0.4, 12), stoneMat);
   basin.position.y = 0.2;
   fountainGroup.add(basin);
@@ -62,7 +60,7 @@ function createRuinedFurniture(scene) {
 
   // Fallen street lamp
   const lampGroup = new THREE.Group();
-  lampGroup.position.set(-15, 0, -195);
+  lampGroup.position.set(-9, 0, -117);
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 3.5, 6), rustMat);
   pole.position.set(0, 0.15, 0);
   pole.rotation.z = Math.PI / 2 - 0.1;

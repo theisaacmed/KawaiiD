@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { unlockPhone } from './phone.js';
 
-// Ruins entrance area (RUINS_Z_START = -75, scaled 40% from original -150)
+// Ruins entrance area (RUINS_Z_START = -90)
 const RUINS_WAYPOINT = new THREE.Vector3(0, 0, -90);
 // Mei's world position
 const MEI_POS = new THREE.Vector3(-6, 0, 9);
