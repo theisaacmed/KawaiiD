@@ -6,7 +6,7 @@ import * as THREE from 'three';
 
 export function createWorld(scene) {
   // Fog and background — oppressive gray atmosphere
-  scene.fog = new THREE.Fog(0xa0a0a0, 60, 350);
+  scene.fog = new THREE.Fog(0xa0a0a0, 40, 210);
   scene.background = new THREE.Color(0xa0a0a0);
 
   // ========== MAIN GROUND PLANE ==========

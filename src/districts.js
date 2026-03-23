@@ -10,8 +10,8 @@ import { getPhoneStats } from './phone.js';
 export const DISTRICTS = {
   town: {
     name: 'Town',
-    center: { x: 0, z: 20 },
-    radius: 80,
+    center: { x: 0, z: 12 },
+    radius: 48,
     unlockDeals: 0,   // always open
     unlockRank: 0,
     unlocked: true,
@@ -19,8 +19,8 @@ export const DISTRICTS = {
   },
   ruins: {
     name: 'Ruins',
-    center: { x: 0, z: -200 },
-    radius: 100,
+    center: { x: 0, z: -120 },
+    radius: 60,
     unlockDeals: 0,   // always open
     unlockRank: 0,
     unlocked: true,
@@ -28,8 +28,8 @@ export const DISTRICTS = {
   },
   downtown: {
     name: 'Downtown',
-    center: { x: 20, z: 120 },
-    radius: 70,
+    center: { x: 12, z: 72 },
+    radius: 42,
     unlockDeals: 15,
     unlockRank: 2,    // Dealer (150 JP)
     unlocked: false,
@@ -37,8 +37,8 @@ export const DISTRICTS = {
   },
   burbs: {
     name: 'Burbs',
-    center: { x: 150, z: -20 },
-    radius: 70,
+    center: { x: 90, z: -12 },
+    radius: 42,
     unlockDeals: 20,
     unlockRank: 3,    // Supplier (300 JP)
     unlocked: false,
@@ -46,8 +46,8 @@ export const DISTRICTS = {
   },
   northtown: {
     name: 'Northtown',
-    center: { x: 130, z: 150 },
-    radius: 60,
+    center: { x: 78, z: 90 },
+    radius: 36,
     unlockDeals: 25,
     unlockRank: 4,    // Smuggler (500 JP)
     unlocked: false,
@@ -55,8 +55,8 @@ export const DISTRICTS = {
   },
   industrial: {
     name: 'Industrial',
-    center: { x: 20, z: -100 },
-    radius: 70,
+    center: { x: 12, z: -60 },
+    radius: 42,
     unlockDeals: 30,
     unlockRank: 4,    // Smuggler (500 JP)
     unlocked: false,
@@ -64,8 +64,8 @@ export const DISTRICTS = {
   },
   uptown: {
     name: 'Uptown',
-    center: { x: 170, z: 80 },
-    radius: 60,
+    center: { x: 102, z: 48 },
+    radius: 36,
     unlockDeals: 35,
     unlockRank: 5,    // Distributor (800 JP)
     unlocked: false,
@@ -73,8 +73,8 @@ export const DISTRICTS = {
   },
   tower: {
     name: 'Tower',
-    center: { x: -140, z: 120 },
-    radius: 60,
+    center: { x: -84, z: 72 },
+    radius: 36,
     unlockDeals: 40,
     unlockRank: 6,    // Kingpin (1200 JP)
     unlocked: false,
@@ -82,8 +82,8 @@ export const DISTRICTS = {
   },
   port: {
     name: 'Port',
-    center: { x: -80, z: 200 },
-    radius: 50,
+    center: { x: -48, z: 120 },
+    radius: 30,
     unlockDeals: 50,
     unlockRank: 6,    // Kingpin (1200 JP)
     unlocked: false,
@@ -91,8 +91,8 @@ export const DISTRICTS = {
   },
   aceHQ: {
     name: 'ACE HQ',
-    center: { x: -140, z: -60 },
-    radius: 50,
+    center: { x: -84, z: -36 },
+    radius: 30,
     unlockDeals: 60,
     unlockRank: 7,    // Kawaii Kingpin (2000 JP)
     unlocked: false,
@@ -108,31 +108,31 @@ let sceneRef = null;
 // Barrier definitions: position on road + which district they gate
 const BARRIER_DEFS = [
   // Downtown: on Main Street between Town and Downtown
-  { district: 'downtown', x: 0, z: 70, w: 10, d: 0.4, label: 'Downtown' },
+  { district: 'downtown', x: 0, z: 42, w: 6, d: 0.4, label: 'Downtown' },
   // Downtown: secondary entrance from west
-  { district: 'downtown', x: -30, z: 85, w: 0.4, d: 8, label: 'Downtown West' },
+  { district: 'downtown', x: -18, z: 51, w: 0.4, d: 5, label: 'Downtown West' },
   // Burbs: on East Blvd south of Cross Street
-  { district: 'burbs', x: 150, z: 10, w: 10, d: 0.4, label: 'Burbs' },
+  { district: 'burbs', x: 90, z: 6, w: 6, d: 0.4, label: 'Burbs' },
   // Burbs: on Cross Street heading east
-  { district: 'burbs', x: 100, z: 50, w: 0.4, d: 10, label: 'Burbs East' },
+  { district: 'burbs', x: 60, z: 30, w: 0.4, d: 6, label: 'Burbs East' },
   // Northtown: on East Blvd heading north
-  { district: 'northtown', x: 150, z: 130, w: 10, d: 0.4, label: 'Northtown' },
+  { district: 'northtown', x: 90, z: 78, w: 6, d: 0.4, label: 'Northtown' },
   // Industrial: on Main Street heading south
-  { district: 'industrial', x: 0, z: -50, w: 10, d: 0.4, label: 'Industrial' },
+  { district: 'industrial', x: 0, z: -30, w: 6, d: 0.4, label: 'Industrial' },
   // Industrial: from west
-  { district: 'industrial', x: -80, z: -80, w: 0.4, d: 10, label: 'Industrial West' },
+  { district: 'industrial', x: -48, z: -48, w: 0.4, d: 6, label: 'Industrial West' },
   // Uptown: on East Blvd between Cross and Northtown
-  { district: 'uptown', x: 150, z: 70, w: 10, d: 0.4, label: 'Uptown South' },
+  { district: 'uptown', x: 90, z: 42, w: 6, d: 0.4, label: 'Uptown South' },
   // Tower: on West Ave heading north
-  { district: 'tower', x: -150, z: 80, w: 10, d: 0.4, label: 'Tower' },
+  { district: 'tower', x: -90, z: 48, w: 6, d: 0.4, label: 'Tower' },
   // Tower: on Coast Road heading west
-  { district: 'tower', x: -100, z: 180, w: 0.4, d: 10, label: 'Tower Coast' },
+  { district: 'tower', x: -60, z: 108, w: 0.4, d: 6, label: 'Tower Coast' },
   // Port: on Coast Road
-  { district: 'port', x: -50, z: 180, w: 0.4, d: 10, label: 'Port' },
+  { district: 'port', x: -30, z: 108, w: 0.4, d: 6, label: 'Port' },
   // ACE HQ: on West Ave heading south
-  { district: 'aceHQ', x: -150, z: -30, w: 10, d: 0.4, label: 'ACE HQ' },
+  { district: 'aceHQ', x: -90, z: -18, w: 6, d: 0.4, label: 'ACE HQ' },
   // ACE HQ: from Industrial Road
-  { district: 'aceHQ', x: -100, z: -80, w: 0.4, d: 10, label: 'ACE HQ East' },
+  { district: 'aceHQ', x: -60, z: -48, w: 0.4, d: 6, label: 'ACE HQ East' },
 ];
 
 function createBarrier(scene, def) {

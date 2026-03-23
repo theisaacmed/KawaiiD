@@ -18,80 +18,80 @@ const allRoadMeshes = []; // for minimap / collision
 // Temp color
 const _c = new THREE.Color();
 
-// ========== MAIN ROADS (8 units wide, #505050) ==========
+// ========== MAIN ROADS (5 units wide, #505050) ==========
 const MAIN_ROADS = [
   // MAIN STREET: N-S through center (X ≈ 0)
-  { x: 0, z: 0, w: 8, d: 440, label: 'Main Street' },
-  // COAST ROAD: E-W along northern coast (Z ≈ 180)
-  { x: 0, z: 180, w: 440, d: 8, label: 'Coast Road' },
-  // EAST BOULEVARD: N-S on east side (X ≈ 150)
-  { x: 150, z: 40, w: 8, d: 360, label: 'East Blvd' },
-  // WEST AVENUE: N-S on west side (X ≈ -150)
-  { x: -150, z: 30, w: 8, d: 360, label: 'West Ave' },
-  // CROSS STREET: E-W through middle (Z ≈ 50)
-  { x: 0, z: 50, w: 440, d: 8, label: 'Cross Street' },
-  // INDUSTRIAL ROAD: E-W in south (Z ≈ -80)
-  { x: 0, z: -80, w: 400, d: 8, label: 'Industrial Rd' },
+  { x: 0, z: 0, w: 5, d: 264, label: 'Main Street' },
+  // COAST ROAD: E-W along northern coast (Z ≈ 108)
+  { x: 0, z: 108, w: 264, d: 5, label: 'Coast Road' },
+  // EAST BOULEVARD: N-S on east side (X ≈ 90)
+  { x: 90, z: 24, w: 5, d: 216, label: 'East Blvd' },
+  // WEST AVENUE: N-S on west side (X ≈ -90)
+  { x: -90, z: 18, w: 5, d: 216, label: 'West Ave' },
+  // CROSS STREET: E-W through middle (Z ≈ 30)
+  { x: 0, z: 30, w: 264, d: 5, label: 'Cross Street' },
+  // INDUSTRIAL ROAD: E-W in south (Z ≈ -48)
+  { x: 0, z: -48, w: 240, d: 5, label: 'Industrial Rd' },
 ];
 
-// ========== SECONDARY ROADS (5 units wide, #555555) ==========
+// ========== SECONDARY ROADS (3 units wide, #555555) ==========
 const SECONDARY_ROADS = [
   // Town internal streets
-  { x: -40, z: 20, w: 5, d: 60 },
-  { x: 40, z: 20, w: 5, d: 60 },
-  { x: 0, z: -10, w: 80, d: 5 },
+  { x: -24, z: 12, w: 3, d: 36 },
+  { x: 24, z: 12, w: 3, d: 36 },
+  { x: 0, z: -6, w: 48, d: 3 },
   // Downtown internal
-  { x: -30, z: 100, w: 5, d: 60 },
-  { x: 50, z: 120, w: 5, d: 50 },
-  { x: 20, z: 140, w: 80, d: 5 },
+  { x: -18, z: 60, w: 3, d: 36 },
+  { x: 30, z: 72, w: 3, d: 30 },
+  { x: 12, z: 84, w: 48, d: 3 },
   // Northtown
-  { x: 130, z: 170, w: 60, d: 5 },
-  { x: 110, z: 150, w: 5, d: 50 },
+  { x: 78, z: 102, w: 36, d: 3 },
+  { x: 66, z: 90, w: 3, d: 30 },
   // Burbs
-  { x: 130, z: -20, w: 5, d: 60 },
-  { x: 170, z: -40, w: 5, d: 50 },
-  { x: 150, z: 0, w: 60, d: 5 },
+  { x: 78, z: -12, w: 3, d: 36 },
+  { x: 102, z: -24, w: 3, d: 30 },
+  { x: 90, z: 0, w: 36, d: 3 },
   // Uptown
-  { x: 170, z: 60, w: 5, d: 50 },
-  { x: 190, z: 80, w: 5, d: 40 },
+  { x: 102, z: 36, w: 3, d: 30 },
+  { x: 114, z: 48, w: 3, d: 24 },
   // Tower
-  { x: -140, z: 140, w: 60, d: 5 },
-  { x: -120, z: 120, w: 5, d: 50 },
+  { x: -84, z: 84, w: 36, d: 3 },
+  { x: -72, z: 72, w: 3, d: 30 },
   // Industrial
-  { x: -40, z: -100, w: 5, d: 50 },
-  { x: 50, z: -100, w: 5, d: 50 },
-  { x: 20, z: -120, w: 80, d: 5 },
+  { x: -24, z: -60, w: 3, d: 30 },
+  { x: 30, z: -60, w: 3, d: 30 },
+  { x: 12, z: -72, w: 48, d: 3 },
   // Port
-  { x: -80, z: 210, w: 60, d: 5 },
-  { x: -60, z: 195, w: 5, d: 40 },
+  { x: -48, z: 126, w: 36, d: 3 },
+  { x: -36, z: 117, w: 3, d: 24 },
   // ACE HQ
-  { x: -120, z: -60, w: 5, d: 50 },
-  { x: -150, z: -40, w: 40, d: 5 },
+  { x: -72, z: -36, w: 3, d: 30 },
+  { x: -90, z: -24, w: 24, d: 3 },
 ];
 
-// ========== ALLEYS (2.5 units wide, #585858) ==========
+// ========== ALLEYS (1.5 units wide, #585858) ==========
 const ALLEYS = [
   // Town alleys
-  { x: -20, z: 10, w: 2.5, d: 30 },
-  { x: 25, z: 30, w: 30, d: 2.5 },
+  { x: -12, z: 6, w: 1.5, d: 18 },
+  { x: 15, z: 18, w: 18, d: 1.5 },
   // Downtown alleys
-  { x: 10, z: 110, w: 2.5, d: 40 },
-  { x: -15, z: 130, w: 35, d: 2.5 },
+  { x: 6, z: 66, w: 1.5, d: 24 },
+  { x: -9, z: 78, w: 21, d: 1.5 },
   // Northtown alley
-  { x: 140, z: 160, w: 30, d: 2.5 },
+  { x: 84, z: 96, w: 18, d: 1.5 },
   // Burbs alley
-  { x: 160, z: -30, w: 2.5, d: 30 },
+  { x: 96, z: -18, w: 1.5, d: 18 },
   // Uptown alley
-  { x: 180, z: 70, w: 2.5, d: 25 },
+  { x: 108, z: 42, w: 1.5, d: 15 },
   // Tower alleys
-  { x: -130, z: 130, w: 2.5, d: 35 },
-  { x: -155, z: 110, w: 25, d: 2.5 },
+  { x: -78, z: 78, w: 1.5, d: 21 },
+  { x: -93, z: 66, w: 15, d: 1.5 },
   // Industrial alleys
-  { x: 30, z: -110, w: 2.5, d: 30 },
+  { x: 18, z: -66, w: 1.5, d: 18 },
   // Port alley
-  { x: -90, z: 205, w: 2.5, d: 25 },
+  { x: -54, z: 123, w: 1.5, d: 15 },
   // ACE HQ - narrow
-  { x: -135, z: -70, w: 2.5, d: 25 },
+  { x: -81, z: -42, w: 1.5, d: 15 },
 ];
 
 function createRoadSurface(scene, road, color, yOffset) {
@@ -307,13 +307,13 @@ export function getRoadData() {
 export function getRoadSegments() {
   const segments = [];
   for (const r of MAIN_ROADS) {
-    segments.push({ x: r.x, z: r.z, w: r.w, d: r.d, roadWidth: 8, type: 'main' });
+    segments.push({ x: r.x, z: r.z, w: r.w, d: r.d, roadWidth: 5, type: 'main' });
   }
   for (const r of SECONDARY_ROADS) {
-    segments.push({ x: r.x, z: r.z, w: r.w, d: r.d, roadWidth: 5, type: 'secondary' });
+    segments.push({ x: r.x, z: r.z, w: r.w, d: r.d, roadWidth: 3, type: 'secondary' });
   }
   for (const r of ALLEYS) {
-    segments.push({ x: r.x, z: r.z, w: r.w, d: r.d, roadWidth: 2.5, type: 'alley' });
+    segments.push({ x: r.x, z: r.z, w: r.w, d: r.d, roadWidth: 1.5, type: 'alley' });
   }
   return segments;
 }

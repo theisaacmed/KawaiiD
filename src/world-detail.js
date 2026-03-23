@@ -32,9 +32,11 @@ let fountainParts = null;
 function createBenches(scene) {
   // Benches placed around Town district
   const positions = [
-    { x: -15, z: 18 }, { x: 8, z: 22 }, { x: -25, z: 30 },
-    { x: 20, z: 12 }, { x: -5, z: 38 }, { x: 30, z: 35 },
-    { x: -35, z: 10 }, { x: 15, z: -5 },
+    { x: -9, z: 11 }, { x: 5, z: 13 }, { x: -15, z: 18 },
+    { x: 12, z: 7 }, { x: -3, z: 23 }, { x: 18, z: 21 },
+    { x: -21, z: 6 }, { x: 9, z: -3 },
+    { x: -6, z: 16 }, { x: 14, z: 3 }, { x: -18, z: 9 },
+    { x: 7, z: 19 }, { x: -10, z: 26 }, { x: 20, z: 10 },
   ];
 
   for (const pos of positions) {
@@ -60,9 +62,11 @@ function createBenches(scene) {
 
 function createTrashCans(scene) {
   const positions = [
-    { x: -20, z: -8 }, { x: 5, z: 10 }, { x: 25, z: 25 },
-    { x: -30, z: 35 }, { x: 35, z: 8 }, { x: -10, z: 38 },
-    { x: 15, z: 32 }, { x: -35, z: 12 },
+    { x: -12, z: -5 }, { x: 3, z: 6 }, { x: 15, z: 15 },
+    { x: -18, z: 21 }, { x: 21, z: 5 }, { x: -6, z: 23 },
+    { x: 9, z: 19 }, { x: -21, z: 7 },
+    { x: -8, z: 2 }, { x: 11, z: 13 }, { x: -14, z: 18 },
+    { x: 17, z: -2 }, { x: -4, z: 24 }, { x: 23, z: 11 },
   ];
 
   for (const pos of positions) {
@@ -87,13 +91,13 @@ function createTrashCans(scene) {
 
 function createParkedCars(scene) {
   const positions = [
-    { x: -28, z: -5, rot: 0 },
-    { x: 30, z: -10, rot: Math.PI / 2 },
-    { x: -22, z: 30, rot: 0 },
-    { x: 25, z: 35, rot: Math.PI / 2 },
-    { x: 15, z: -8, rot: 0 },
-    { x: -35, z: 20, rot: Math.PI / 2 },
-    { x: 38, z: 15, rot: 0 },
+    { x: -17, z: -3, rot: 0 },
+    { x: 18, z: -6, rot: Math.PI / 2 },
+    { x: -13, z: 18, rot: 0 },
+    { x: 15, z: 21, rot: Math.PI / 2 },
+    { x: 9, z: -5, rot: 0 },
+    { x: -21, z: 12, rot: Math.PI / 2 },
+    { x: 23, z: 9, rot: 0 },
   ];
 
   for (let i = 0; i < positions.length; i++) {
@@ -124,11 +128,11 @@ function createParkedCars(scene) {
 
 function createFences(scene) {
   const segments = [
-    { x: -25, z: 5, w: 3, rot: 0 },
-    { x: 30, z: 5, w: 2.5, rot: 0 },
-    { x: -30, z: 25, w: 4, rot: Math.PI / 2 },
-    { x: 35, z: 25, w: 3, rot: Math.PI / 2 },
-    { x: -15, z: 40, w: 3, rot: 0 },
+    { x: -15, z: 3, w: 3, rot: 0 },
+    { x: 18, z: 3, w: 2.5, rot: 0 },
+    { x: -18, z: 15, w: 4, rot: Math.PI / 2 },
+    { x: 21, z: 15, w: 3, rot: Math.PI / 2 },
+    { x: -9, z: 24, w: 3, rot: 0 },
   ];
 
   for (let i = 0; i < segments.length; i++) {
@@ -159,9 +163,9 @@ function createFences(scene) {
 function createTrees(scene) {
   // Trees scattered around Town
   const positions = [
-    { x: -28, z: -12 }, { x: 28, z: -10 }, { x: -38, z: 15 },
-    { x: 38, z: 18 }, { x: -10, z: 40 }, { x: 25, z: 40 },
-    { x: -20, z: 0 }, { x: 15, z: 0 },
+    { x: -17, z: -7 }, { x: 17, z: -6 }, { x: -23, z: 9 },
+    { x: 23, z: 11 }, { x: -6, z: 24 }, { x: 15, z: 24 },
+    { x: -12, z: 0 }, { x: 9, z: 0 },
   ];
 
   for (const tp of positions) {
@@ -189,9 +193,12 @@ function createTrees(scene) {
 // Street lamps along main roads in Town
 function createStreetLamps(scene) {
   const positions = [
-    { x: -5, z: -5 }, { x: 5, z: -5 }, { x: -5, z: 15 },
-    { x: 5, z: 15 }, { x: -5, z: 35 }, { x: 5, z: 35 },
-    { x: -20, z: 20 }, { x: 20, z: 20 },
+    { x: -3, z: -3 }, { x: 3, z: -3 }, { x: -3, z: 9 },
+    { x: 3, z: 9 }, { x: -3, z: 21 }, { x: 3, z: 21 },
+    { x: -12, z: 12 }, { x: 12, z: 12 },
+    { x: -3, z: 3 }, { x: 3, z: 3 }, { x: -3, z: 15 },
+    { x: 3, z: 15 }, { x: -12, z: 6 }, { x: 12, z: 6 },
+    { x: -6, z: 18 }, { x: 6, z: 18 },
   ];
 
   const poleMat = new THREE.MeshLambertMaterial({ color: 0x505050 });
@@ -213,18 +220,18 @@ function createStreetLamps(scene) {
 function createACEPosters(scene) {
   // Town: 3 posters
   const townPosters = [
-    { x: -30, z: -10 + 2.5 + 0.03, ry: 0 },      // on building front wall
-    { x: 10, z: -10 + 2.0 + 0.03, ry: 0 },
-    { x: 35, z: 12 + 3.0 + 0.03, ry: 0 },
+    { x: -18, z: -6 + 2.5 + 0.03, ry: 0 },      // on building front wall
+    { x: 6, z: -6 + 2.0 + 0.03, ry: 0 },
+    { x: 21, z: 7 + 3.0 + 0.03, ry: 0 },
   ];
   // Downtown: 6 posters
   const dtPosters = [
-    { x: -20, z: 90 + 2.5 + 0.03, ry: 0 },
-    { x: 18, z: 90 + 3.0 + 0.03, ry: 0 },
-    { x: -25, z: 110 + 2.5 + 0.03, ry: 0 },
-    { x: 38, z: 112 + 3.0 + 0.03, ry: 0 },
-    { x: 52, z: 108 + 2.5 + 0.03, ry: 0 },
-    { x: -18, z: 130 + 2.5 + 0.03, ry: 0 },
+    { x: -12, z: 54 + 2.5 + 0.03, ry: 0 },
+    { x: 11, z: 54 + 3.0 + 0.03, ry: 0 },
+    { x: -15, z: 66 + 2.5 + 0.03, ry: 0 },
+    { x: 23, z: 67 + 3.0 + 0.03, ry: 0 },
+    { x: 31, z: 65 + 2.5 + 0.03, ry: 0 },
+    { x: -11, z: 78 + 2.5 + 0.03, ry: 0 },
   ];
 
   const posterMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
@@ -248,7 +255,7 @@ function createACEPosters(scene) {
 function createBusStop(scene) {
   const mat = new THREE.MeshLambertMaterial({ color: 0x606060 });
   const glassMat = new THREE.MeshLambertMaterial({ color: 0x555560, transparent: true, opacity: 0.6 });
-  const x = 6, z = 5; // along Main Street in Town
+  const x = 4, z = 3; // along Main Street in Town
 
   // Roof
   const roof = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 1.5), mat);
@@ -280,8 +287,8 @@ function createBusStop(scene) {
 // Downtown: newspaper boxes (small thin boxes on sidewalks)
 function createNewspaperBoxes(scene) {
   const positions = [
-    { x: -8, z: 92 + 3 }, { x: 32, z: 92 + 3 },
-    { x: 5, z: 88 + 3 }, { x: 22, z: 110 + 3 },
+    { x: -5, z: 55 + 3 }, { x: 19, z: 55 + 3 },
+    { x: 3, z: 53 + 3 }, { x: 13, z: 66 + 3 },
   ];
 
   const boxMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
