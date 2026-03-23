@@ -3,6 +3,7 @@
 // Steps 0-5; skip button available at all times.
 
 import * as THREE from 'three';
+import { unlockPhone } from './phone.js';
 
 // Ruins entrance area (RUINS_Z_START = -150)
 const RUINS_WAYPOINT = new THREE.Vector3(0, 0, -150);
@@ -18,8 +19,8 @@ const STEP_TEXTS = [
   "You found an old sticker!\nThere might be someone who wants this.",
   // Step 3 — go meet Mei
   "Mei is nearby. Walk up to her and press E.",
-  // Step 4 — deal complete
-  "Color is returning!\nKeep dealing to restore the city.\n\nHint: press [Tab] to open your phone — NPCs will text you deal offers.",
+  // Step 4 — deal complete / phone unlock
+  "Mei gave you a phone!\n'Here, so we can stay in touch.'\nPress Tab to open it.",
   // Step 5 — complete (no text shown)
   null,
 ];
@@ -56,12 +57,14 @@ export function restoreTutorialState(data) {
   if (data.complete) {
     tutorialComplete = true;
     tutorialStep = 5;
+    unlockPhone();
     return;
   }
   // If save exists and tutorial was in progress, just mark complete to avoid
   // re-running confusing mid-session state on reload.
   tutorialComplete = true;
   tutorialStep = 5;
+  unlockPhone();
 }
 
 // Called from main.js on new game
@@ -120,6 +123,7 @@ export function updateTutorial(dt, playerPos, piles) {
 export function onTutorialDealComplete() {
   if (tutorialComplete) return;
   if (tutorialStep === 3) {
+    unlockPhone();
     advanceStep(4);
   }
 }
@@ -237,6 +241,7 @@ function hideOverlay() {
 function skipTutorial() {
   tutorialComplete = true;
   tutorialStep = 5;
+  unlockPhone();
   hideOverlay();
   hideWaypoint();
 }

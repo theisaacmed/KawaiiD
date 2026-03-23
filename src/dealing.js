@@ -481,7 +481,7 @@ function acceptDeal() {
   const removed = removeFromSlot(offeredItem.slotIndex);
   const gachaContains = isGacha && removed ? removed.contains : null;
 
-  addMoney(price);
+  if (!isTutorialDealStep()) addMoney(price);
   activeNPC.purchaseCount++;
 
   // Track gacha purchases for addiction

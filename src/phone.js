@@ -29,9 +29,40 @@ export function setDealFunctions(isDealOpen) { isDealOpenFn = isDealOpen; }
 // Gacha unlock callback — set by main.js
 export function setGachaUnlockCallback(fn) { gachaUnlockCallback = fn; }
 
+export function isPhoneUnlocked() { return phoneUnlocked; }
+export function unlockPhone() { phoneUnlocked = true; }
+
+let noPhoneToastTimeout;
+function showNoPhoneToast() {
+  let toast = document.getElementById('no-phone-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'no-phone-toast';
+    Object.assign(toast.style, {
+      position: 'fixed', bottom: '90px', left: '50%',
+      transform: 'translateX(-50%)',
+      background: 'rgba(40,40,40,0.9)', color: '#aaa',
+      fontFamily: 'monospace', fontSize: '13px',
+      padding: '6px 18px', borderRadius: '6px',
+      pointerEvents: 'none', zIndex: '160',
+      display: 'none', transition: 'opacity 0.3s',
+    });
+    toast.textContent = "You don't have a phone yet.";
+    document.body.appendChild(toast);
+  }
+  toast.style.display = 'block';
+  toast.style.opacity = '1';
+  clearTimeout(noPhoneToastTimeout);
+  noPhoneToastTimeout = setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => { toast.style.display = 'none'; }, 300);
+  }, 1800);
+}
+
 // --- State ---
 let phoneContainer = null;
 let isPhoneOpen = false;
+let phoneUnlocked = false;
 let activeTab = 'messages';
 let sceneRef = null;
 let npcsRef = [];
@@ -74,6 +105,7 @@ let msgInterval = randomBetween(45, 90);
 let dexMsgDay = -1;
 
 function sendDexDailyMsg() {
+  if (!phoneUnlocked) return;
   const day = getDayNumber();
   if (dexMsgDay === day) return; // already sent today
   // Check if Dex is unlocked and available
@@ -208,7 +240,21 @@ function createWaypointSprite(pos) {
 }
 
 // --- Message Generation ---
+const SMS_TEMPLATES = {
+  Mei:    ["hey! got any stickers? im at {location} til {time}", "found the perfect wall for a sticker, come find me at {location}!"],
+  Hiro:   ["Need a plushie for my daughter. At {location} til {time}.", "Got anything soft? I'll be around {location}."],
+  Luna:   ["hiii! looking for anything cute! meet me at {location}?", "omg come find me i need something cute!! at {location} til {time}"],
+  Ash:    ["hey... do you have anything? im near {location}. be quick tho", "can we meet at {location}? need stickers"],
+  Dex:    ["Got bulk? Name your price. {location}, {time}.", "I need product. {location}. Don't be late."],
+  Ren:    ["yo need stickers for a new piece. {location} before {time}", "got stickers? meet me i have a wall to cover"],
+  Nao:    ["Could you bring something by the cafe? Open til {time}", "customers keep asking for cute stuff. help me out? at {location}"],
+  Felix:  ["PLEASE tell me you have gacha capsules. {location} NOW", "do you have capsules?? im at {location} PLEASE"],
+  Marco:  ["Need something to brighten up the restaurant. {location}?", "got anything to make people smile? come by {location}"],
+  Harper: ["Heard you might have something interesting. {location}, {time}.", "got a tip for you too. meet me at {location}."],
+};
+
 function generateMessage() {
+  if (!phoneUnlocked) return;
   // Pick an eligible NPC
   const eligible = npcsRef.filter(npc => {
     // NPCs in locked districts or referral-locked can't message
@@ -251,12 +297,17 @@ function generateMessage() {
   const qty = Math.floor(Math.random() * 2) + 1; // 1-2
   const meetup = randomFrom(npc.meetupLocations);
 
-  // Build message text from template
-  let text = randomFrom(npc.messageTemplates);
+  // Build message text from SMS-style character templates
   const itemName = itemType === 'sticker' ? 'stickers' : itemType === 'gacha' ? 'capsules' : 'plushies';
-  text = text.replace('{item}', itemName);
-  text = text.replace('{qty}', qty.toString());
+  const npcTemplates = SMS_TEMPLATES[npc.name];
+  let text = npcTemplates
+    ? randomFrom(npcTemplates)
+    : 'hey, looking for {itemType}. at {location} til {time}';
+  const rawHour = getGameHour();
+  const timeStr = `${rawHour > 12 ? rawHour - 12 : rawHour === 0 ? 12 : rawHour} ${rawHour >= 12 ? 'PM' : 'AM'}`;
   text = text.replace('{location}', meetup.name);
+  text = text.replace('{time}', timeStr);
+  text = text.replace('{itemType}', itemName);
 
   const msg = {
     id: nextMsgId++,
@@ -399,6 +450,7 @@ export function onPhoneDealCompleted(npcName, itemType, price) {
 
 // --- Gacha addiction messages ---
 function scheduleGachaEagerMessage(npc) {
+  if (!phoneUnlocked) return;
   const purchases = npc.gachaPurchases || 0;
   let text;
   if (purchases >= 5) {
@@ -1028,12 +1080,12 @@ function renderMessagesTab() {
             flex:1;padding:6px 0;border-radius:6px;border:1px solid #4a7;
             background:rgba(68,170,119,0.15);color:#4a7;font-family:monospace;
             font-size:11px;font-weight:bold;cursor:pointer;
-          ">Accept</button>
+          ">On my way</button>
           <button class="phone-msg-btn phone-decline-btn" data-msg-id="${msg.id}" style="
             flex:1;padding:6px 0;border-radius:6px;border:1px solid #666;
             background:rgba(100,100,100,0.1);color:#666;font-family:monospace;
             font-size:11px;font-weight:bold;cursor:pointer;
-          ">Decline</button>
+          ">Can't right now</button>
         </div>
       `;
     }
@@ -1334,6 +1386,7 @@ export function closePhone() {
 }
 
 export function togglePhone() {
+  if (!phoneUnlocked) { showNoPhoneToast(); return; }
   if (isPhoneOpen) closePhone();
   else openPhone();
 }
@@ -1365,6 +1418,7 @@ export function getPhoneState() {
     gachaUnlockSent,
     eastsideUnlockSent,
     dexMsgDay,
+    phoneUnlocked,
     activeDeals: getActiveDealsState(),
     // Don't save active waypoints — they expire on reload
   };
@@ -1387,6 +1441,7 @@ export function restorePhoneState(data) {
   if (data.gachaUnlockSent) gachaUnlockSent = true;
   if (data.eastsideUnlockSent) eastsideUnlockSent = true;
   if (data.dexMsgDay !== undefined) dexMsgDay = data.dexMsgDay;
+  if (data.phoneUnlocked) phoneUnlocked = true;
   if (data.activeDeals) restoreActiveDealsState(data.activeDeals);
   updateNotifBadge();
 }
