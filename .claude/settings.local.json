@@ -62,7 +62,16 @@
       "Bash(ls /c/Users/Admin/scoop/apps/nodejs*/current/node.exe)",
       "Bash(ls /c/Users/Admin/AppData/Local/Programs/node*)",
       "Bash(ls /c/Users/Admin/Desktop/KawaiiD/node_modules/.bin/vite*)",
-      "Bash(./node_modules/.bin/vite build:*)"
+      "Bash(./node_modules/.bin/vite build:*)",
+      "Bash(git push:*)",
+      "Bash(node scale_map.js)",
+      "Bash(cmd.exe /c \"where node 2>&1\")",
+      "Bash(npx --version)",
+      "Bash(cmd.exe /c \"node --version 2>&1 || echo NOT FOUND\")",
+      "Bash(cmd.exe /c \"npm --version 2>&1 && echo FOUND || echo NOT FOUND\")",
+      "Bash(powershell.exe -Command \"Get-Command node -ErrorAction SilentlyContinue | Select-Object Source; Get-Command python -ErrorAction SilentlyContinue | Select-Object Source; Get-Command python3 -ErrorAction SilentlyContinue | Select-Object Source\")",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\Microsoft\\\\WindowsApps\\\\python.exe'' --version 2>&1\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem ''C:\\\\Program Files\\\\nodejs\\\\node.exe'' -ErrorAction SilentlyContinue; Get-ChildItem ''C:\\\\Program Files \\(x86\\)\\\\nodejs\\\\node.exe'' -ErrorAction SilentlyContinue; Get-ChildItem ''C:\\\\Users\\\\Admin\\\\AppData\\\\Roaming\\\\nvm'' -ErrorAction SilentlyContinue | head -5\")"
     ]
   }
 }
