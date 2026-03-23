@@ -1,10 +1,11 @@
 // Print Station — first manufacturing station
 // Converts sticker paper → fresh stickers
 // Features: input/output slots, auto-queue, progress bar, offline processing
+// Animations: print head, paper feed, output stacking, status light pulse, ink particles
 // State persists in save data
 
 import * as THREE from 'three';
-import { hasItem, removeItem, addItem, isFull } from '../inventory.js';
+import { hasItem, removeItem, addItem, isFull, getSlots } from '../inventory.js';
 import { PRINT_STATION_POS } from '../apartment.js';
 
 // --- Constants ---
@@ -31,12 +32,31 @@ let isUIOpen = false;
 let playerRef = null;
 let enabled = false;
 
+// Animation refs
+let printHead = null;
+let printHeadMat = null;
+let feedPaper = null;
+let feedPaperMat = null;
+let outputStack = null;  // group of stacked sheets
+let outputSheets = [];   // individual sheet meshes in the stack
+let inkParticles = null;
+let inkPositions = null;
+let inkVelocities = null;
+let inkMat = null;
+const INK_COUNT = 16;
+let inkActive = false;
+let completionFlash = 0; // countdown for flash effect on print complete
+
 // UI elements
 let backdrop = null;
 let panel = null;
+let uiDirty = true; // only re-render DOM when state changes
 
 // Audio context (reuse game audio)
 let audioCtx = null;
+
+// Track last UI state to avoid needless DOM rebuilds
+let lastUIHash = '';
 
 // --- Public API ---
 
@@ -75,6 +95,7 @@ export function restorePrintStationState(data) {
   }
 
   updateStatusLight();
+  updateOutputStack();
 }
 
 export function getStationSaveData() {
@@ -147,6 +168,69 @@ function createStationMesh() {
   tray.position.set(0.4, 0.72, 0.05);
   group.add(tray);
 
+  // --- Print head (slides back and forth during printing) ---
+  printHeadMat = new THREE.MeshStandardMaterial({
+    color: 0x222830,
+    emissive: 0x000000,
+    emissiveIntensity: 0,
+  });
+  printHead = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.35), printHeadMat);
+  printHead.position.set(0, 0.78, 0);
+  group.add(printHead);
+
+  // --- Feed paper (slides from input to output during printing) ---
+  feedPaperMat = new THREE.MeshStandardMaterial({
+    color: 0xf0f0f0,
+    emissive: 0x000000,
+    transparent: true,
+    opacity: 0,
+  });
+  feedPaper = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.01, 0.28), feedPaperMat);
+  feedPaper.position.set(-0.4, 0.77, 0);
+  group.add(feedPaper);
+
+  // --- Output stack (grows as outputQueue increases) ---
+  outputStack = new THREE.Group();
+  outputStack.position.set(0.4, 0.74, 0.05);
+  group.add(outputStack);
+  // Pre-create sheet meshes for the stack (up to OUTPUT_MAX)
+  for (let i = 0; i < OUTPUT_MAX; i++) {
+    const sheetMat = new THREE.MeshStandardMaterial({
+      color: 0xe8e0f0,
+      emissive: 0x000000,
+    });
+    const sheet = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.012, 0.3), sheetMat);
+    sheet.position.y = i * 0.013;
+    sheet.visible = false;
+    outputStack.add(sheet);
+    outputSheets.push({ mesh: sheet, mat: sheetMat });
+  }
+
+  // --- Ink mist particles ---
+  const inkGeo = new THREE.BufferGeometry();
+  inkPositions = new Float32Array(INK_COUNT * 3);
+  inkVelocities = new Float32Array(INK_COUNT * 3);
+  for (let i = 0; i < INK_COUNT; i++) {
+    inkPositions[i * 3] = 0;
+    inkPositions[i * 3 + 1] = 0.8;
+    inkPositions[i * 3 + 2] = 0;
+    inkVelocities[i * 3] = (Math.random() - 0.5) * 0.3;
+    inkVelocities[i * 3 + 1] = Math.random() * 0.4 + 0.1;
+    inkVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
+  }
+  inkGeo.setAttribute('position', new THREE.BufferAttribute(inkPositions, 3));
+  inkMat = new THREE.PointsMaterial({
+    color: 0xd080ff,
+    size: 0.04,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  inkParticles = new THREE.Points(inkGeo, inkMat);
+  inkParticles.position.set(0, 0, 0);
+  group.add(inkParticles);
+
   // Status light (small sphere on front)
   statusLightMat = new THREE.MeshStandardMaterial({
     color: 0x44ff44,
@@ -184,21 +268,48 @@ function createStationMesh() {
   updateStatusLight();
 }
 
+// --- Status Light ---
+
 function updateStatusLight() {
   if (!statusLightMat) return;
 
   if (stationState.outputQueue >= OUTPUT_MAX) {
-    // Red — output full
     statusLightMat.color.setHex(0xff4444);
     statusLightMat.emissive.setHex(0xff4444);
   } else if (stationState.isRunning) {
-    // Yellow — printing
     statusLightMat.color.setHex(0xffcc44);
     statusLightMat.emissive.setHex(0xffcc44);
   } else {
-    // Green — idle
     statusLightMat.color.setHex(0x44ff44);
     statusLightMat.emissive.setHex(0x44ff44);
+  }
+}
+
+// --- Output Stack Visual ---
+
+function updateOutputStack() {
+  if (!outputSheets.length) return;
+  const total = stationState.outputQueue;
+  const fresh = stationState.outputQueueFresh;
+  const gray = total - fresh;
+
+  for (let i = 0; i < OUTPUT_MAX; i++) {
+    const s = outputSheets[i];
+    if (i < total) {
+      s.mesh.visible = true;
+      // Color: gray sheets first at bottom, fresh on top
+      if (i < gray) {
+        s.mat.color.setHex(0xa0a0a8);
+        s.mat.emissive.setHex(0x000000);
+        s.mat.emissiveIntensity = 0;
+      } else {
+        s.mat.color.setHex(0xe0a0f0);
+        s.mat.emissive.setHex(0xc060e0);
+        s.mat.emissiveIntensity = 0.15;
+      }
+    } else {
+      s.mesh.visible = false;
+    }
   }
 }
 
@@ -270,37 +381,143 @@ export function updatePrintStation(dt) {
     stationState.inputQueue--;
     startNextItem();
     playThunk();
+    uiDirty = true;
   }
 
   if (stationState.isRunning) {
+    const wasPrinting = stationState.progress < 1;
     stationState.progress += dt / PRINT_TIME;
 
-    // Pulse the station mesh slightly during printing
+    // --- Print head animation: sweep back and forth ---
+    if (printHead) {
+      // Sweep across z-axis (front to back), 2 full sweeps per print
+      const sweepT = (stationState.progress * 4) % 2;
+      const sweepPos = sweepT < 1 ? sweepT : 2 - sweepT; // triangle wave 0→1→0
+      printHead.position.z = -0.15 + sweepPos * 0.3;
+      // Subtle glow when printing
+      printHeadMat.emissive.setHex(stationState.runningIsInked ? 0xc060e0 : 0x4488cc);
+      printHeadMat.emissiveIntensity = 0.4 + Math.sin(Date.now() * 0.02) * 0.2;
+    }
+
+    // --- Feed paper animation: slide from left to right ---
+    if (feedPaper && feedPaperMat) {
+      const p = stationState.progress;
+      // Paper appears at 5%, slides across, disappears at 95%
+      if (p > 0.05 && p < 0.95) {
+        feedPaperMat.opacity = Math.min(1, (p - 0.05) * 10, (0.95 - p) * 10);
+        // Slide from input slot (-0.4) to output tray (0.4)
+        feedPaper.position.x = -0.4 + (p - 0.05) / 0.9 * 0.8;
+        // Add color tint if inked
+        if (stationState.runningIsInked && p > 0.3) {
+          const inkProgress = Math.min(1, (p - 0.3) / 0.4);
+          const r = 0.94 + inkProgress * (0.88 - 0.94);
+          const g = 0.94 + inkProgress * (0.63 - 0.94);
+          const b = 0.94 + inkProgress * (0.94 - 0.94);
+          feedPaperMat.color.setRGB(r, g, b);
+          feedPaperMat.emissive.setHex(0xc060e0);
+          feedPaperMat.emissiveIntensity = inkProgress * 0.2;
+        } else {
+          feedPaperMat.color.setHex(0xf0f0f0);
+          feedPaperMat.emissive.setHex(0x000000);
+          feedPaperMat.emissiveIntensity = 0;
+        }
+      } else {
+        feedPaperMat.opacity = 0;
+      }
+    }
+
+    // --- Ink mist particles (only for color prints) ---
+    if (inkParticles && stationState.runningIsInked) {
+      inkActive = true;
+      const t = Date.now() * 0.001;
+      const headZ = printHead ? printHead.position.z : 0;
+      for (let i = 0; i < INK_COUNT; i++) {
+        const life = ((t * 1.5 + i * 0.37) % 1); // 0-1 lifecycle
+        const px = feedPaper ? feedPaper.position.x : 0;
+        inkPositions[i * 3] = px + (Math.sin(i * 2.1 + t * 3) * 0.06);
+        inkPositions[i * 3 + 1] = 0.78 + life * 0.12;
+        inkPositions[i * 3 + 2] = headZ + (Math.cos(i * 1.7 + t * 2) * 0.06);
+      }
+      inkParticles.geometry.attributes.position.needsUpdate = true;
+      inkMat.opacity = 0.5 + Math.sin(t * 4) * 0.15;
+    } else if (inkActive) {
+      inkMat.opacity = Math.max(0, inkMat.opacity - dt * 3);
+      if (inkMat.opacity <= 0) inkActive = false;
+    }
+
+    // --- Subtle vibration during printing ---
     if (stationMesh) {
-      stationMesh.position.y = Math.sin(Date.now() * 0.008) * 0.005;
+      stationMesh.position.y = Math.sin(Date.now() * 0.025) * 0.003;
+    }
+
+    // --- Status light pulse ---
+    if (statusLight) {
+      const pulse = 0.7 + Math.sin(Date.now() * 0.006) * 0.3;
+      statusLight.scale.setScalar(pulse);
+      statusLightMat.emissiveIntensity = 0.5 + pulse * 0.5;
     }
 
     if (stationState.progress >= 1) {
       finishCurrentItem();
       playDing();
+      completionFlash = 0.4; // 0.4s flash
+      uiDirty = true;
+
+      // Reset animations
       if (stationMesh) stationMesh.position.y = 0;
+      if (printHead) {
+        printHead.position.z = 0;
+        printHeadMat.emissive.setHex(0x000000);
+        printHeadMat.emissiveIntensity = 0;
+      }
+      if (feedPaperMat) feedPaperMat.opacity = 0;
+      if (statusLight) statusLight.scale.setScalar(1);
+
+      updateOutputStack();
     }
 
     updateStatusLight();
+    uiDirty = true; // progress bar needs updating
+  } else {
+    // Idle state — gentle breathing glow on status light
+    if (statusLight) {
+      const breath = 0.85 + Math.sin(Date.now() * 0.002) * 0.15;
+      statusLight.scale.setScalar(breath);
+      statusLightMat.emissiveIntensity = 0.4 + breath * 0.3;
+    }
+
+    // Fade ink if still visible
+    if (inkActive && inkMat) {
+      inkMat.opacity = Math.max(0, inkMat.opacity - dt * 3);
+      if (inkMat.opacity <= 0) inkActive = false;
+    }
   }
 
-  // Update UI if open
-  if (isUIOpen) renderUI();
+  // Completion flash on output stack
+  if (completionFlash > 0) {
+    completionFlash -= dt;
+    const flashI = Math.max(0, completionFlash / 0.4);
+    const topIdx = stationState.outputQueue - 1;
+    if (topIdx >= 0 && topIdx < outputSheets.length) {
+      const s = outputSheets[topIdx];
+      s.mat.emissiveIntensity = flashI * 0.8;
+    }
+  }
+
+  // Update UI if open (only when state changed)
+  if (isUIOpen && uiDirty) {
+    renderUI();
+    uiDirty = false;
+  }
 }
 
 // --- UI ---
 
 function createUI() {
-  // Backdrop
   backdrop = document.createElement('div');
   Object.assign(backdrop.style, {
     position: 'fixed', inset: '0',
-    background: 'rgba(0,0,0,0.4)',
+    background: 'rgba(0,0,0,0.55)',
     zIndex: '190',
     display: 'none',
   });
@@ -309,7 +526,6 @@ function createUI() {
   });
   document.body.appendChild(backdrop);
 
-  // Panel
   panel = document.createElement('div');
   Object.assign(panel.style, {
     position: 'fixed',
@@ -319,7 +535,7 @@ function createUI() {
     border: '1px solid rgba(100,180,255,0.2)',
     borderRadius: '16px',
     padding: '0',
-    width: '420px',
+    width: '520px',
     color: '#fff',
     fontFamily: 'monospace',
     fontSize: '14px',
@@ -332,11 +548,34 @@ function createUI() {
     overflow: 'hidden',
   });
   document.body.appendChild(panel);
+
+  if (!document.getElementById('ps-animations')) {
+    const style = document.createElement('style');
+    style.id = 'ps-animations';
+    style.textContent = `
+      @keyframes ps-shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      @keyframes ps-pop {
+        0% { transform: scale(0.3); opacity: 0; }
+        60% { transform: scale(1.15); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      @keyframes ps-pulse-border {
+        0%,100% { border-color: rgba(100,255,150,0.25); }
+        50% { border-color: rgba(100,255,150,0.65); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 }
 
 export function openUI() {
   if (isUIOpen) return;
   isUIOpen = true;
+  lastUIHash = '';
+  uiDirty = true;
   document.exitPointerLock();
   backdrop.style.display = 'block';
   panel.style.display = 'block';
@@ -349,170 +588,242 @@ function closeUI() {
   panel.style.display = 'none';
 }
 
-function renderUI() {
+function getUIHash() {
   const hasPaper = hasItem('material', 'sticker_paper');
-  const hasInk = hasItem('material', 'color_ink');
-  const canLoad = hasPaper && (stationState.inputQueue + stationState.outputQueue + (stationState.isRunning ? 1 : 0)) < OUTPUT_MAX + 5;
-  const canCollect = stationState.outputQueue > 0;
+  const progQ = stationState.isRunning ? Math.floor(stationState.progress * 50) : -1;
+  return `${hasPaper}|${stationState.inputQueue}|${stationState.inkQueue}|${stationState.runningIsInked}|${stationState.outputQueue}|${stationState.outputQueueFresh}|${stationState.isRunning}|${progQ}|${isFull()}`;
+}
+
+function renderUI() {
+  const hash = getUIHash();
+  if (hash === lastUIHash) return;
+  lastUIHash = hash;
+
   const isProcessing = stationState.isRunning;
   const totalQueued = stationState.inputQueue + (isProcessing ? 1 : 0);
-  const inkedQueued = stationState.inkQueue + (isProcessing && stationState.runningIsInked ? 1 : 0);
+  const inkedCount = stationState.inkQueue + (isProcessing && stationState.runningIsInked ? 1 : 0);
   const grayOutputCount = stationState.outputQueue - stationState.outputQueueFresh;
-
-  // Progress bar
+  const canCollect = stationState.outputQueue > 0 && !isFull();
   const progressPct = isProcessing ? Math.min(stationState.progress * 100, 100) : 0;
-  const progressColor = isProcessing ? (stationState.runningIsInked ? '#f8a0ff' : '#6cf') : '#333';
+  const progressColor = isProcessing ? (stationState.runningIsInked ? '#f8a0ff' : '#6cf') : '#444';
+  const canPrint = totalQueued > 0 || hasItem('material', 'sticker_paper');
+  const invFull = isFull();
 
-  // Status text
-  let statusText = 'Idle';
-  let statusColor = '#4a4';
-  if (stationState.outputQueue >= OUTPUT_MAX) {
-    statusText = 'Output Full';
-    statusColor = '#f44';
-  } else if (isProcessing) {
-    statusText = `Printing... (${totalQueued} in queue)`;
-    statusColor = stationState.runningIsInked ? '#f8a' : '#fc4';
-  }
+  const zoneStyle = (borderColor, bgColor, pulse) =>
+    `width:110px;height:110px;border-radius:10px;border:2px ${borderColor};background:${bgColor};` +
+    `display:flex;flex-direction:column;align-items:center;justify-content:center;` +
+    `position:relative;transition:border-color 0.15s,background 0.15s;box-sizing:border-box;` +
+    (pulse ? 'animation:ps-pulse-border 1.5s ease infinite;' : '');
 
   panel.innerHTML = `
-    <div style="padding:20px 24px 0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <span style="font-size:18px;font-weight:bold;letter-spacing:0.5px">Print Station</span>
-        <button id="ps-close" style="background:none;border:none;color:#666;font-size:20px;cursor:pointer;padding:2px 6px;line-height:1">&times;</button>
+    <div style="padding:18px 22px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <span style="font-size:17px;font-weight:bold;letter-spacing:0.5px;color:#dde">Print Station</span>
+        <button id="ps-close" style="background:none;border:none;color:#556;font-size:22px;cursor:pointer;padding:0 4px;line-height:1">&times;</button>
       </div>
-      <div style="color:${statusColor};font-size:12px;margin-bottom:6px">${statusText}</div>
-      <div style="font-size:11px;color:${hasInk ? '#d080ff' : '#555'};margin-bottom:10px">
-        ${hasInk ? `Ink: ready — loaded sheets get color` : 'No ink — prints will be gray ($9)'}
-      </div>
-    </div>
 
-    <div style="padding:0 24px">
-      <!-- Input / Arrow / Output row -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px">
-        <!-- Input slot -->
-        <div style="text-align:center">
-          <div style="font-size:11px;color:#888;margin-bottom:6px">INPUT</div>
-          <div style="
-            width:72px;height:72px;
-            border:2px ${canLoad ? 'solid rgba(100,200,255,0.4)' : 'dashed rgba(255,255,255,0.15)'};
-            border-radius:10px;
-            background:rgba(255,255,255,0.04);
-            display:flex;flex-direction:column;align-items:center;justify-content:center;
-            position:relative;
-          ">
+      <!-- Three zones row -->
+      <div style="display:flex;gap:14px;justify-content:center;margin-bottom:16px">
+
+        <!-- Paper input zone -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
+          <div id="ps-paper-zone" style="${zoneStyle(
+            totalQueued > 0 ? 'solid rgba(100,200,255,0.5)' : 'dashed rgba(255,255,255,0.15)',
+            totalQueued > 0 ? 'rgba(100,200,255,0.06)' : 'rgba(255,255,255,0.03)',
+            false
+          )}">
             ${totalQueued > 0 ? `
-              <div style="width:22px;height:22px;border-radius:2px;background:linear-gradient(135deg,#f0f0f0,#d8d8d8);border:1px solid rgba(255,255,255,0.3)"></div>
-              <span style="font-size:11px;color:#aaa;margin-top:4px">${totalQueued}${inkedQueued > 0 ? ` <span style="color:#d080ff">(${inkedQueued}✦)</span>` : ''}</span>
+              <div style="width:30px;height:36px;border-radius:2px;background:linear-gradient(160deg,#f2f2f2,#d8d8e8);border:1px solid rgba(255,255,255,0.5);box-shadow:2px 2px 6px rgba(0,0,0,0.5)"></div>
+              <span style="font-size:13px;color:#acd;margin-top:6px;font-weight:bold">x${totalQueued}</span>
+              ${inkedCount > 0 ? `<span style="font-size:9px;color:#d080ff;margin-top:1px">${inkedCount} inked</span>` : ''}
             ` : `
-              <span style="font-size:11px;color:#555">Empty</span>
+              <div style="font-size:28px;opacity:0.18;line-height:1;user-select:none">📄</div>
+              <span style="font-size:9px;color:#445;margin-top:5px">drag here</span>
             `}
           </div>
+          <span style="font-size:10px;color:#667;letter-spacing:1px">PAPER</span>
+          <button id="ps-move-all" style="padding:3px 9px;border-radius:5px;font-family:monospace;font-size:10px;border:1px solid rgba(100,200,255,0.22);background:rgba(100,200,255,0.06);color:#6ad;cursor:pointer">Move All</button>
         </div>
 
-        <!-- Arrow + Print button -->
-        <div style="text-align:center">
-          <div style="font-size:20px;color:#555;margin-bottom:6px">&rarr;</div>
-          <button id="ps-load" style="
-            padding:6px 14px;
-            border-radius:6px;
-            font-family:monospace;font-size:12px;
-            cursor:${canLoad ? 'pointer' : 'default'};
-            border:1px solid ${canLoad ? 'rgba(100,200,255,0.4)' : 'rgba(255,255,255,0.1)'};
-            background:${canLoad ? 'rgba(100,200,255,0.1)' : 'rgba(255,255,255,0.03)'};
-            color:${canLoad ? '#6cf' : '#444'};
-          " ${canLoad ? '' : 'disabled'}>Load Paper</button>
+        <!-- Ink zone -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
+          <div id="ps-ink-zone" style="${zoneStyle(
+            stationState.inkQueue > 0 ? 'solid rgba(200,100,255,0.5)' : 'dashed rgba(255,255,255,0.15)',
+            stationState.inkQueue > 0 ? 'rgba(200,100,255,0.06)' : 'rgba(255,255,255,0.03)',
+            false
+          )}">
+            ${stationState.inkQueue > 0 ? `
+              <div style="width:26px;height:30px;border-radius:50% 50% 6px 6px;background:linear-gradient(160deg,#e080ff,#7030b0);box-shadow:0 0 14px rgba(192,80,255,0.5)"></div>
+              <span style="font-size:13px;color:#d8a0ff;margin-top:6px;font-weight:bold">x${stationState.inkQueue}</span>
+            ` : `
+              <div style="font-size:28px;opacity:0.18;line-height:1;user-select:none">🖊</div>
+              <span style="font-size:9px;color:#445;margin-top:5px">optional</span>
+            `}
+          </div>
+          <span style="font-size:10px;color:#667;letter-spacing:1px">INK</span>
+          <span style="font-size:9px;color:#445;text-align:center;line-height:1.4">color prints<br>cost 1 ink</span>
         </div>
 
-        <!-- Output slot -->
-        <div style="text-align:center">
-          <div style="font-size:11px;color:#888;margin-bottom:6px">OUTPUT</div>
-          <div style="
-            width:72px;height:72px;
-            border:2px ${canCollect ? 'solid rgba(100,255,150,0.4)' : 'dashed rgba(255,255,255,0.15)'};
-            border-radius:10px;
-            background:rgba(255,255,255,0.04);
-            display:flex;flex-direction:column;align-items:center;justify-content:center;
-          ">
+        <!-- Output zone -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
+          <div id="ps-output-zone" style="${zoneStyle(
+            stationState.outputQueue > 0 ? 'solid rgba(100,255,150,0.4)' : 'dashed rgba(255,255,255,0.12)',
+            stationState.outputQueue > 0 ? 'rgba(100,255,150,0.05)' : 'rgba(255,255,255,0.03)',
+            stationState.outputQueue > 0
+          )}cursor:${canCollect ? 'pointer' : 'default'};">
             ${stationState.outputQueue > 0 ? `
-              <div style="width:28px;height:28px;border-radius:4px;background:${stationState.outputQueueFresh > 0 ? 'linear-gradient(135deg,#f0a0e8,#c87aff)' : 'linear-gradient(135deg,#a0a0a8,#707078)'};box-shadow:${stationState.outputQueueFresh > 0 ? '0 0 10px rgba(220,120,255,0.4)' : 'none'}"></div>
-              <span style="font-size:10px;color:#aaa;margin-top:2px">${stationState.outputQueue}/${OUTPUT_MAX}</span>
-              ${stationState.outputQueueFresh > 0 && grayOutputCount > 0 ? `<span style="font-size:9px;color:#888">${stationState.outputQueueFresh}✦+${grayOutputCount}</span>` : ''}
+              <div style="width:30px;height:30px;border-radius:4px;background:${stationState.outputQueueFresh > 0 ? 'linear-gradient(135deg,#ff90f0,#d080ff)' : 'linear-gradient(135deg,#a0a0a8,#707078)'};box-shadow:${stationState.outputQueueFresh > 0 ? '0 0 12px rgba(220,120,255,0.5)' : 'none'};animation:ps-pop 0.3s ease"></div>
+              <span style="font-size:13px;color:#8f8;margin-top:6px;font-weight:bold">x${stationState.outputQueue}</span>
+              ${stationState.outputQueueFresh > 0 && grayOutputCount > 0 ? `<span style="font-size:9px;color:#888">${stationState.outputQueueFresh}✦+${grayOutputCount}○</span>` : ''}
             ` : `
-              <span style="font-size:11px;color:#555">Empty</span>
+              <span style="font-size:11px;color:#444">empty</span>
             `}
           </div>
+          <span style="font-size:10px;color:#667;letter-spacing:1px">OUTPUT</span>
+          <button id="ps-collect-all" style="padding:3px 9px;border-radius:5px;font-family:monospace;font-size:10px;border:1px solid ${canCollect ? 'rgba(100,255,150,0.28)' : 'rgba(255,255,255,0.08)'};background:${canCollect ? 'rgba(100,255,150,0.07)' : 'rgba(255,255,255,0.02)'};color:${canCollect ? '#6f6' : '#444'};cursor:${canCollect ? 'pointer' : 'default'}" ${canCollect ? '' : 'disabled'}>Collect All</button>
         </div>
+
       </div>
 
       <!-- Progress bar -->
-      <div style="margin-bottom:12px">
-        <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:10px;overflow:hidden">
-          <div style="width:${progressPct}%;height:100%;background:${progressColor};border-radius:4px;transition:width 0.1s linear"></div>
+      <div style="margin:0 2px 10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:10px;color:#557">${isProcessing ? (stationState.runningIsInked ? 'Printing (color)…' : 'Printing…') : totalQueued > 0 ? 'Queued — ready to print' : 'Idle'}</span>
+          ${isProcessing ? `<span style="font-size:10px;color:#668">${Math.round(progressPct)}%</span>` : ''}
         </div>
-      </div>
-
-      <!-- Action buttons -->
-      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px">
-        <button id="ps-load-all" style="
-          padding:6px 14px;border-radius:6px;font-family:monospace;font-size:12px;
-          cursor:${canLoad ? 'pointer' : 'default'};
-          border:1px solid ${canLoad ? 'rgba(100,200,255,0.3)' : 'rgba(255,255,255,0.1)'};
-          background:${canLoad ? 'rgba(100,200,255,0.08)' : 'rgba(255,255,255,0.03)'};
-          color:${canLoad ? '#6cf' : '#444'};
-        " ${canLoad ? '' : 'disabled'}>Load All</button>
-        <button id="ps-collect" style="
-          padding:6px 14px;border-radius:6px;font-family:monospace;font-size:12px;
-          cursor:${canCollect ? 'pointer' : 'default'};
-          border:1px solid ${canCollect ? 'rgba(100,255,150,0.3)' : 'rgba(255,255,255,0.1)'};
-          background:${canCollect ? 'rgba(100,255,150,0.08)' : 'rgba(255,255,255,0.03)'};
-          color:${canCollect ? '#6f6' : '#444'};
-        " ${canCollect ? '' : 'disabled'}>Collect</button>
-        <button id="ps-collect-all" style="
-          padding:6px 14px;border-radius:6px;font-family:monospace;font-size:12px;
-          cursor:${canCollect ? 'pointer' : 'default'};
-          border:1px solid ${canCollect ? 'rgba(100,255,150,0.3)' : 'rgba(255,255,255,0.1)'};
-          background:${canCollect ? 'rgba(100,255,150,0.08)' : 'rgba(255,255,255,0.03)'};
-          color:${canCollect ? '#6f6' : '#444'};
-        " ${canCollect ? '' : 'disabled'}>Collect All</button>
-      </div>
-
-      <div style="font-size:11px;color:#555;text-align:center;margin-bottom:4px">
-        Sticker Paper &rarr; Fresh Sticker (${PRINT_TIME}s)
+        <div style="background:rgba(255,255,255,0.07);border-radius:4px;height:8px;overflow:hidden;position:relative">
+          <div style="width:${progressPct}%;height:100%;background:${progressColor};border-radius:4px;transition:width 0.15s linear"></div>
+          ${isProcessing ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,transparent 30%,rgba(255,255,255,0.15) 50%,transparent 70%);background-size:200% 100%;animation:ps-shimmer 1.5s ease infinite;border-radius:4px;pointer-events:none"></div>` : ''}
+        </div>
       </div>
     </div>
 
-    <div style="padding:8px 24px 16px;text-align:center">
-      <button id="ps-done" style="
-        padding:6px 20px;border-radius:6px;font-family:monospace;font-size:13px;
-        cursor:pointer;border:1px solid rgba(255,255,255,0.15);
-        background:rgba(255,255,255,0.06);color:#888;
-      ">Done</button>
+    <!-- PRINT button -->
+    <div style="padding:0 22px 18px">
+      <button id="ps-print" style="width:100%;padding:10px;border-radius:8px;font-family:monospace;font-size:15px;font-weight:bold;letter-spacing:2px;border:1px solid ${canPrint ? 'rgba(80,220,100,0.45)' : 'rgba(255,255,255,0.08)'};background:${canPrint ? 'rgba(60,180,80,0.15)' : 'rgba(255,255,255,0.03)'};color:${canPrint ? '#7fa' : '#555'};cursor:${canPrint ? 'pointer' : 'default'};transition:all 0.15s" ${canPrint ? '' : 'disabled'}>PRINT</button>
+      ${invFull && stationState.outputQueue > 0 ? `<div style="font-size:10px;color:#f80;text-align:center;margin-top:6px">Inventory full — make room to collect</div>` : ''}
     </div>
   `;
 
-  // Wire up buttons
+  // Wire buttons
   panel.querySelector('#ps-close').addEventListener('click', closeUI);
-  panel.querySelector('#ps-done').addEventListener('click', closeUI);
 
-  const loadBtn = panel.querySelector('#ps-load');
-  if (loadBtn && canLoad) {
-    loadBtn.addEventListener('click', () => loadPaper(1));
-  }
-
-  const loadAllBtn = panel.querySelector('#ps-load-all');
-  if (loadAllBtn && canLoad) {
-    loadAllBtn.addEventListener('click', () => loadAllPaper());
-  }
-
-  const collectBtn = panel.querySelector('#ps-collect');
-  if (collectBtn && canCollect) {
-    collectBtn.addEventListener('click', () => collectSticker(1));
-  }
+  panel.querySelector('#ps-move-all').addEventListener('click', () => {
+    loadAllPaper();
+    lastUIHash = ''; renderUI();
+  });
 
   const collectAllBtn = panel.querySelector('#ps-collect-all');
-  if (collectAllBtn && canCollect) {
-    collectAllBtn.addEventListener('click', () => collectAllStickers());
+  if (collectAllBtn && !collectAllBtn.disabled) {
+    collectAllBtn.addEventListener('click', () => { collectAllStickers(); lastUIHash = ''; renderUI(); });
   }
+
+  const outputZone = panel.querySelector('#ps-output-zone');
+  if (outputZone && canCollect) {
+    outputZone.addEventListener('click', () => { collectSticker(1); lastUIHash = ''; renderUI(); });
+  }
+
+  const printBtn = panel.querySelector('#ps-print');
+  if (printBtn && !printBtn.disabled) {
+    printBtn.addEventListener('click', () => {
+      if (hasItem('material', 'sticker_paper')) loadPaper(1);
+      lastUIHash = ''; renderUI();
+    });
+  }
+}
+
+// --- Drop zone hit testing (called by hud.js during drag) ---
+
+export function isOverPrintPaperZone(x, y) {
+  if (!isUIOpen) return false;
+  const el = document.getElementById('ps-paper-zone');
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+export function isOverPrintInkZone(x, y) {
+  if (!isUIOpen) return false;
+  const el = document.getElementById('ps-ink-zone');
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+export function updatePrintDropHighlights(x, y, type, subtype) {
+  if (!isUIOpen) return;
+
+  const paperZone = document.getElementById('ps-paper-zone');
+  if (paperZone) {
+    const isPaper = type === 'material' && subtype === 'sticker_paper';
+    if (isPaper) {
+      const r = paperZone.getBoundingClientRect();
+      const over = x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+      paperZone.style.borderColor = over ? 'rgba(100,255,150,0.9)' : 'rgba(100,200,255,0.6)';
+      paperZone.style.borderStyle = 'solid';
+      paperZone.style.background = over ? 'rgba(100,255,150,0.15)' : 'rgba(100,200,255,0.08)';
+    }
+  }
+
+  const inkZone = document.getElementById('ps-ink-zone');
+  if (inkZone) {
+    const isInk = type === 'material' && subtype === 'color_ink';
+    if (isInk) {
+      const r = inkZone.getBoundingClientRect();
+      const over = x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+      inkZone.style.borderColor = over ? 'rgba(220,120,255,0.9)' : 'rgba(200,100,255,0.6)';
+      inkZone.style.borderStyle = 'solid';
+      inkZone.style.background = over ? 'rgba(220,120,255,0.15)' : 'rgba(200,100,255,0.08)';
+    }
+  }
+}
+
+export function handlePrintDrop(slotIndex, type, subtype, zone) {
+  if (!isUIOpen) return false;
+
+  if (zone === 'paper' && type === 'material' && subtype === 'sticker_paper') {
+    const slots = getSlots();
+    const slot = slots[slotIndex];
+    if (!slot || slot.type !== 'material' || slot.subtype !== 'sticker_paper') return false;
+    const count = slot.count || 1;
+    let loaded = 0;
+    for (let i = 0; i < count; i++) {
+      if ((stationState.inputQueue + stationState.outputQueue + (stationState.isRunning ? 1 : 0)) >= OUTPUT_MAX + 5) break;
+      if (!removeItem('material', 'sticker_paper')) break;
+      stationState.inputQueue++;
+      loaded++;
+    }
+    if (loaded > 0) {
+      if (!stationState.isRunning && stationState.inputQueue > 0 && stationState.outputQueue < OUTPUT_MAX) {
+        stationState.inputQueue--;
+        startNextItem();
+      }
+      updateStatusLight();
+      uiDirty = true;
+      playThunk();
+      return true;
+    }
+  }
+
+  if (zone === 'ink' && type === 'material' && subtype === 'color_ink') {
+    const slots = getSlots();
+    const slot = slots[slotIndex];
+    if (!slot || slot.type !== 'material' || slot.subtype !== 'color_ink') return false;
+    const count = slot.count || 1;
+    let loaded = 0;
+    for (let i = 0; i < count; i++) {
+      if (!removeItem('material', 'color_ink')) break;
+      stationState.inkQueue++;
+      loaded++;
+    }
+    if (loaded > 0) {
+      uiDirty = true;
+      playThunk();
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // --- Actions ---
@@ -523,22 +834,17 @@ function loadPaper(count) {
     if ((stationState.inputQueue + stationState.outputQueue + (stationState.isRunning ? 1 : 0)) >= OUTPUT_MAX + 5) break;
     if (removeItem('material', 'sticker_paper')) {
       stationState.inputQueue++;
-      // Consume ink if available for this sheet
-      if (hasItem('material', 'color_ink') && removeItem('material', 'color_ink')) {
-        stationState.inkQueue++;
-      }
       playThunk();
     }
   }
 
-  // Auto-start if not running
   if (!stationState.isRunning && stationState.inputQueue > 0 && stationState.outputQueue < OUTPUT_MAX) {
     stationState.inputQueue--;
     startNextItem();
   }
 
   updateStatusLight();
-  renderUI();
+  uiDirty = true;
 }
 
 function loadAllPaper() {
@@ -547,17 +853,12 @@ function loadAllPaper() {
          (stationState.inputQueue + stationState.outputQueue + (stationState.isRunning ? 1 : 0)) < OUTPUT_MAX + 5) {
     if (removeItem('material', 'sticker_paper')) {
       stationState.inputQueue++;
-      if (hasItem('material', 'color_ink') && removeItem('material', 'color_ink')) {
-        stationState.inkQueue++;
-      }
       loaded++;
     } else break;
   }
 
   if (loaded > 0) {
     playThunk();
-
-    // Auto-start if not running
     if (!stationState.isRunning && stationState.inputQueue > 0 && stationState.outputQueue < OUTPUT_MAX) {
       stationState.inputQueue--;
       startNextItem();
@@ -565,7 +866,7 @@ function loadAllPaper() {
   }
 
   updateStatusLight();
-  renderUI();
+  uiDirty = true;
 }
 
 function collectSticker(count) {
@@ -573,7 +874,6 @@ function collectSticker(count) {
   for (let i = 0; i < count; i++) {
     if (stationState.outputQueue <= 0) break;
     if (isFull()) break;
-    // Give fresh stickers first (inked), then old (gray)
     const subtype = stationState.outputQueueFresh > 0 ? 'fresh' : 'old';
     if (addItem('sticker', subtype)) {
       stationState.outputQueue--;
@@ -585,9 +885,10 @@ function collectSticker(count) {
   if (collected > 0) {
     playDing();
     updateStatusLight();
+    updateOutputStack();
   }
 
-  renderUI();
+  uiDirty = true;
 }
 
 function collectAllStickers() {
@@ -604,9 +905,10 @@ function collectAllStickers() {
   if (collected > 0) {
     playDing();
     updateStatusLight();
+    updateOutputStack();
   }
 
-  renderUI();
+  uiDirty = true;
 }
 
 // --- Audio (synthesized) ---

@@ -2,6 +2,7 @@
 
 import { getSlots, getMaxSlots, onInventoryChange, onMoneyChange, onMaxSlotsChange } from './inventory.js';
 import { isOverGachaInput, handleGachaDrop, updateGachaDropHighlight, isGachaUIOpen } from './gacha.js';
+import { isOverPrintPaperZone, isOverPrintInkZone, handlePrintDrop, updatePrintDropHighlights, isPrintStationOpen } from './stations/print-station.js';
 import { getMaterialIconStyle, getMaterialGhostStyle } from './materials.js';
 import { getJP, getRankName, getJPProgress, getNextRank, setOnJPChangeCallback } from './jp-system.js';
 
@@ -400,6 +401,11 @@ function onDragMove(e) {
   if (isGachaUIOpen()) {
     updateGachaDropHighlight(e.clientX, e.clientY);
   }
+
+  // Check if hovering over print station zones
+  if (isPrintStationOpen()) {
+    updatePrintDropHighlights(e.clientX, e.clientY, dragState.type, dragState.subtype);
+  }
 }
 
 function onDragEnd(e) {
@@ -414,6 +420,15 @@ function onDragEnd(e) {
   // Check if dropped on gacha input zone
   if (isGachaUIOpen() && isOverGachaInput(e.clientX, e.clientY)) {
     handled = handleGachaDrop(dragState.slotIndex, dragState.type);
+  }
+
+  // Check if dropped on print station zones
+  if (!handled && isPrintStationOpen()) {
+    if (isOverPrintPaperZone(e.clientX, e.clientY)) {
+      handled = handlePrintDrop(dragState.slotIndex, dragState.type, dragState.subtype, 'paper');
+    } else if (isOverPrintInkZone(e.clientX, e.clientY)) {
+      handled = handlePrintDrop(dragState.slotIndex, dragState.type, dragState.subtype, 'ink');
+    }
   }
 
   // Check if dropped on deal zone
