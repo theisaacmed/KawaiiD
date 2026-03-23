@@ -2229,9 +2229,9 @@ function findIntersectionZones(roads) {
       const r2MaxZ = r2.z + r2.d / 2;
 
       if (r1MinX < r2MaxX && r1MaxX > r2MinX && r1MinZ < r2MaxZ && r1MaxZ > r2MinZ) {
-        // Intersection found — clearance zone = wider road + 1 unit on each side
+        // Intersection found — clearance zone = wider road + 0.6 unit on each side (scaled 40%)
         const widerRoad = Math.max(r1.roadWidth, r2.roadWidth);
-        const clearance = widerRoad + 2; // 1 unit on each side
+        const clearance = widerRoad + 1.2; // 0.6 unit on each side
         const cx = Math.max(r1MinX, r2MinX) + (Math.min(r1MaxX, r2MaxX) - Math.max(r1MinX, r2MinX)) / 2;
         const cz = Math.max(r1MinZ, r2MinZ) + (Math.min(r1MaxZ, r2MaxZ) - Math.max(r1MinZ, r2MinZ)) / 2;
         zones.push({ x: cx, z: cz, w: clearance, d: clearance });
@@ -2332,7 +2332,7 @@ function snapToRoadEdge(b, roads) {
 
   if (!bestRoad) return null;
 
-  const sidewalkEdge = bestRoad.roadWidth / 2 + 0.5; // Half road width + small gap
+  const sidewalkEdge = bestRoad.roadWidth / 2 + 0.3; // Half road width + small gap (scaled 40%)
 
   if (bestIsHoriz) {
     // Road runs E-W, building should be north or south
@@ -2355,13 +2355,13 @@ function shiftAwayFromRoad(b, overlap) {
     // Shift along Z axis away from road
     const side = b.z >= road.z ? 1 : -1;
     const edgeDist = side > 0 ? rMaxZ : rMinZ;
-    const newZ = edgeDist + side * (b.d / 2 + 0.5);
+    const newZ = edgeDist + side * (b.d / 2 + 0.3); // 0.3 gap (scaled 40%)
     return { x: b.x, z: newZ };
   } else {
     // Shift along X axis away from road
     const side = b.x >= road.x ? 1 : -1;
     const edgeDist = side > 0 ? rMaxX : rMinX;
-    const newX = edgeDist + side * (b.w / 2 + 0.5);
+    const newX = edgeDist + side * (b.w / 2 + 0.3); // 0.3 gap (scaled 40%)
     return { x: newX, z: b.z };
   }
 }
@@ -2415,9 +2415,9 @@ function validateAndFixPlacements(districtSets) {
           needsFix = true;
           repositioned++;
         } else {
-          // Shift by 2 units in both axes
-          b.x += (b.x >= 0 ? 2 : -2);
-          b.z += (b.z >= 0 ? 2 : -2);
+          // Shift by 1.2 units in both axes (scaled 40%)
+          b.x += (b.x >= 0 ? 1.2 : -1.2);
+          b.z += (b.z >= 0 ? 1.2 : -1.2);
           needsFix = true;
           repositioned++;
         }
@@ -2432,7 +2432,7 @@ function validateAndFixPlacements(districtSets) {
           needsFix = true;
           repositioned++;
         } else {
-          b.x += 3;
+          b.x += 1.8; // 1.8 units (scaled 40%)
           needsFix = true;
           repositioned++;
         }
@@ -2451,18 +2451,23 @@ function validateAndFixPlacements(districtSets) {
     }
   }
 
-  // Pass 2: Fix building-to-building overlaps
+  // Pass 2: Fix building-to-building overlaps (run twice for cascades)
+  for (let pass2iter = 0; pass2iter < 2; pass2iter++) {
   for (let i = 0; i < allPlaced.length; i++) {
     const b = allPlaced[i];
-    if (b.landmark === 'apartment' || b.btype === 'player_apartment') continue;
+    // Never move named buildings, player apartment, or landmark buildings
+    if (b.landmark === 'apartment' || b.btype === 'player_apartment' || b.named) continue;
 
     if (overlapsOtherBuilding(b.x, b.z, b.w, b.d, allPlaced, i)) {
-      // Try shifting by 2 units in the direction away from the overlapping building
+      // Try shifting in multiple directions at scaled distances (0.6x of original)
       let fixed = false;
       for (const shift of [
-        { dx: 2, dz: 0 }, { dx: -2, dz: 0 },
-        { dx: 0, dz: 2 }, { dx: 0, dz: -2 },
-        { dx: 2, dz: 2 }, { dx: -2, dz: -2 },
+        { dx: 0, dz: 1.2 }, { dx: 0, dz: -1.2 },
+        { dx: 1.2, dz: 0 }, { dx: -1.2, dz: 0 },
+        { dx: 0, dz: 2.4 }, { dx: 0, dz: -2.4 },
+        { dx: 2.4, dz: 0 }, { dx: -2.4, dz: 0 },
+        { dx: 1.2, dz: 1.2 }, { dx: -1.2, dz: -1.2 },
+        { dx: 1.2, dz: -1.2 }, { dx: -1.2, dz: 1.2 },
       ]) {
         const nx = b.x + shift.dx;
         const nz = b.z + shift.dz;
@@ -2483,6 +2488,7 @@ function validateAndFixPlacements(districtSets) {
       }
     }
   }
+  } // end pass2iter
 
   // Pass 3: Final validation — check for significant road overlap after repositioning
   for (let i = 0; i < allPlaced.length; i++) {
@@ -2495,10 +2501,10 @@ function validateAndFixPlacements(districtSets) {
       const halfRoadW = road.roadWidth / 2;
       if (isHoriz) {
         const side = b.z >= road.z ? 1 : -1;
-        b.z = road.z + side * (halfRoadW + b.d / 2 + 1);
+        b.z = road.z + side * (halfRoadW + b.d / 2 + 0.6); // 0.6 gap (scaled 40%)
       } else {
         const side = b.x >= road.x ? 1 : -1;
-        b.x = road.x + side * (halfRoadW + b.w / 2 + 1);
+        b.x = road.x + side * (halfRoadW + b.w / 2 + 0.6); // 0.6 gap (scaled 40%)
       }
       repositioned++;
     }
