@@ -30,6 +30,7 @@ import { showTitleScreen } from './title-screen.js';
 import { initPauseMenu, isPauseMenuOpen } from './pause-menu.js';
 import { initProgression, setVictoryCallback, checkDealMilestone, checkColorMilestone, getProgressionState, restoreProgressionState, showRankMessage } from './progression.js';
 import { spawnPropsIfNeeded, restoreAllProps } from './named-buildings.js';
+import { loadBuildingModels } from './building-models.js';
 import { addJP, setOnRankUpCallback, getCurrentRankIndex, restoreJPState } from './jp-system.js';
 import {
   initAudio, updateAmbientDrone, updateFootsteps,
@@ -157,6 +158,9 @@ async function boot() {
 
   // Build buildings (all districts)
   const { buildings, windowMats, doorMats } = createBuildings(scene);
+
+  // Async: swap named buildings to GLTF models (falls back to primitives if files missing)
+  loadBuildingModels(scene, buildings);
 
   // Build district barriers
   createDistricts(scene);
