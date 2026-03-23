@@ -4,6 +4,7 @@
 
 import * as THREE from 'three';
 import { getBuildingColors } from './color-system.js';
+import { getTerrainHeight } from './world.js';
 
 // Color targets
 const GRAY = new THREE.Color(0x808080);
@@ -48,7 +49,7 @@ function createBenches(scene) {
   for (const pos of positions) {
     const benchMat = new THREE.MeshLambertMaterial({ color: 0x707070 });
     const group = new THREE.Group();
-    group.position.set(pos.x, 0, pos.z);
+    group.position.set(pos.x, getTerrainHeight(pos.x, pos.z), pos.z);
 
     const seat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.08, 0.5), benchMat);
     seat.position.y = 0.45; seat.castShadow = true; group.add(seat);
@@ -85,7 +86,7 @@ function createTrashCans(scene) {
   for (const pos of positions) {
     const canMat = new THREE.MeshLambertMaterial({ color: 0x606060 });
     const group = new THREE.Group();
-    group.position.set(pos.x, 0, pos.z);
+    group.position.set(pos.x, getTerrainHeight(pos.x, pos.z), pos.z);
 
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.22, 0.7, 8), canMat);
     body.position.y = 0.35; body.castShadow = true; group.add(body);
@@ -123,7 +124,7 @@ function createParkedCars(scene) {
     const pos = positions[i];
     const carMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
     const group = new THREE.Group();
-    group.position.set(pos.x, 0, pos.z);
+    group.position.set(pos.x, getTerrainHeight(pos.x, pos.z), pos.z);
     group.rotation.y = pos.rot;
 
     const body = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.8, 1.2), carMat);
@@ -159,7 +160,7 @@ function createFences(scene) {
     const f = segments[i];
     const fenceMat = new THREE.MeshLambertMaterial({ color: 0x707070 });
     const group = new THREE.Group();
-    group.position.set(f.x, 0, f.z);
+    group.position.set(f.x, getTerrainHeight(f.x, f.z), f.z);
     group.rotation.y = f.rot;
 
     const rail = new THREE.Mesh(new THREE.BoxGeometry(f.w, 0.08, 0.06), fenceMat);
@@ -190,7 +191,7 @@ function createTrees(scene) {
 
   for (const tp of positions) {
     const group = new THREE.Group();
-    group.position.set(tp.x, 0, tp.z);
+    group.position.set(tp.x, getTerrainHeight(tp.x, tp.z), tp.z);
 
     const trunkMat = new THREE.MeshLambertMaterial({ color: 0x606060 });
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 2.0, 6), trunkMat);
@@ -237,13 +238,14 @@ function createStreetLamps(scene) {
   const lampMat = new THREE.MeshBasicMaterial({ color: 0x888888 });
 
   for (const pos of positions) {
+    const T = getTerrainHeight(pos.x, pos.z);
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 3.5, 6), poleMat);
-    pole.position.set(pos.x, 1.75, pos.z);
+    pole.position.set(pos.x, T + 1.75, pos.z);
     pole.castShadow = true;
     scene.add(pole);
 
     const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), lampMat);
-    lamp.position.set(pos.x, 3.6, pos.z);
+    lamp.position.set(pos.x, T + 3.6, pos.z);
     scene.add(lamp);
   }
 }
@@ -286,25 +288,26 @@ function createBusStop(scene) {
   const mat = new THREE.MeshLambertMaterial({ color: 0x606060 });
   const glassMat = new THREE.MeshLambertMaterial({ color: 0x555560, transparent: true, opacity: 0.6 });
   const x = 2.4, z = 1.8; // along Main Street in Town
+  const bsT = getTerrainHeight(x, z);
 
   const roof = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 1.5), mat);
-  roof.position.set(x, 2.5, z);
+  roof.position.set(x, bsT + 2.5, z);
   roof.castShadow = true;
   scene.add(roof);
 
   for (const px of [-1.3, 1.3]) {
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.5, 6), mat);
-    pole.position.set(x + px, 1.25, z + 0.65);
+    pole.position.set(x + px, bsT + 1.25, z + 0.65);
     pole.castShadow = true;
     scene.add(pole);
   }
 
   const panel = new THREE.Mesh(new THREE.BoxGeometry(3, 2.0, 0.06), glassMat);
-  panel.position.set(x, 1.2, z - 0.7);
+  panel.position.set(x, bsT + 1.2, z - 0.7);
   scene.add(panel);
 
   const bench = new THREE.Mesh(new THREE.BoxGeometry(2, 0.08, 0.5), mat);
-  bench.position.set(x, 0.5, z - 0.4);
+  bench.position.set(x, bsT + 0.5, z - 0.4);
   scene.add(bench);
 
   worldObjects.push({ mesh: roof, material: mat, type: 'bench', targetColor: BENCH_COLOR, x, z });
@@ -321,7 +324,7 @@ function createNewspaperBoxes(scene) {
 
   for (const pos of positions) {
     const group = new THREE.Group();
-    group.position.set(pos.x + 2, 0, pos.z);
+    group.position.set(pos.x + 2, getTerrainHeight(pos.x + 2, pos.z), pos.z);
 
     const body = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.9, 0.3), boxMat);
     body.position.y = 0.45;
@@ -348,15 +351,16 @@ function createConstructionBarriers(scene) {
   ];
 
   for (const b of barriers) {
+    const bT = getTerrainHeight(b.x, b.z);
     const barMat = new THREE.MeshLambertMaterial({ color: 0x666055 });
     const barrier = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.8, 0.15), barMat);
-    barrier.position.set(b.x, 0.4, b.z);
+    barrier.position.set(b.x, bT + 0.4, b.z);
     barrier.castShadow = true;
     scene.add(barrier);
 
     const stripeMat = new THREE.MeshLambertMaterial({ color: 0x554433 });
     const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.15, 0.16), stripeMat);
-    stripe.position.set(b.x, 0.5, b.z);
+    stripe.position.set(b.x, bT + 0.5, b.z);
     scene.add(stripe);
   }
 }
@@ -383,13 +387,14 @@ function createDowntownStreetLamps(scene) {
   const lampMat = new THREE.MeshBasicMaterial({ color: 0x888888 });
 
   for (const pos of positions) {
+    const T = getTerrainHeight(pos.x, pos.z);
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 3.5, 6), poleMat);
-    pole.position.set(pos.x, 1.75, pos.z);
+    pole.position.set(pos.x, T + 1.75, pos.z);
     pole.castShadow = true;
     scene.add(pole);
 
     const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), lampMat);
-    lamp.position.set(pos.x, 3.6, pos.z);
+    lamp.position.set(pos.x, T + 3.6, pos.z);
     scene.add(lamp);
   }
 }
@@ -407,7 +412,7 @@ function createDowntownTrashCans(scene) {
   for (const pos of positions) {
     const canMat = new THREE.MeshLambertMaterial({ color: 0x606060 });
     const group = new THREE.Group();
-    group.position.set(pos.x, 0, pos.z);
+    group.position.set(pos.x, getTerrainHeight(pos.x, pos.z), pos.z);
 
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.22, 0.7, 8), canMat);
     body.position.y = 0.35; body.castShadow = true; group.add(body);
@@ -438,7 +443,7 @@ function createDowntownParkedCars(scene) {
     const pos = positions[i];
     const carMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
     const group = new THREE.Group();
-    group.position.set(pos.x, 0, pos.z);
+    group.position.set(pos.x, getTerrainHeight(pos.x, pos.z), pos.z);
     group.rotation.y = pos.rot;
 
     const body = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.8, 1.2), carMat);

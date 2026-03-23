@@ -4,21 +4,43 @@
 
 import * as THREE from 'three';
 
-// Module-level refs for animated ocean
+// Module-level refs for animated ocean and terrain
 let oceanMesh = null;
 let oceanMesh2 = null;
+let terrainMesh = null;
+
+// ========== 2D VALUE NOISE ==========
+function hash(x, y) { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 13)) * 1274126177; return (h ^ (h >> 16)) / 2147483647; }
+function noise2D(x, y) {
+  const ix = Math.floor(x), iy = Math.floor(y);
+  const fx = x - ix, fy = y - iy;
+  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+  const n00 = hash(ix, iy), n10 = hash(ix+1, iy), n01 = hash(ix, iy+1), n11 = hash(ix+1, iy+1);
+  return n00*(1-sx)*(1-sy) + n10*sx*(1-sy) + n01*(1-sx)*sy + n11*sx*sy;
+}
 
 // ========== TERRAIN HEIGHT ==========
-// Returns the vertical offset (world Y) for a given x,z position.
-// Used by buildings, NPCs, and ACE officers to sit on terrain.
+// Returns the world-Y for a given x,z — used by buildings, NPCs, player, and the terrain mesh itself.
 export function getTerrainHeight(x, z) {
-  // Uptown hill — center (102, 48), influence radius ~48
-  const dxU = x - 102, dzU = z - 48;
-  if (dxU * dxU + dzU * dzU < 48 * 48) return 3;
-  // Ruins depression — center (0, -120), radius 60
-  const dxR = x, dzR = z + 120;
-  if (dxR * dxR + dzR * dzR < 60 * 60) return -1;
-  return 0;
+  // Base rolling hills
+  let h = noise2D(x * 0.008, z * 0.008) * 2.5;
+  h += noise2D(x * 0.022, z * 0.022) * 0.8;
+
+  // Uptown hill — center (102, 48), smooth peak
+  const uptownDist = Math.sqrt((x - 102) ** 2 + (z - 48) ** 2);
+  if (uptownDist < 48) h += (1 - uptownDist / 48) * 5;
+
+  // Ruins depression — sunken south zone
+  if (z < -60) h -= 2 * Math.min(1, (-60 - z) / 30);
+
+  // Flatten Main Street (x ≈ 0)
+  const msDist = Math.abs(x);
+  if (msDist < 4) h *= msDist / 4;
+
+  // Flatten port/waterfront (north)
+  if (z > 80) h *= Math.max(0, 1 - (z - 80) / 40);
+
+  return h;
 }
 
 // ========== OCEAN UPDATE ==========
@@ -65,32 +87,26 @@ export function createWorld(scene) {
   scene.fog = new THREE.Fog(0xa0a0a0, 40, 210);
   scene.background = new THREE.Color(0xa0a0a0);
 
-  // ========== MAIN GROUND PLANE ==========
-  const groundGeo = new THREE.PlaneGeometry(360, 360);
-  const groundMat = new THREE.MeshLambertMaterial({ color: 0x787872 });
-  const ground = new THREE.Mesh(groundGeo, groundMat);
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+  // ========== HEIGHTMAPPED TERRAIN ==========
+  const terrainGeo = new THREE.PlaneGeometry(360, 360, 120, 120);
+  terrainGeo.rotateX(-Math.PI / 2);
+  const tPos = terrainGeo.attributes.position;
+  for (let i = 0; i < tPos.count; i++) {
+    tPos.setY(i, getTerrainHeight(tPos.getX(i), tPos.getZ(i)));
+  }
+  terrainGeo.computeVertexNormals();
+  const terrainMat = new THREE.MeshLambertMaterial({ color: 0x787872 });
+  terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
+  terrainMesh.receiveShadow = true;
+  scene.add(terrainMesh);
 
-  // ========== UPTOWN HILL ==========
-  // Wide, flattened sphere sitting under the Uptown district
-  // Uptown center: x=102, z=48, district radius 36
-  const hillGeo = new THREE.SphereGeometry(42, 32, 16);
-  const hillMat = new THREE.MeshLambertMaterial({ color: 0x7A7A74 });
-  const hill = new THREE.Mesh(hillGeo, hillMat);
-  hill.scale.y = 4 / 42;    // top of dome at y=4
-  hill.position.set(102, 0, 48);
-  hill.receiveShadow = true;
-  scene.add(hill);
-
-  // ========== RUINS GROUND (sunken, scorched earth) ==========
-  // Slightly below y=0 to create a depression effect
+  // ========== RUINS GROUND (scorched overlay) ==========
+  // Dark plane slightly above terrain center to tint the ruins zone
   const ruinsGroundGeo = new THREE.PlaneGeometry(180, 80);
   const ruinsGroundMat = new THREE.MeshLambertMaterial({ color: 0x505050 });
   const ruinsGround = new THREE.Mesh(ruinsGroundGeo, ruinsGroundMat);
   ruinsGround.rotation.x = -Math.PI / 2;
-  ruinsGround.position.set(0, -1, -120);
+  ruinsGround.position.set(0, getTerrainHeight(0, -120) + 0.05, -120);
   ruinsGround.receiveShadow = true;
   scene.add(ruinsGround);
 
@@ -116,7 +132,7 @@ export function createWorld(scene) {
     // Slightly tilt each piece
     rm.rotation.y = (r.x * 0.31 + r.z * 0.17) % (Math.PI * 2);
     rm.rotation.z = (r.x * 0.07) % 0.3;
-    rm.position.set(r.x, -1 + r.h / 2, r.z);
+    rm.position.set(r.x, getTerrainHeight(r.x, r.z) + r.h / 2, r.z);
     rm.receiveShadow = true;
     rm.castShadow = true;
     scene.add(rm);
@@ -214,7 +230,8 @@ export function createWorld(scene) {
       new THREE.CylinderGeometry(0.15, 0.22, 2.0, 6),
       trunkMat
     );
-    trunk.position.set(tp.x, 1.0, tp.z);
+    const treeBase = getTerrainHeight(tp.x, tp.z);
+    trunk.position.set(tp.x, treeBase + 1.0, tp.z);
     trunk.castShadow = true;
     scene.add(trunk);
     // Canopy
@@ -222,7 +239,7 @@ export function createWorld(scene) {
       new THREE.SphereGeometry(1.2, 8, 6),
       canopyMat.clone()
     );
-    canopy.position.set(tp.x, 2.8, tp.z);
+    canopy.position.set(tp.x, treeBase + 2.8, tp.z);
     canopy.castShadow = true;
     scene.add(canopy);
   }
@@ -263,5 +280,5 @@ export function createWorld(scene) {
   sun.shadow.camera.bottom = -90;
   scene.add(sun);
 
-  return { ground, groundMat };
+  return { ground: terrainMesh, groundMat: terrainMat };
 }

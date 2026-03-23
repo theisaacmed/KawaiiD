@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { getBarrierBoxes } from './districts.js';
 import { isNoclip, getSpeedMult } from './admin.js';
 import { getAllBuildingBlocks } from './buildings.js';
+import { getTerrainHeight } from './world.js';
 
 const PLAYER_HEIGHT = 1.7;
 const WALK_SPEED = 5;
@@ -169,9 +170,10 @@ export class Player {
     this.position.y += this.velocity.y * dt;
     this.position.z += this.velocity.z * dt;
 
-    // Ground collision
-    if (this.position.y <= PLAYER_HEIGHT) {
-      this.position.y = PLAYER_HEIGHT;
+    // Ground collision — follow terrain height
+    const groundY = getTerrainHeight(this.position.x, this.position.z) + PLAYER_HEIGHT;
+    if (this.position.y <= groundY) {
+      this.position.y = groundY;
       this.velocity.y = 0;
       this.isOnGround = true;
     } else {
