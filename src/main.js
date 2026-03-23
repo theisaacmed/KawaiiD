@@ -30,7 +30,6 @@ import { showTitleScreen } from './title-screen.js';
 import { initPauseMenu, isPauseMenuOpen } from './pause-menu.js';
 import { initProgression, setVictoryCallback, checkDealMilestone, checkColorMilestone, getProgressionState, restoreProgressionState, showRankMessage } from './progression.js';
 import { spawnPropsIfNeeded, restoreAllProps } from './named-buildings.js';
-import { loadBuildingModels } from './building-models.js';
 import { addJP, setOnRankUpCallback, getCurrentRankIndex, restoreJPState } from './jp-system.js';
 import {
   initAudio, updateAmbientDrone, updateFootsteps,
@@ -128,14 +127,6 @@ function updateFogParticles(fogData, dt, playerPos) {
   pos.needsUpdate = true;
 }
 
-// --- NPC bobbing ---
-function updateNPCBobbing(npcs, elapsed) {
-  for (const npc of npcs) {
-    if (npc.group) {
-      npc.group.position.y = Math.sin(elapsed * 1.5 + npc.group.position.x * 0.5) * 0.03;
-    }
-  }
-}
 
 // --- Boot game ---
 async function boot() {
@@ -160,7 +151,7 @@ async function boot() {
   const { buildings, windowMats, doorMats } = createBuildings(scene);
 
   // Async: swap named buildings to GLTF models (falls back to primitives if files missing)
-  loadBuildingModels(scene, buildings);
+  // building GLTFs removed — primitive meshes only
 
   // Build district barriers
   createDistricts(scene);
@@ -570,7 +561,6 @@ async function boot() {
     updateFogParticles(fogData, dt, player.position);
 
     // NPC bobbing
-    updateNPCBobbing(npcs, elapsed);
 
     // Color milestones
     if (Math.floor(elapsed * 10) % 6 === 0) {

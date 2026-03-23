@@ -3,6 +3,7 @@
 
 import * as THREE from 'three';
 import { getBuildingColors } from './color-system.js';
+import { getTerrainHeight } from './world.js';
 
 // Road marking pastel targets (when color spreads)
 const ROAD_MARKING_PASTEL = [
@@ -94,11 +95,12 @@ const ALLEYS = [
   { x: -81, z: -42, w: 1.5, d: 15 },
 ];
 
-function createRoadSurface(scene, road, color, yOffset) {
-  const geo = new THREE.BoxGeometry(road.w, 0.02, road.d);
+function createRoadSurface(scene, road, color) {
+  const ty = getTerrainHeight(road.x, road.z);
+  const geo = new THREE.BoxGeometry(road.w, 0.4, road.d);
   const mat = new THREE.MeshLambertMaterial({ color });
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(road.x, yOffset, road.z);
+  mesh.position.set(road.x, ty + 0.01, road.z);
   mesh.receiveShadow = true;
   scene.add(mesh);
   allRoadMeshes.push({ x: road.x, z: road.z, w: road.w, d: road.d });
@@ -116,13 +118,17 @@ function createDashedCenterLine(scene, road) {
     const dashD = isHorizontal ? 0.15 : 2;
     const mat = markMat.clone();
     const dash = new THREE.Mesh(new THREE.BoxGeometry(dashW, 0.025, dashD), mat);
+    let dx, dz;
     if (isHorizontal) {
-      dash.position.set(road.x - length / 2 + i * 4 + 2, 0.025, road.z);
+      dx = road.x - length / 2 + i * 4 + 2;
+      dz = road.z;
     } else {
-      dash.position.set(road.x, 0.025, road.z - length / 2 + i * 4 + 2);
+      dx = road.x;
+      dz = road.z - length / 2 + i * 4 + 2;
     }
+    dash.position.set(dx, getTerrainHeight(dx, dz) + 0.025, dz);
     scene.add(dash);
-    roadMarkings.push({ mesh: dash, material: mat, x: dash.position.x, z: dash.position.z });
+    roadMarkings.push({ mesh: dash, material: mat, x: dx, z: dz });
   }
 }
 
@@ -135,20 +141,24 @@ function createSidewalks(scene, road) {
   if (isHorizontal) {
     // Sidewalks on north and south sides
     for (const side of [-1, 1]) {
+      const sx = road.x, sz = road.z + side * (road.d / 2 + swWidth / 2);
+      const ty = getTerrainHeight(sx, sz);
       const geo = new THREE.BoxGeometry(road.w, swHeight, swWidth);
       const mat = new THREE.MeshLambertMaterial({ color: swColor });
       const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(road.x, swHeight / 2, road.z + side * (road.d / 2 + swWidth / 2));
+      mesh.position.set(sx, ty + swHeight / 2, sz);
       mesh.receiveShadow = true;
       scene.add(mesh);
     }
   } else {
     // Sidewalks on east and west sides
     for (const side of [-1, 1]) {
+      const sx = road.x + side * (road.w / 2 + swWidth / 2), sz = road.z;
+      const ty = getTerrainHeight(sx, sz);
       const geo = new THREE.BoxGeometry(swWidth, swHeight, road.d);
       const mat = new THREE.MeshLambertMaterial({ color: swColor });
       const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(road.x + side * (road.w / 2 + swWidth / 2), swHeight / 2, road.z);
+      mesh.position.set(sx, ty + swHeight / 2, sz);
       mesh.receiveShadow = true;
       scene.add(mesh);
     }
@@ -196,15 +206,15 @@ function createCrosswalks(scene) {
           ),
           mat
         );
+        let sx, sz;
         if (isHoriz) {
-          stripe.position.set(cw.x, 0.025, cw.z + offset + i * 0.7 * 0);
-          // Actually position along the offset axis
-          stripe.position.set(cw.x, 0.025, cw.z + offset);
-          stripe.position.x = cw.x - 2.1 + i * 0.7;
-          stripe.position.z = cw.z + offset;
+          sx = cw.x - 2.1 + i * 0.7;
+          sz = cw.z + offset;
         } else {
-          stripe.position.set(cw.x + offset, 0.025, cw.z - 2.1 + i * 0.7);
+          sx = cw.x + offset;
+          sz = cw.z - 2.1 + i * 0.7;
         }
+        stripe.position.set(sx, getTerrainHeight(sx, sz) + 0.025, sz);
         scene.add(stripe);
         roadMarkings.push({ mesh: stripe, material: mat, x: cw.x, z: cw.z });
       }
@@ -223,7 +233,7 @@ function createCrackedTransition(scene) {
       new THREE.BoxGeometry(0.08, 0.025, 0.5 + Math.random() * 2),
       crackMat
     );
-    crack.position.set(x, 0.015, z);
+    crack.position.set(x, getTerrainHeight(x, z) + 0.015, z);
     crack.rotation.y = Math.random() * Math.PI;
     scene.add(crack);
   }
@@ -233,19 +243,19 @@ function createCrackedTransition(scene) {
 export function createRoads(scene) {
   // Main roads
   for (const road of MAIN_ROADS) {
-    createRoadSurface(scene, road, 0x505050, 0.01);
+    createRoadSurface(scene, road, 0x505050);
     createDashedCenterLine(scene, road);
     createSidewalks(scene, road);
   }
 
   // Secondary roads
   for (const road of SECONDARY_ROADS) {
-    createRoadSurface(scene, road, 0x555555, 0.008);
+    createRoadSurface(scene, road, 0x555555);
   }
 
   // Alleys
   for (const road of ALLEYS) {
-    createRoadSurface(scene, road, 0x585858, 0.006);
+    createRoadSurface(scene, road, 0x585858);
   }
 
   // Crosswalks at major intersections
