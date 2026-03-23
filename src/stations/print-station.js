@@ -590,8 +590,12 @@ function closeUI() {
 
 function getUIHash() {
   const hasPaper = hasItem('material', 'sticker_paper');
+  const hasInk = hasItem('material', 'color_ink');
   const progQ = stationState.isRunning ? Math.floor(stationState.progress * 50) : -1;
-  return `${hasPaper}|${stationState.inputQueue}|${stationState.inkQueue}|${stationState.runningIsInked}|${stationState.outputQueue}|${stationState.outputQueueFresh}|${stationState.isRunning}|${progQ}|${isFull()}`;
+  const invSlots = getSlots();
+  const paperInInv = invSlots.filter(s => s.type === 'material' && s.subtype === 'sticker_paper').reduce((n, s) => n + s.count, 0);
+  const inkInInv = invSlots.filter(s => s.type === 'material' && s.subtype === 'color_ink').reduce((n, s) => n + s.count, 0);
+  return `${hasPaper}|${hasInk}|${paperInInv}|${inkInInv}|${stationState.inputQueue}|${stationState.inkQueue}|${stationState.runningIsInked}|${stationState.outputQueue}|${stationState.outputQueueFresh}|${stationState.isRunning}|${progQ}|${isFull()}`;
 }
 
 function renderUI() {
@@ -603,118 +607,155 @@ function renderUI() {
   const totalQueued = stationState.inputQueue + (isProcessing ? 1 : 0);
   const inkedCount = stationState.inkQueue + (isProcessing && stationState.runningIsInked ? 1 : 0);
   const grayOutputCount = stationState.outputQueue - stationState.outputQueueFresh;
-  const canCollect = stationState.outputQueue > 0 && !isFull();
-  const progressPct = isProcessing ? Math.min(stationState.progress * 100, 100) : 0;
-  const progressColor = isProcessing ? (stationState.runningIsInked ? '#f8a0ff' : '#6cf') : '#444';
-  const canPrint = totalQueued > 0 || hasItem('material', 'sticker_paper');
   const invFull = isFull();
+  const canCollect = stationState.outputQueue > 0 && !invFull;
+  const canLoadPaper = hasItem('material', 'sticker_paper') &&
+    (stationState.inputQueue + stationState.outputQueue + (isProcessing ? 1 : 0)) < OUTPUT_MAX + 5;
+  const canLoadInk = hasItem('material', 'color_ink');
+  const canPrint = totalQueued > 0 || canLoadPaper;
 
-  const zoneStyle = (borderColor, bgColor, pulse) =>
-    `width:110px;height:110px;border-radius:10px;border:2px ${borderColor};background:${bgColor};` +
+  const progressPct = isProcessing ? Math.min(stationState.progress * 100, 100) : 0;
+  const progressColor = isProcessing ? (stationState.runningIsInked ? '#f8a0ff' : '#6cf') : '#4a4';
+
+  // Count items in inventory for display
+  const slots = getSlots();
+  const paperInInv = slots.filter(s => s.type === 'material' && s.subtype === 'sticker_paper').reduce((n, s) => n + s.count, 0);
+  const inkInInv = slots.filter(s => s.type === 'material' && s.subtype === 'color_ink').reduce((n, s) => n + s.count, 0);
+
+  const btn = (active, label, id) =>
+    `<button id="${id}" style="padding:4px 10px;font-size:10px;font-family:monospace;border-radius:5px;` +
+    `background:${active ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)'};` +
+    `color:${active ? '#ccc' : '#3a3a3a'};` +
+    `border:1px solid ${active ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.06)'};` +
+    `cursor:${active ? 'pointer' : 'default'};transition:all 0.15s" ${active ? '' : 'disabled'}>${label}</button>`;
+
+  const zone = (id, borderCol, bgCol, pulse, clickable) =>
+    `<div id="${id}" style="width:100px;height:100px;border-radius:10px;border:2px ${borderCol};background:${bgCol};` +
     `display:flex;flex-direction:column;align-items:center;justify-content:center;` +
-    `position:relative;transition:border-color 0.15s,background 0.15s;box-sizing:border-box;` +
-    (pulse ? 'animation:ps-pulse-border 1.5s ease infinite;' : '');
+    `box-sizing:border-box;transition:border-color 0.15s,background 0.15s;` +
+    `cursor:${clickable ? 'pointer' : 'default'};` +
+    (pulse ? 'animation:ps-pulse-border 1.5s ease infinite;' : '') + '">`;
 
   panel.innerHTML = `
-    <div style="padding:18px 22px 0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-        <span style="font-size:17px;font-weight:bold;letter-spacing:0.5px;color:#dde">Print Station</span>
-        <button id="ps-close" style="background:none;border:none;color:#556;font-size:22px;cursor:pointer;padding:0 4px;line-height:1">&times;</button>
+    <!-- Header -->
+    <div style="padding:18px 22px 0;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-size:17px;font-weight:bold;letter-spacing:0.5px;color:#dde">Print Station</span>
+      <button id="ps-close" style="background:none;border:none;color:#556;font-size:22px;cursor:pointer;padding:0 4px;line-height:1">&times;</button>
+    </div>
+
+    <!-- Three zones -->
+    <div style="padding:0 22px;display:flex;gap:12px;justify-content:center;align-items:flex-start;margin-bottom:14px">
+
+      <!-- Paper -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <span style="font-size:10px;color:#667;letter-spacing:1px">PAPER</span>
+        ${zone('ps-paper-zone',
+          canLoadPaper ? 'solid rgba(100,200,255,0.55)' : totalQueued > 0 ? 'solid rgba(100,200,255,0.3)' : 'dashed rgba(255,255,255,0.13)',
+          totalQueued > 0 ? 'rgba(100,200,255,0.05)' : 'rgba(255,255,255,0.02)',
+          false, canLoadPaper)}
+          ${totalQueued > 0 ? `
+            <div style="width:26px;height:32px;border-radius:2px;background:linear-gradient(160deg,#f2f2f2,#d8d8e8);border:1px solid rgba(255,255,255,0.5);box-shadow:2px 2px 5px rgba(0,0,0,0.5)"></div>
+            <span style="font-size:12px;color:#acd;margin-top:5px;font-weight:bold">×${totalQueued}</span>
+            ${inkedCount > 0 ? `<span style="font-size:9px;color:#d080ff;margin-top:1px">${inkedCount} inked</span>` : ''}
+          ` : `
+            <div style="font-size:26px;opacity:${canLoadPaper ? '0.5' : '0.15'};line-height:1;user-select:none">📄</div>
+            <span style="font-size:9px;color:#445;margin-top:4px">${canLoadPaper ? 'click to load' : 'empty'}</span>
+          `}
+        </div>
+        <span style="font-size:9px;color:#445">inv: ${paperInInv}</span>
+        ${btn(canLoadPaper, 'Load All', 'ps-load-all-paper')}
       </div>
 
-      <!-- Three zones row -->
-      <div style="display:flex;gap:14px;justify-content:center;margin-bottom:16px">
-
-        <!-- Paper input zone -->
-        <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
-          <div id="ps-paper-zone" style="${zoneStyle(
-            totalQueued > 0 ? 'solid rgba(100,200,255,0.5)' : 'dashed rgba(255,255,255,0.15)',
-            totalQueued > 0 ? 'rgba(100,200,255,0.06)' : 'rgba(255,255,255,0.03)',
-            false
-          )}">
-            ${totalQueued > 0 ? `
-              <div style="width:30px;height:36px;border-radius:2px;background:linear-gradient(160deg,#f2f2f2,#d8d8e8);border:1px solid rgba(255,255,255,0.5);box-shadow:2px 2px 6px rgba(0,0,0,0.5)"></div>
-              <span style="font-size:13px;color:#acd;margin-top:6px;font-weight:bold">x${totalQueued}</span>
-              ${inkedCount > 0 ? `<span style="font-size:9px;color:#d080ff;margin-top:1px">${inkedCount} inked</span>` : ''}
-            ` : `
-              <div style="font-size:28px;opacity:0.18;line-height:1;user-select:none">📄</div>
-              <span style="font-size:9px;color:#445;margin-top:5px">drag here</span>
-            `}
-          </div>
-          <span style="font-size:10px;color:#667;letter-spacing:1px">PAPER</span>
-          <button id="ps-move-all" style="padding:3px 9px;border-radius:5px;font-family:monospace;font-size:10px;border:1px solid rgba(100,200,255,0.22);background:rgba(100,200,255,0.06);color:#6ad;cursor:pointer">Move All</button>
+      <!-- Ink -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <span style="font-size:10px;color:#667;letter-spacing:1px">INK</span>
+        ${zone('ps-ink-zone',
+          canLoadInk ? 'solid rgba(200,100,255,0.55)' : stationState.inkQueue > 0 ? 'solid rgba(200,100,255,0.3)' : 'dashed rgba(255,255,255,0.13)',
+          stationState.inkQueue > 0 ? 'rgba(200,100,255,0.05)' : 'rgba(255,255,255,0.02)',
+          false, canLoadInk)}
+          ${stationState.inkQueue > 0 ? `
+            <div style="width:22px;height:26px;border-radius:50% 50% 5px 5px;background:linear-gradient(160deg,#e080ff,#7030b0);box-shadow:0 0 12px rgba(192,80,255,0.5)"></div>
+            <span style="font-size:12px;color:#d8a0ff;margin-top:5px;font-weight:bold">×${stationState.inkQueue}</span>
+          ` : `
+            <div style="font-size:26px;opacity:${canLoadInk ? '0.5' : '0.15'};line-height:1;user-select:none">🎨</div>
+            <span style="font-size:9px;color:#445;margin-top:4px">${canLoadInk ? 'click to load' : 'optional'}</span>
+          `}
         </div>
-
-        <!-- Ink zone -->
-        <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
-          <div id="ps-ink-zone" style="${zoneStyle(
-            stationState.inkQueue > 0 ? 'solid rgba(200,100,255,0.5)' : 'dashed rgba(255,255,255,0.15)',
-            stationState.inkQueue > 0 ? 'rgba(200,100,255,0.06)' : 'rgba(255,255,255,0.03)',
-            false
-          )}">
-            ${stationState.inkQueue > 0 ? `
-              <div style="width:26px;height:30px;border-radius:50% 50% 6px 6px;background:linear-gradient(160deg,#e080ff,#7030b0);box-shadow:0 0 14px rgba(192,80,255,0.5)"></div>
-              <span style="font-size:13px;color:#d8a0ff;margin-top:6px;font-weight:bold">x${stationState.inkQueue}</span>
-            ` : `
-              <div style="font-size:28px;opacity:0.18;line-height:1;user-select:none">🖊</div>
-              <span style="font-size:9px;color:#445;margin-top:5px">optional</span>
-            `}
-          </div>
-          <span style="font-size:10px;color:#667;letter-spacing:1px">INK</span>
-          <span style="font-size:9px;color:#445;text-align:center;line-height:1.4">color prints<br>cost 1 ink</span>
-        </div>
-
-        <!-- Output zone -->
-        <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
-          <div id="ps-output-zone" style="${zoneStyle(
-            stationState.outputQueue > 0 ? 'solid rgba(100,255,150,0.4)' : 'dashed rgba(255,255,255,0.12)',
-            stationState.outputQueue > 0 ? 'rgba(100,255,150,0.05)' : 'rgba(255,255,255,0.03)',
-            stationState.outputQueue > 0
-          )}cursor:${canCollect ? 'pointer' : 'default'};">
-            ${stationState.outputQueue > 0 ? `
-              <div style="width:30px;height:30px;border-radius:4px;background:${stationState.outputQueueFresh > 0 ? 'linear-gradient(135deg,#ff90f0,#d080ff)' : 'linear-gradient(135deg,#a0a0a8,#707078)'};box-shadow:${stationState.outputQueueFresh > 0 ? '0 0 12px rgba(220,120,255,0.5)' : 'none'};animation:ps-pop 0.3s ease"></div>
-              <span style="font-size:13px;color:#8f8;margin-top:6px;font-weight:bold">x${stationState.outputQueue}</span>
-              ${stationState.outputQueueFresh > 0 && grayOutputCount > 0 ? `<span style="font-size:9px;color:#888">${stationState.outputQueueFresh}✦+${grayOutputCount}○</span>` : ''}
-            ` : `
-              <span style="font-size:11px;color:#444">empty</span>
-            `}
-          </div>
-          <span style="font-size:10px;color:#667;letter-spacing:1px">OUTPUT</span>
-          <button id="ps-collect-all" style="padding:3px 9px;border-radius:5px;font-family:monospace;font-size:10px;border:1px solid ${canCollect ? 'rgba(100,255,150,0.28)' : 'rgba(255,255,255,0.08)'};background:${canCollect ? 'rgba(100,255,150,0.07)' : 'rgba(255,255,255,0.02)'};color:${canCollect ? '#6f6' : '#444'};cursor:${canCollect ? 'pointer' : 'default'}" ${canCollect ? '' : 'disabled'}>Collect All</button>
-        </div>
-
+        <span style="font-size:9px;color:#445">inv: ${inkInInv}</span>
+        ${btn(canLoadInk, 'Load All', 'ps-load-all-ink')}
       </div>
 
-      <!-- Progress bar -->
-      <div style="margin:0 2px 10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span style="font-size:10px;color:#557">${isProcessing ? (stationState.runningIsInked ? 'Printing (color)…' : 'Printing…') : totalQueued > 0 ? 'Queued — ready to print' : 'Idle'}</span>
-          ${isProcessing ? `<span style="font-size:10px;color:#668">${Math.round(progressPct)}%</span>` : ''}
+      <!-- Arrow -->
+      <div style="display:flex;align-items:center;margin-top:42px;font-size:20px;color:${isProcessing ? '#6cf' : '#2a2a3a'};${isProcessing ? 'animation:ps-feed 1.5s ease infinite' : ''}">→</div>
+
+      <!-- Output -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <span style="font-size:10px;color:#667;letter-spacing:1px">OUTPUT</span>
+        ${zone('ps-output-zone',
+          stationState.outputQueue > 0 ? 'solid rgba(100,255,150,0.45)' : 'dashed rgba(255,255,255,0.13)',
+          stationState.outputQueue > 0 ? 'rgba(100,255,150,0.05)' : 'rgba(255,255,255,0.02)',
+          stationState.outputQueue > 0, canCollect)}
+          ${stationState.outputQueue > 0 ? `
+            <div style="width:28px;height:28px;border-radius:4px;background:${stationState.outputQueueFresh > 0 ? 'linear-gradient(135deg,#ff90f0,#d080ff)' : 'linear-gradient(135deg,#a0a0a8,#707078)'};box-shadow:${stationState.outputQueueFresh > 0 ? '0 0 12px rgba(220,120,255,0.5)' : 'none'};animation:ps-pop 0.3s ease"></div>
+            <span style="font-size:12px;color:#8f8;margin-top:5px;font-weight:bold">×${stationState.outputQueue}</span>
+            ${stationState.outputQueueFresh > 0 && grayOutputCount > 0 ? `<span style="font-size:9px;color:#888">${stationState.outputQueueFresh}✦+${grayOutputCount}○</span>` : ''}
+          ` : `
+            <span style="font-size:26px;opacity:0.12;line-height:1;user-select:none">✨</span>
+            <span style="font-size:9px;color:#333;margin-top:4px">empty</span>
+          `}
         </div>
-        <div style="background:rgba(255,255,255,0.07);border-radius:4px;height:8px;overflow:hidden;position:relative">
-          <div style="width:${progressPct}%;height:100%;background:${progressColor};border-radius:4px;transition:width 0.15s linear"></div>
-          ${isProcessing ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,transparent 30%,rgba(255,255,255,0.15) 50%,transparent 70%);background-size:200% 100%;animation:ps-shimmer 1.5s ease infinite;border-radius:4px;pointer-events:none"></div>` : ''}
-        </div>
+        <span style="font-size:9px;color:#445">&nbsp;</span>
+        ${btn(canCollect, 'Collect All', 'ps-collect-all')}
+      </div>
+
+    </div>
+
+    ${invFull && stationState.outputQueue > 0 ? `<div style="padding:0 22px;font-size:10px;color:#f80;margin-bottom:4px;text-align:center">Inventory full — make room to collect</div>` : ''}
+
+    <!-- Progress bar -->
+    <div style="padding:0 22px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+        <span style="font-size:10px;color:#557">${isProcessing ? (stationState.runningIsInked ? 'Printing (color)…' : 'Printing…') : totalQueued > 0 ? 'Queued' : 'Idle'}</span>
+        ${isProcessing ? `<span style="font-size:10px;color:#557">${Math.round(progressPct)}%</span>` : ''}
+      </div>
+      <div style="background:rgba(255,255,255,0.07);border-radius:4px;height:7px;overflow:hidden;position:relative">
+        <div style="width:${progressPct}%;height:100%;background:${progressColor};border-radius:4px;transition:width 0.15s linear"></div>
+        ${isProcessing ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,transparent 30%,rgba(255,255,255,0.15) 50%,transparent 70%);background-size:200% 100%;animation:ps-shimmer 1.5s ease infinite;border-radius:4px;pointer-events:none"></div>` : ''}
       </div>
     </div>
 
     <!-- PRINT button -->
-    <div style="padding:0 22px 18px">
-      <button id="ps-print" style="width:100%;padding:10px;border-radius:8px;font-family:monospace;font-size:15px;font-weight:bold;letter-spacing:2px;border:1px solid ${canPrint ? 'rgba(80,220,100,0.45)' : 'rgba(255,255,255,0.08)'};background:${canPrint ? 'rgba(60,180,80,0.15)' : 'rgba(255,255,255,0.03)'};color:${canPrint ? '#7fa' : '#555'};cursor:${canPrint ? 'pointer' : 'default'};transition:all 0.15s" ${canPrint ? '' : 'disabled'}>PRINT</button>
-      ${invFull && stationState.outputQueue > 0 ? `<div style="font-size:10px;color:#f80;text-align:center;margin-top:6px">Inventory full — make room to collect</div>` : ''}
+    <div style="padding:0 22px 16px;text-align:center">
+      <button id="ps-print" style="width:100%;padding:10px;border-radius:8px;font-family:monospace;font-size:15px;font-weight:bold;letter-spacing:2px;border:1px solid ${canPrint ? 'rgba(80,220,100,0.45)' : 'rgba(255,255,255,0.07)'};background:${canPrint ? 'rgba(60,180,80,0.15)' : 'rgba(255,255,255,0.03)'};color:${canPrint ? '#7fa' : '#444'};cursor:${canPrint ? 'pointer' : 'default'};transition:all 0.15s" ${canPrint ? '' : 'disabled'}>PRINT</button>
+      <div style="font-size:10px;color:#3a3a4a;margin-top:6px">Press E or Esc to close</div>
     </div>
   `;
 
   // Wire buttons
   panel.querySelector('#ps-close').addEventListener('click', closeUI);
 
-  panel.querySelector('#ps-move-all').addEventListener('click', () => {
-    loadAllPaper();
-    lastUIHash = ''; renderUI();
-  });
+  const paperZone = panel.querySelector('#ps-paper-zone');
+  if (paperZone && canLoadPaper) {
+    paperZone.addEventListener('click', () => { loadPaper(1); lastUIHash = ''; renderUI(); });
+  }
+
+  const inkZone = panel.querySelector('#ps-ink-zone');
+  if (inkZone && canLoadInk) {
+    inkZone.addEventListener('click', () => { loadOneInk(); lastUIHash = ''; renderUI(); });
+  }
+
+  const loadAllPaperBtn = panel.querySelector('#ps-load-all-paper');
+  if (loadAllPaperBtn && canLoadPaper) {
+    loadAllPaperBtn.addEventListener('click', () => { loadAllPaper(); lastUIHash = ''; renderUI(); });
+  }
+
+  const loadAllInkBtn = panel.querySelector('#ps-load-all-ink');
+  if (loadAllInkBtn && canLoadInk) {
+    loadAllInkBtn.addEventListener('click', () => { loadAllInk(); lastUIHash = ''; renderUI(); });
+  }
 
   const collectAllBtn = panel.querySelector('#ps-collect-all');
-  if (collectAllBtn && !collectAllBtn.disabled) {
+  if (collectAllBtn && canCollect) {
     collectAllBtn.addEventListener('click', () => { collectAllStickers(); lastUIHash = ''; renderUI(); });
   }
 
@@ -724,9 +765,9 @@ function renderUI() {
   }
 
   const printBtn = panel.querySelector('#ps-print');
-  if (printBtn && !printBtn.disabled) {
+  if (printBtn && canPrint) {
     printBtn.addEventListener('click', () => {
-      if (hasItem('material', 'sticker_paper')) loadPaper(1);
+      if (canLoadPaper) loadAllPaper();
       lastUIHash = ''; renderUI();
     });
   }
@@ -867,6 +908,30 @@ function loadAllPaper() {
 
   updateStatusLight();
   uiDirty = true;
+}
+
+function loadOneInk() {
+  if (!hasItem('material', 'color_ink')) return;
+  if (removeItem('material', 'color_ink')) {
+    stationState.inkQueue++;
+    playThunk();
+    updateStatusLight();
+    uiDirty = true;
+  }
+}
+
+function loadAllInk() {
+  let loaded = 0;
+  while (hasItem('material', 'color_ink')) {
+    if (!removeItem('material', 'color_ink')) break;
+    stationState.inkQueue++;
+    loaded++;
+  }
+  if (loaded > 0) {
+    playThunk();
+    updateStatusLight();
+    uiDirty = true;
+  }
 }
 
 function collectSticker(count) {
