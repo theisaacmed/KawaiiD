@@ -2215,6 +2215,7 @@ export function createNPCs(scene) {
     // Build distinct NPC model from primitives
     const { group, parts, bodyMat, accessoryMat, headMat, hairMat } = buildNPCModel(data.name);
     group.position.copy(data.position);
+    group.position.y = getTerrainHeight(data.position.x, data.position.z);
 
     // Name label — floating sprite above head
     const { sprite: labelSprite } = makeNPCLabel(data.name);
@@ -2592,7 +2593,7 @@ function updateNPCRoutine(npc, playerPos, hour, dt) {
         // else: fully blocked — stay put this frame
       }
     }
-    npc.worldPos.y = 0; // stay on ground
+    npc.worldPos.y = getTerrainHeight(npc.worldPos.x, npc.worldPos.z);
     npc.group.position.copy(npc.worldPos);
 
     // Smooth rotation toward movement direction
@@ -2641,7 +2642,7 @@ function updateActivityBehavior(npc, rs, playerPos, dt) {
 
     case 'wandering':
       // Walk between random nearby points slowly
-      npc.group.position.y = 0;
+      npc.group.position.y = getTerrainHeight(npc.group.position.x, npc.group.position.z);
       if (!rs.wanderTarget) {
         rs.wanderTarget = getWanderTarget(npc.worldPos.x, npc.worldPos.z);
         rs.wanderTimer = 3 + Math.random() * 5; // pause before wandering
@@ -2675,7 +2676,7 @@ function updateActivityBehavior(npc, rs, playerPos, dt) {
 
     default:
       // sleeping / idle — face player if nearby
-      npc.group.position.y = 0;
+      npc.group.position.y = getTerrainHeight(npc.group.position.x, npc.group.position.z);
       facePlayer(npc, playerPos, dt);
       break;
   }
