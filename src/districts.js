@@ -139,13 +139,13 @@ function createBarrier(scene, def) {
   const group = new THREE.Group();
   group.position.set(def.x, 0, def.z);
 
-  // Striped barricade (red/white)
-  const barricadeGeo = new THREE.BoxGeometry(def.w, 1.2, def.d);
-  const barricadeMat = new THREE.MeshLambertMaterial({ color: 0xCC3333 });
-  const barricade = new THREE.Mesh(barricadeGeo, barricadeMat);
-  barricade.position.y = 0.6;
-  barricade.castShadow = true;
-  group.add(barricade);
+  // Striped barricade (red/white) — commented out: red box removed while ACE is disabled
+  // const barricadeGeo = new THREE.BoxGeometry(def.w, 1.2, def.d);
+  // const barricadeMat = new THREE.MeshLambertMaterial({ color: 0xCC3333 });
+  // const barricade = new THREE.Mesh(barricadeGeo, barricadeMat);
+  // barricade.position.y = 0.6;
+  // barricade.castShadow = true;
+  // group.add(barricade);
 
   // White stripes
   const stripeCount = Math.max(3, Math.floor(Math.max(def.w, def.d) / 2));
@@ -182,11 +182,11 @@ function createBarrier(scene, def) {
   sign.position.set(post.position.x, 2.2, post.position.z + 0.1);
   group.add(sign);
 
-  // "ACE" text backing
-  const textMat = new THREE.MeshBasicMaterial({ color: 0xCC3333 });
-  const textBg = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 0.09), textMat);
-  textBg.position.set(post.position.x, 2.2, post.position.z + 0.12);
-  group.add(textBg);
+  // "ACE" text backing — commented out with red barricade
+  // const textMat = new THREE.MeshBasicMaterial({ color: 0xCC3333 });
+  // const textBg = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 0.09), textMat);
+  // textBg.position.set(post.position.x, 2.2, post.position.z + 0.12);
+  // group.add(textBg);
 
   scene.add(group);
 

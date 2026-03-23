@@ -12,7 +12,7 @@ const DAY_START_HOUR = 6;   // 6:00 AM
 const NIGHT_START_HOUR = 18; // 6:00 PM
 
 // --- State ---
-let gameHour = 6.0;   // current hour (0–24 float)
+let gameHour = 9.0;   // current hour (0–24 float)
 let dayNumber = 1;
 let paused = false;
 

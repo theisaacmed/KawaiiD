@@ -108,9 +108,8 @@ function createRubblePile(scene, px, pz, index) {
   glow.position.set(0, 1.6, 0);
   group.add(glow);
 
-  const light = new THREE.PointLight(0x66ccff, 0.6, 6);
-  light.position.copy(glow.position);
-  group.add(light);
+  // const light = new THREE.PointLight(0x66ccff, 0.6, 6);
+  const light = { intensity: 0 }; // stub — light removed to avoid floating orb glow
 
   scene.add(group);
 
