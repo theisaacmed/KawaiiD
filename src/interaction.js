@@ -20,6 +20,7 @@ import { isNearStuffingStation, isStuffingStationOpen, openStuffingStationUI } f
 import { isNearStationShop, isStationShopOpen, openStationShopUI } from './station-shop.js';
 import { isNearGus, isGusAvailable, openOrderUI, isSmuggleUIOpen, isNearCrate, collectCrate, closeOrderUI } from './smuggling.js';
 import { isAshOnDuty, isNearRuinsKid, isRuinsKidHired, isPipRecruited, isPipHired, recruitPip, hirePip, firePip, onPileSearched } from './scavenger-system.js';
+import { isTutorialDealStep } from './tutorial.js';
 import { isNearWorkshopBuilding, isWorkshopPurchased, openStorageUI, isWorkshopStorageOpen } from './workshop.js';
 import { getNearestDecorSpot, openDecorUI, isDecorUIOpen } from './apartment-decor.js';
 
@@ -214,12 +215,12 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
           showRefusal("I'm out on a run. Catch me after 4 PM.");
           return;
         }
-        // Street encounter — chance of refusal
-        if (nearNPC.purchaseCount >= nearNPC.maxPurchases) {
+        // Street encounter — chance of refusal (bypassed during tutorial deal step)
+        if (!isTutorialDealStep() && nearNPC.purchaseCount >= nearNPC.maxPurchases) {
           showRefusal(nearNPC.limitLine);
           return;
         }
-        if (Math.random() < STREET_REFUSE_CHANCE) {
+        if (!isTutorialDealStep() && Math.random() < STREET_REFUSE_CHANCE) {
           const refuseLine = nearNPC.streetRefuseLines
             ? nearNPC.streetRefuseLines[Math.floor(Math.random() * nearNPC.streetRefuseLines.length)]
             : "Not right now.";

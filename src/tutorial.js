@@ -49,7 +49,7 @@ export function isTutorialComplete() { return tutorialComplete; }
 export function isTutorialDealStep() { return !tutorialComplete && tutorialStep === 3; }
 
 // During steps 2-3, Mei is relocated near the ruins entrance so the player finds her easily.
-const MEI_TUTORIAL_POS = new THREE.Vector3(-6, 0, -81);
+const MEI_TUTORIAL_POS = new THREE.Vector3(0, 0, -72);
 export function getMeiTutorialOverride() {
   if (tutorialComplete) return null;
   if (tutorialStep === 2 || tutorialStep === 3) return MEI_TUTORIAL_POS;

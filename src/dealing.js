@@ -133,10 +133,10 @@ export function isDealOpen() {
 // --- Handle item dropped into deal zone ---
 function handleItemDrop(slotIndex, itemType, itemSubtype) {
   if (!isOpen || !activeNPC || phase !== 'greeting') return false;
-  if (activeNPC.purchaseCount >= activeNPC.maxPurchases) return false;
+  if (!isTutorialDealStep() && activeNPC.purchaseCount >= activeNPC.maxPurchases) return false;
 
-  // After 3 rejections in a session, NPC refuses all items
-  if (sessionRejections >= 3) {
+  // After 3 rejections in a session, NPC refuses all items (bypassed during tutorial)
+  if (!isTutorialDealStep() && sessionRejections >= 3) {
     renderSessionMaxReject();
     return false;
   }
