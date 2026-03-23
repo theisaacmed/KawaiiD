@@ -2,7 +2,7 @@
 
 import * as THREE from 'three';
 import { playColorSpread } from './audio.js';
-import { isNight } from './time-system.js';
+import { isNight, getDaylightFactor } from './time-system.js';
 import { updateNPCColor } from './npc-models.js';
 
 // Warm, happy target colors for buildings
@@ -256,6 +256,9 @@ export function updateColorSystem(dt) {
 
 function updateAtmosphere(worldColor) {
   if (!sceneRef) return;
+  // During dawn/dusk/night, lighting.js controls sky/fog/lights.
+  // Only run here at full daytime (8AM–4PM) so the two systems don't fight.
+  if (getDaylightFactor() < 1.0) return;
 
   // Fog color
   _c1.copy(FOG_GRAY).lerp(FOG_TARGET, worldColor);

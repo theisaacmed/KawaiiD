@@ -6,11 +6,11 @@ import { getDaylightFactor, getTimePeriod, getGameHour, getDayNumber, isNight } 
 
 // --- Constants ---
 // Dawn colors (6–8 AM): warm orange sunrise
-const DAWN_SUN_COLOR = new THREE.Color(0xFFA040);
-const DAWN_SKY = new THREE.Color(0xE8A060);
-const DAWN_FOG = new THREE.Color(0xC8986A);
-const DAWN_AMBIENT = 0.5;
-const DAWN_SUN_INTENSITY = 0.5;
+const DAWN_SUN_COLOR = new THREE.Color(0xFFD080);
+const DAWN_SKY = new THREE.Color(0xB0B8C8);
+const DAWN_FOG = new THREE.Color(0xA8B0C0);
+const DAWN_AMBIENT = 0.75;
+const DAWN_SUN_INTENSITY = 0.8;
 
 // Daytime (8 AM – 4 PM): bright, neutral (handled by color-system)
 // We just leave color-system values as-is at daylightFactor=1.0
@@ -19,16 +19,16 @@ const DAWN_SUN_INTENSITY = 0.5;
 const DUSK_SUN_COLOR = new THREE.Color(0xFF7040);
 const DUSK_SKY = new THREE.Color(0xD07050);
 const DUSK_FOG = new THREE.Color(0xB07060);
-const DUSK_AMBIENT = 0.35;
-const DUSK_SUN_INTENSITY = 0.45;
+const DUSK_AMBIENT = 0.5;
+const DUSK_SUN_INTENSITY = 0.6;
 
 // Night colors (6 PM – 6 AM): dark blue
 const NIGHT_FOG = new THREE.Color(0x0a0a18);
 const NIGHT_SKY = new THREE.Color(0x060610);
 const NIGHT_FOG_NEAR = 8;
 const NIGHT_FOG_FAR = 40;
-const NIGHT_AMBIENT = 0.08;
-const NIGHT_SUN_INTENSITY = 0.03;
+const NIGHT_AMBIENT = 0.25;
+const NIGHT_SUN_INTENSITY = 0.12;
 const NIGHT_SUN_COLOR = new THREE.Color(0x3344aa); // blue moonlight
 
 // Sun angle (low at dawn/dusk, high at noon)
