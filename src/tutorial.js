@@ -48,6 +48,14 @@ export function isTutorialComplete() { return tutorialComplete; }
 // Returns true while the player needs to complete the first deal with Mei.
 export function isTutorialDealStep() { return !tutorialComplete && tutorialStep === 3; }
 
+// During steps 2-3, Mei is relocated near the ruins entrance so the player finds her easily.
+const MEI_TUTORIAL_POS = new THREE.Vector3(-10, 0, -135);
+export function getMeiTutorialOverride() {
+  if (tutorialComplete) return null;
+  if (tutorialStep === 2 || tutorialStep === 3) return MEI_TUTORIAL_POS;
+  return null;
+}
+
 export function getTutorialState() {
   return { step: tutorialStep, complete: tutorialComplete };
 }
@@ -158,7 +166,7 @@ function showStep(step) {
     positionWaypoint(RUINS_WAYPOINT);
     showWaypoint();
   } else if (step === 3) {
-    positionWaypoint(MEI_POS);
+    positionWaypoint(MEI_TUTORIAL_POS);
     showWaypoint();
   } else {
     hideWaypoint();

@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { getGameHour, isNPCActive, getDayNumber } from './time-system.js';
+import { getMeiTutorialOverride } from './tutorial.js';
 import { isDistrictUnlocked } from './districts.js';
 import { getOfficers } from './ace.js';
 import { getBuildingColors } from './color-system.js';
@@ -17,6 +18,7 @@ import {
 import { buildGraph } from './npc-pathfinding.js';
 import { buildNPCModel, makeNPCLabel } from './npc-models.js';
 import { animateNPCs, updateNPCLabels } from './npc-animation.js';
+import { getAllBuildingBlocks } from './buildings.js';
 
 // ========== SOCIAL / REFERRAL STATE ==========
 // Tracks which NPCs have been unlocked via referral chains
@@ -2370,6 +2372,16 @@ const ROUTINE_WALK_SPEED = 1.8;
 // Player avoidance
 const PLAYER_AVOID_DIST = 1.5;
 const PLAYER_AVOID_STRENGTH = 1.2;
+const NPC_RADIUS = 0.4;
+
+function npcInsideBuilding(x, z) {
+  const bldgs = getAllBuildingBlocks();
+  for (const b of bldgs) {
+    if (x >= b.x - b.w / 2 - NPC_RADIUS && x <= b.x + b.w / 2 + NPC_RADIUS &&
+        z >= b.z - b.d / 2 - NPC_RADIUS && z <= b.z + b.d / 2 + NPC_RADIUS) return true;
+  }
+  return false;
+}
 
 export function updateNPCs(npcs, playerPos, dt) {
   const hour = getGameHour();
@@ -2419,6 +2431,20 @@ export function updateNPCs(npcs, playerPos, dt) {
         }
       } else {
         npc.group.visible = true;
+      }
+    }
+
+    // ===== TUTORIAL OVERRIDE: keep Mei near ruins during steps 2-3 =====
+    if (npc.name === 'Mei') {
+      const tutorialPos = getMeiTutorialOverride();
+      if (tutorialPos) {
+        npc.worldPos.copy(tutorialPos);
+        npc.targetPos.copy(tutorialPos);
+        npc.group.position.copy(tutorialPos);
+        npc.isWalking = false;
+        npc.group.visible = true;
+        npc.isAvailable = true;
+        continue;
       }
     }
 
@@ -2539,8 +2565,32 @@ function updateNPCRoutine(npc, playerPos, hour, dt) {
       avoidZ = -(pdz / pDist) * pushStrength;
     }
 
-    npc.worldPos.x += moveX + avoidX;
-    npc.worldPos.z += moveZ + avoidZ;
+    // Apply move with building collision — sliding response
+    const cx = npc.worldPos.x;
+    const cz = npc.worldPos.z;
+    const fullX = cx + moveX + avoidX;
+    const fullZ = cz + moveZ + avoidZ;
+
+    if (!npcInsideBuilding(fullX, fullZ)) {
+      npc.worldPos.x = fullX;
+      npc.worldPos.z = fullZ;
+    } else {
+      // Try path move without avoidance nudge
+      const pathX = cx + moveX;
+      const pathZ = cz + moveZ;
+      if (!npcInsideBuilding(pathX, pathZ)) {
+        npc.worldPos.x = pathX;
+        npc.worldPos.z = pathZ;
+      } else {
+        // Slide along one axis
+        if (!npcInsideBuilding(pathX, cz)) {
+          npc.worldPos.x = pathX;
+        } else if (!npcInsideBuilding(cx, pathZ)) {
+          npc.worldPos.z = pathZ;
+        }
+        // else: fully blocked — stay put this frame
+      }
+    }
     npc.worldPos.y = 0; // stay on ground
     npc.group.position.copy(npc.worldPos);
 
