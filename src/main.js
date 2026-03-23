@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Player } from './player.js';
-import { createWorld } from './world.js';
+import { createWorld, updateOcean } from './world.js';
 import { createRuins, updateRuinsGlow } from './ruins.js';
 import { createRoads, updateRoads } from './roads.js';
 import { createBuildings, getFountainData, showDistrictBuildings } from './buildings.js';
@@ -550,6 +550,7 @@ async function boot() {
 
     // Audio
     const worldColor = getWorldColor();
+    updateOcean(elapsed, worldColor);
     updateAmbientDrone(worldColor);
     const isMoving = player.keys.forward || player.keys.back || player.keys.left || player.keys.right;
     updateFootsteps(dt, isMoving && player.locked);

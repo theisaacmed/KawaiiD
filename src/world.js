@@ -4,13 +4,68 @@
 
 import * as THREE from 'three';
 
+// Module-level refs for animated ocean
+let oceanMesh = null;
+let oceanMesh2 = null;
+
+// ========== TERRAIN HEIGHT ==========
+// Returns the vertical offset (world Y) for a given x,z position.
+// Used by buildings, NPCs, and ACE officers to sit on terrain.
+export function getTerrainHeight(x, z) {
+  // Uptown hill — center (102, 48), influence radius ~48
+  const dxU = x - 102, dzU = z - 48;
+  if (dxU * dxU + dzU * dzU < 48 * 48) return 3;
+  // Ruins depression — center (0, -120), radius 60
+  const dxR = x, dzR = z + 120;
+  if (dxR * dxR + dzR * dzR < 60 * 60) return -1;
+  return 0;
+}
+
+// ========== OCEAN UPDATE ==========
+// Called each frame from main.js animate loop.
+// worldColor: 0–1 value from color-system
+export function updateOcean(time, worldColor = 0) {
+  if (oceanMesh) {
+    const pos = oceanMesh.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const y = pos.getY(i);
+      pos.setZ(i,
+        Math.sin(x * 0.3 + time) * 0.3 +
+        Math.sin(y * 0.2 + time * 0.7) * 0.2
+      );
+    }
+    pos.needsUpdate = true;
+    oceanMesh.geometry.computeVertexNormals();
+    // Lerp color from dull gray-blue to vibrant blue as world gains color
+    const t = Math.min(1, worldColor);
+    const r = Math.round(0x4a + (0x22 - 0x4a) * t);
+    const g = Math.round(0x66 + (0x88 - 0x66) * t);
+    const b = Math.round(0x70 + (0xcc - 0x70) * t);
+    oceanMesh.material.color.setRGB(r / 255, g / 255, b / 255);
+  }
+  if (oceanMesh2) {
+    const pos2 = oceanMesh2.geometry.attributes.position;
+    for (let i = 0; i < pos2.count; i++) {
+      const x = pos2.getX(i);
+      const y = pos2.getY(i);
+      pos2.setZ(i,
+        Math.sin(x * 0.25 + time * 1.3 + 0.8) * 0.15 +
+        Math.sin(y * 0.35 + time * 0.5 + 1.2) * 0.1
+      );
+    }
+    pos2.needsUpdate = true;
+    pos2.geometry?.computeVertexNormals?.();
+    oceanMesh2.geometry.computeVertexNormals();
+  }
+}
+
 export function createWorld(scene) {
   // Fog and background — oppressive gray atmosphere
   scene.fog = new THREE.Fog(0xa0a0a0, 40, 210);
   scene.background = new THREE.Color(0xa0a0a0);
 
   // ========== MAIN GROUND PLANE ==========
-  // 500x500 unit city area
   const groundGeo = new THREE.PlaneGeometry(360, 360);
   const groundMat = new THREE.MeshLambertMaterial({ color: 0x787872 });
   const ground = new THREE.Mesh(groundGeo, groundMat);
@@ -18,18 +73,56 @@ export function createWorld(scene) {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // ========== RUINS GROUND (darker, rougher) ==========
-  // South area (Z < -150) has cracked darker ground
-  const ruinsGroundGeo = new THREE.PlaneGeometry(180, 72);
-  const ruinsGroundMat = new THREE.MeshLambertMaterial({ color: 0x606058 });
+  // ========== UPTOWN HILL ==========
+  // Wide, flattened sphere sitting under the Uptown district
+  // Uptown center: x=102, z=48, district radius 36
+  const hillGeo = new THREE.SphereGeometry(42, 32, 16);
+  const hillMat = new THREE.MeshLambertMaterial({ color: 0x7A7A74 });
+  const hill = new THREE.Mesh(hillGeo, hillMat);
+  hill.scale.y = 4 / 42;    // top of dome at y=4
+  hill.position.set(102, 0, 48);
+  hill.receiveShadow = true;
+  scene.add(hill);
+
+  // ========== RUINS GROUND (sunken, scorched earth) ==========
+  // Slightly below y=0 to create a depression effect
+  const ruinsGroundGeo = new THREE.PlaneGeometry(180, 80);
+  const ruinsGroundMat = new THREE.MeshLambertMaterial({ color: 0x505050 });
   const ruinsGround = new THREE.Mesh(ruinsGroundGeo, ruinsGroundMat);
   ruinsGround.rotation.x = -Math.PI / 2;
-  ruinsGround.position.set(0, 0.002, -120);
+  ruinsGround.position.set(0, -1, -120);
   ruinsGround.receiveShadow = true;
   scene.add(ruinsGround);
 
+  // Scattered rubble at ruins edges — small boxes and wedges
+  const rubbleMat = new THREE.MeshLambertMaterial({ color: 0x484848 });
+  const rubblePositions = [
+    { x: -55, z: -80,  w: 3.5, h: 0.8, d: 2.5 },
+    { x: -42, z: -90,  w: 2.0, h: 1.2, d: 1.5 },
+    { x: -35, z: -155, w: 4.0, h: 0.6, d: 3.0 },
+    { x: -22, z: -165, w: 1.5, h: 1.5, d: 1.8 },
+    { x:  28, z: -78,  w: 3.0, h: 0.7, d: 2.0 },
+    { x:  48, z: -88,  w: 2.5, h: 1.0, d: 3.5 },
+    { x:  55, z: -145, w: 1.8, h: 1.3, d: 2.2 },
+    { x:  18, z: -162, w: 3.2, h: 0.5, d: 2.8 },
+    { x: -15, z: -92,  w: 2.8, h: 0.9, d: 2.0 },
+    { x:  35, z: -118, w: 2.0, h: 1.1, d: 1.5 },
+    { x: -48, z: -130, w: 1.5, h: 0.7, d: 3.0 },
+    { x:  12, z: -78,  w: 4.5, h: 0.4, d: 1.8 },
+  ];
+  for (const r of rubblePositions) {
+    const rg = new THREE.BoxGeometry(r.w, r.h, r.d);
+    const rm = new THREE.Mesh(rg, rubbleMat);
+    // Slightly tilt each piece
+    rm.rotation.y = (r.x * 0.31 + r.z * 0.17) % (Math.PI * 2);
+    rm.rotation.z = (r.x * 0.07) % 0.3;
+    rm.position.set(r.x, -1 + r.h / 2, r.z);
+    rm.receiveShadow = true;
+    rm.castShadow = true;
+    scene.add(rm);
+  }
+
   // ========== TOWER DISTRICT ELEVATION ==========
-  // Slight elevation for Tower district area
   const towerElevGeo = new THREE.PlaneGeometry(72, 60);
   const towerElevMat = new THREE.MeshLambertMaterial({ color: 0x7A7A74 });
   const towerElev = new THREE.Mesh(towerElevGeo, towerElevMat);
@@ -38,33 +131,103 @@ export function createWorld(scene) {
   towerElev.receiveShadow = true;
   scene.add(towerElev);
 
-  // ========== WATER PLANE (northern coast) ==========
-  // Water at Z > 220, extends north
-  const waterGeo = new THREE.PlaneGeometry(800, 400);
-  const waterMat = new THREE.MeshLambertMaterial({
-    color: 0x5A7A8A,
+  // ========== PORT DOCKS ==========
+  // Port center: x=-48, z=120, radius 30
+  // Flat platform at y=-0.5 near the waterfront
+  const dockPlatGeo = new THREE.PlaneGeometry(36, 18);
+  const dockPlatMat = new THREE.MeshLambertMaterial({ color: 0x706858 });
+  const dockPlat = new THREE.Mesh(dockPlatGeo, dockPlatMat);
+  dockPlat.rotation.x = -Math.PI / 2;
+  dockPlat.position.set(-48, -0.45, 130);
+  dockPlat.receiveShadow = true;
+  scene.add(dockPlat);
+
+  // Wooden dock planks extending northward over the water
+  const plankMat = new THREE.MeshLambertMaterial({ color: 0x5A4025 });
+  for (let i = 0; i < 5; i++) {
+    const px = -62 + i * 7;
+    const plankGeo = new THREE.BoxGeometry(1.4, 0.18, 18);
+    const plank = new THREE.Mesh(plankGeo, plankMat);
+    plank.position.set(px, -0.35, 146);
+    plank.castShadow = true;
+    plank.receiveShadow = true;
+    scene.add(plank);
+    // Dock posts under each plank
+    const postGeo = new THREE.CylinderGeometry(0.18, 0.22, 2.5, 5);
+    const postMat = new THREE.MeshLambertMaterial({ color: 0x3A2818 });
+    for (const pz of [138, 152]) {
+      const post = new THREE.Mesh(postGeo, postMat);
+      post.position.set(px, -1.4, pz);
+      scene.add(post);
+    }
+  }
+
+  // ========== ANIMATED OCEAN (northern coast) ==========
+  // Main ocean — large, segmented for vertex wave displacement
+  const oceanGeo = new THREE.PlaneGeometry(300, 200, 64, 64);
+  const oceanMat = new THREE.MeshStandardMaterial({
+    color: 0x4a6670,
     transparent: true,
     opacity: 0.85,
+    roughness: 0.4,
+    metalness: 0.1,
   });
-  const water = new THREE.Mesh(waterGeo, waterMat);
-  water.rotation.x = -Math.PI / 2;
-  water.position.set(0, -0.5, 252);
-  scene.add(water);
+  oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
+  oceanMesh.rotation.x = -Math.PI / 2;
+  oceanMesh.position.set(0, -0.5, 252);
+  scene.add(oceanMesh);
 
-  // Secondary water strip closer to shore for depth effect
-  const shoreWaterGeo = new THREE.PlaneGeometry(360, 24);
-  const shoreWaterMat = new THREE.MeshLambertMaterial({
-    color: 0x6A8A98,
+  // Second wave layer — smaller, detail chop
+  const ocean2Geo = new THREE.PlaneGeometry(300, 60, 48, 24);
+  const ocean2Mat = new THREE.MeshStandardMaterial({
+    color: 0x5a7480,
     transparent: true,
     opacity: 0.7,
+    roughness: 0.6,
   });
-  const shoreWater = new THREE.Mesh(shoreWaterGeo, shoreWaterMat);
-  shoreWater.rotation.x = -Math.PI / 2;
-  shoreWater.position.set(0, -0.3, 138);
-  scene.add(shoreWater);
+  oceanMesh2 = new THREE.Mesh(ocean2Geo, ocean2Mat);
+  oceanMesh2.rotation.x = -Math.PI / 2;
+  oceanMesh2.position.set(0, -0.25, 155);
+  scene.add(oceanMesh2);
+
+  // ========== BURBS PARK ==========
+  // Park near Burbs center (90, -12), radius 42
+  const parkGeo = new THREE.PlaneGeometry(22, 18);
+  const parkMat = new THREE.MeshLambertMaterial({ color: 0x626858 });
+  const park = new THREE.Mesh(parkGeo, parkMat);
+  park.rotation.x = -Math.PI / 2;
+  park.position.set(88, 0.02, -28);
+  park.receiveShadow = true;
+  scene.add(park);
+
+  // Park trees — cylinder trunk + sphere canopy
+  const trunkMat = new THREE.MeshLambertMaterial({ color: 0x4A3828 });
+  const canopyMat = new THREE.MeshLambertMaterial({ color: 0x445040 });
+  const treePositions = [
+    { x: 80,  z: -22 }, { x: 86,  z: -18 }, { x: 93,  z: -20 },
+    { x: 98,  z: -30 }, { x: 82,  z: -35 }, { x: 90,  z: -38 },
+    { x: 96,  z: -24 },
+  ];
+  for (const tp of treePositions) {
+    // Trunk
+    const trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.15, 0.22, 2.0, 6),
+      trunkMat
+    );
+    trunk.position.set(tp.x, 1.0, tp.z);
+    trunk.castShadow = true;
+    scene.add(trunk);
+    // Canopy
+    const canopy = new THREE.Mesh(
+      new THREE.SphereGeometry(1.2, 8, 6),
+      canopyMat.clone()
+    );
+    canopy.position.set(tp.x, 2.8, tp.z);
+    canopy.castShadow = true;
+    scene.add(canopy);
+  }
 
   // ========== SUBTLE TERRAIN VARIATION ==========
-  // Small raised patches to break up the flat feel
   const patchMat = new THREE.MeshLambertMaterial({ color: 0x797973 });
   const terrainPatches = [
     { x: -36, z: 18, w: 30, d: 25 },

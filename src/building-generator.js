@@ -4,6 +4,7 @@
 
 import * as THREE from 'three';
 import { TEMPLATES, TEMPLATE_CATEGORIES } from './building-templates.js';
+import { getTerrainHeight } from './world.js';
 
 // ============================================================
 // DISTRICT TEMPLATE WEIGHTS
@@ -160,8 +161,8 @@ export function generateBuilding(scene, b, idx, district) {
   const result = templateFn(varied.w, varied.h, varied.d);
   const { group, windows, doors, bodyMesh } = result;
 
-  // Position the group in the world
-  group.position.set(b.x, 0, b.z);
+  // Position the group in the world, offset for terrain height
+  group.position.set(b.x, getTerrainHeight(b.x, b.z), b.z);
   scene.add(group);
 
   // The bodyMesh is the main wall — it will be colored by the color system

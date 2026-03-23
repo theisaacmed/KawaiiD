@@ -9,6 +9,7 @@ import { getMeiTutorialOverride } from './tutorial.js';
 import { isDistrictUnlocked } from './districts.js';
 import { getOfficers } from './ace.js';
 import { getBuildingColors } from './color-system.js';
+import { getTerrainHeight } from './world.js';
 import {
   hasRoutine, getRoutineState, getCurrentScheduleEntry, checkScheduleTransition,
   calculateRoutePath, getActivityYOffset, getWanderTarget,
@@ -2605,19 +2606,20 @@ function updateNPCRoutine(npc, playerPos, hour, dt) {
 }
 
 function updateActivityBehavior(npc, rs, playerPos, dt) {
+  const terrainY = getTerrainHeight(npc.group.position.x, npc.group.position.z);
   const yOffset = getActivityYOffset(rs.activity);
-  npc.group.position.y = yOffset;
+  npc.group.position.y = terrainY + yOffset;
 
   switch (rs.activity) {
     case 'working':
       // Face away from the road (toward nearest building wall)
       // Just stand still, slight idle sway
-      npc.group.position.y = 0;
+      npc.group.position.y = terrainY;
       break;
 
     case 'sitting':
       // Lower Y position
-      npc.group.position.y = -0.5;
+      npc.group.position.y = terrainY - 0.5;
       // Face player if nearby
       facePlayer(npc, playerPos, dt);
       break;
@@ -2633,7 +2635,7 @@ function updateActivityBehavior(npc, rs, playerPos, dt) {
       break;
 
     case 'eating':
-      npc.group.position.y = 0;
+      npc.group.position.y = terrainY;
       facePlayer(npc, playerPos, dt);
       break;
 
@@ -2666,7 +2668,7 @@ function updateActivityBehavior(npc, rs, playerPos, dt) {
       const wstep = ROUTINE_WALK_SPEED * 0.5 * dt;
       npc.worldPos.x += (wdx / wdist) * wstep;
       npc.worldPos.z += (wdz / wdist) * wstep;
-      npc.group.position.set(npc.worldPos.x, 0, npc.worldPos.z);
+      npc.group.position.set(npc.worldPos.x, getTerrainHeight(npc.worldPos.x, npc.worldPos.z), npc.worldPos.z);
       smoothRotate(npc, Math.atan2(wdx, wdz), dt);
       npc.isWalking = true;
       break;

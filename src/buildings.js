@@ -7,6 +7,7 @@ import { isDistrictUnlocked } from './districts.js';
 import { getRoadSegments } from './roads.js';
 import { generateBuilding } from './building-generator.js';
 import { NAMED_BUILDINGS } from './named-buildings.js';
+import { getTerrainHeight } from './world.js';
 
 // Window and door materials — updated by color system
 const windowMats = [];
@@ -443,7 +444,7 @@ function createBuilding(scene, b, idx, district) {
   const geo = new THREE.BoxGeometry(b.w, b.h, b.d);
   const mat = new THREE.MeshLambertMaterial({ color: 0x707070 });
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(b.x, b.h / 2, b.z);
+  mesh.position.set(b.x, getTerrainHeight(b.x, b.z) + b.h / 2, b.z);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
 
