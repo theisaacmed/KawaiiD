@@ -12,29 +12,29 @@ const RUINS_X_MAX = 100;
 // 20 rubble pile positions spread across the large ruins area
 const PILE_POSITIONS = [
   // Near entrance (easier to find)
-  { x: -30, z: -160 },
-  { x: 10, z: -155 },
-  { x: 40, z: -162 },
-  { x: -60, z: -158 },
+  { x: -18, z: -96 },
+  { x: 6, z: -93 },
+  { x: 24, z: -97.2 },
+  { x: -36, z: -94.8 },
   // Middle ruins
-  { x: -20, z: -175 },
-  { x: 15, z: -178 },
-  { x: 50, z: -172 },
-  { x: -50, z: -180 },
-  { x: 70, z: -176 },
-  { x: -80, z: -170 },
+  { x: -12, z: -105 },
+  { x: 9, z: -106.8 },
+  { x: 30, z: -103.2 },
+  { x: -30, z: -108 },
+  { x: 42, z: -105.6 },
+  { x: -48, z: -102 },
   // Deep ruins
-  { x: -10, z: -195 },
-  { x: 30, z: -198 },
-  { x: -45, z: -200 },
-  { x: 60, z: -192 },
-  { x: -70, z: -195 },
+  { x: -6, z: -117 },
+  { x: 18, z: -118.8 },
+  { x: -27, z: -120 },
+  { x: 36, z: -115.2 },
+  { x: -42, z: -117 },
   // Far ruins (most dangerous, highest reward feel)
-  { x: 0, z: -215 },
-  { x: -35, z: -220 },
-  { x: 40, z: -218 },
-  { x: -80, z: -212 },
-  { x: 75, z: -225 },
+  { x: 0, z: -129 },
+  { x: -21, z: -132 },
+  { x: 24, z: -130.8 },
+  { x: -48, z: -127.2 },
+  { x: 45, z: -135 },
 ];
 
 function seededRandom(seed) {
@@ -462,12 +462,12 @@ function createRuinsLandmarks(scene) {
 
   // Debris mounds scattered throughout
   const moundPositions = [
-    { x: -15, z: -165 }, { x: 45, z: -170 }, { x: -60, z: -190 },
-    { x: 70, z: -195 }, { x: -30, z: -215 }, { x: 55, z: -225 },
-    { x: -90, z: -180 }, { x: 85, z: -215 },
+    { x: -9, z: -99 }, { x: 27, z: -102 }, { x: -36, z: -114 },
+    { x: 42, z: -117 }, { x: -18, z: -129 }, { x: 33, z: -135 },
+    { x: -54, z: -108 }, { x: 51, z: -129 },
     // Additional mounds for more density
-    { x: 25, z: -165 }, { x: -45, z: -175 }, { x: 60, z: -210 },
-    { x: -75, z: -225 },
+    { x: 15, z: -99 }, { x: -27, z: -105 }, { x: 36, z: -126 },
+    { x: -45, z: -135 },
   ];
   for (const mp of moundPositions) {
     for (let i = 0; i < 6; i++) {

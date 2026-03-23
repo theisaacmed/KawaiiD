@@ -6,9 +6,9 @@ import * as THREE from 'three';
 import { unlockPhone } from './phone.js';
 
 // Ruins entrance area (RUINS_Z_START = -150)
-const RUINS_WAYPOINT = new THREE.Vector3(0, 0, -150);
+const RUINS_WAYPOINT = new THREE.Vector3(0, 0, -90);
 // Mei's world position
-const MEI_POS = new THREE.Vector3(-10, 0, 15);
+const MEI_POS = new THREE.Vector3(-6, 0, 9);
 
 const STEP_TEXTS = [
   // Step 0 — intro lore (3s auto-advance)
@@ -49,7 +49,7 @@ export function isTutorialComplete() { return tutorialComplete; }
 export function isTutorialDealStep() { return !tutorialComplete && tutorialStep === 3; }
 
 // During steps 2-3, Mei is relocated near the ruins entrance so the player finds her easily.
-const MEI_TUTORIAL_POS = new THREE.Vector3(-10, 0, -135);
+const MEI_TUTORIAL_POS = new THREE.Vector3(-6, 0, -81);
 export function getMeiTutorialOverride() {
   if (tutorialComplete) return null;
   if (tutorialStep === 2 || tutorialStep === 3) return MEI_TUTORIAL_POS;

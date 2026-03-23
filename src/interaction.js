@@ -29,7 +29,7 @@ const STREET_REFUSE_CHANCE = 0.40; // 40% chance NPC refuses cold approach
 const BED_RADIUS = 2.5; // how close to be to the bed
 
 // Bed/sleeping spot at player apartment (origin)
-const BED_POS = new THREE.Vector3(14, 0, 12);
+const BED_POS = new THREE.Vector3(8.4, 0, 7.2);
 
 let piles = [];
 let npcs = [];

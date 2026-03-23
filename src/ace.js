@@ -65,55 +65,55 @@ const SCAN_AMPLITUDE = Math.PI / 4;
 // This is updated dynamically via addBuildingsForLOS
 let BUILDINGS = [
   // Town buildings (starting area)
-  { x: -30, z: -10, w: 6, d: 5, h: 3.5 },
-  { x: -20, z: -12, w: 5, d: 4, h: 4.0 },
-  { x: -10, z: -8, w: 4, d: 5, h: 3.0 },
-  { x: 10, z: -10, w: 5, d: 4, h: 3.5 },
-  { x: 20, z: -12, w: 4, d: 5, h: 4.5 },
-  { x: 30, z: -8, w: 5, d: 4, h: 3.0 },
-  { x: -35, z: 10, w: 5, d: 6, h: 4.0 },
-  { x: -22, z: 12, w: 4, d: 5, h: 3.5 },
-  { x: -12, z: 8, w: 5, d: 4, h: 5.0 },
-  { x: 12, z: 10, w: 4, d: 5, h: 3.5 },
-  { x: 22, z: 8, w: 5, d: 4, h: 4.0 },
-  { x: 35, z: 12, w: 4, d: 5, h: 3.0 },
-  { x: -28, z: 35, w: 5, d: 4, h: 4.5 },
-  { x: -15, z: 32, w: 4, d: 5, h: 3.5 },
-  { x: -5, z: 38, w: 5, d: 4, h: 4.0 },
-  { x: 15, z: 35, w: 4, d: 5, h: 3.0 },
-  { x: 25, z: 32, w: 5, d: 4, h: 5.0 },
-  { x: 38, z: 38, w: 4, d: 5, h: 3.5 },
+  { x: -18, z: -6, w: 6, d: 5, h: 3.5 },
+  { x: -12, z: -7.2, w: 5, d: 4, h: 4.0 },
+  { x: -6, z: -4.8, w: 4, d: 5, h: 3.0 },
+  { x: 6, z: -6, w: 5, d: 4, h: 3.5 },
+  { x: 12, z: -7.2, w: 4, d: 5, h: 4.5 },
+  { x: 18, z: -4.8, w: 5, d: 4, h: 3.0 },
+  { x: -21, z: 6, w: 5, d: 6, h: 4.0 },
+  { x: -13.2, z: 7.2, w: 4, d: 5, h: 3.5 },
+  { x: -7.2, z: 4.8, w: 5, d: 4, h: 5.0 },
+  { x: 7.2, z: 6, w: 4, d: 5, h: 3.5 },
+  { x: 13.2, z: 4.8, w: 5, d: 4, h: 4.0 },
+  { x: 21, z: 7.2, w: 4, d: 5, h: 3.0 },
+  { x: -16.8, z: 21, w: 5, d: 4, h: 4.5 },
+  { x: -9, z: 19.2, w: 4, d: 5, h: 3.5 },
+  { x: -3, z: 22.8, w: 5, d: 4, h: 4.0 },
+  { x: 9, z: 21, w: 4, d: 5, h: 3.0 },
+  { x: 15, z: 19.2, w: 5, d: 4, h: 5.0 },
+  { x: 22.8, z: 22.8, w: 4, d: 5, h: 3.5 },
 ];
 
 // Checkpoint positions (daytime posts) — positioned at district entrances
 const CHECKPOINTS = [
   // Officer 1: Main Street between Town and Downtown (blocks Downtown)
-  { pos: new THREE.Vector3(0, 0, 65), facing: Math.PI },
+  { pos: new THREE.Vector3(0, 0, 39), facing: Math.PI },
   // Officer 2: Cross Street eastern edge (blocks Burbs)
-  { pos: new THREE.Vector3(95, 0, 50), facing: Math.PI / 2 },
+  { pos: new THREE.Vector3(57, 0, 30), facing: Math.PI / 2 },
   // Officer 3: Roaming patrol within Town (the only one in starting area)
-  { pos: new THREE.Vector3(-15, 0, 20), facing: 0 },
+  { pos: new THREE.Vector3(-9, 0, 12), facing: 0 },
 ];
 
 // Night patrol routes — within Town area
 const NIGHT_ROUTES = [
   // Officer 1: north side of town
   [
-    new THREE.Vector3(-20, 0, -10), new THREE.Vector3(10, 0, -10),
-    new THREE.Vector3(20, 0, 0), new THREE.Vector3(10, 0, 10),
-    new THREE.Vector3(-10, 0, 10), new THREE.Vector3(-20, 0, 0),
+    new THREE.Vector3(-12, 0, -6), new THREE.Vector3(6, 0, -6),
+    new THREE.Vector3(12, 0, 0), new THREE.Vector3(6, 0, 6),
+    new THREE.Vector3(-6, 0, 6), new THREE.Vector3(-12, 0, 0),
   ],
   // Officer 2: east side patrol
   [
-    new THREE.Vector3(30, 0, 0), new THREE.Vector3(35, 0, 15),
-    new THREE.Vector3(30, 0, 30), new THREE.Vector3(20, 0, 35),
-    new THREE.Vector3(10, 0, 30), new THREE.Vector3(15, 0, 15),
+    new THREE.Vector3(18, 0, 0), new THREE.Vector3(21, 0, 9),
+    new THREE.Vector3(18, 0, 18), new THREE.Vector3(12, 0, 21),
+    new THREE.Vector3(6, 0, 18), new THREE.Vector3(9, 0, 9),
   ],
   // Officer 3: south/west patrol
   [
-    new THREE.Vector3(-30, 0, 10), new THREE.Vector3(-30, 0, 30),
-    new THREE.Vector3(-15, 0, 38), new THREE.Vector3(0, 0, 35),
-    new THREE.Vector3(0, 0, 20), new THREE.Vector3(-15, 0, 10),
+    new THREE.Vector3(-18, 0, 6), new THREE.Vector3(-18, 0, 18),
+    new THREE.Vector3(-9, 0, 22.8), new THREE.Vector3(0, 0, 21),
+    new THREE.Vector3(0, 0, 12), new THREE.Vector3(-9, 0, 6),
   ],
 ];
 

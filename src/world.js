@@ -11,7 +11,7 @@ export function createWorld(scene) {
 
   // ========== MAIN GROUND PLANE ==========
   // 500x500 unit city area
-  const groundGeo = new THREE.PlaneGeometry(600, 600);
+  const groundGeo = new THREE.PlaneGeometry(360, 360);
   const groundMat = new THREE.MeshLambertMaterial({ color: 0x787872 });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI / 2;
@@ -20,21 +20,21 @@ export function createWorld(scene) {
 
   // ========== RUINS GROUND (darker, rougher) ==========
   // South area (Z < -150) has cracked darker ground
-  const ruinsGroundGeo = new THREE.PlaneGeometry(300, 120);
+  const ruinsGroundGeo = new THREE.PlaneGeometry(180, 72);
   const ruinsGroundMat = new THREE.MeshLambertMaterial({ color: 0x606058 });
   const ruinsGround = new THREE.Mesh(ruinsGroundGeo, ruinsGroundMat);
   ruinsGround.rotation.x = -Math.PI / 2;
-  ruinsGround.position.set(0, 0.002, -200);
+  ruinsGround.position.set(0, 0.002, -120);
   ruinsGround.receiveShadow = true;
   scene.add(ruinsGround);
 
   // ========== TOWER DISTRICT ELEVATION ==========
   // Slight elevation for Tower district area
-  const towerElevGeo = new THREE.PlaneGeometry(120, 100);
+  const towerElevGeo = new THREE.PlaneGeometry(72, 60);
   const towerElevMat = new THREE.MeshLambertMaterial({ color: 0x7A7A74 });
   const towerElev = new THREE.Mesh(towerElevGeo, towerElevMat);
   towerElev.rotation.x = -Math.PI / 2;
-  towerElev.position.set(-140, 0.15, 120);
+  towerElev.position.set(-84, 0.15, 72);
   towerElev.receiveShadow = true;
   scene.add(towerElev);
 
@@ -48,11 +48,11 @@ export function createWorld(scene) {
   });
   const water = new THREE.Mesh(waterGeo, waterMat);
   water.rotation.x = -Math.PI / 2;
-  water.position.set(0, -0.5, 420);
+  water.position.set(0, -0.5, 252);
   scene.add(water);
 
   // Secondary water strip closer to shore for depth effect
-  const shoreWaterGeo = new THREE.PlaneGeometry(600, 40);
+  const shoreWaterGeo = new THREE.PlaneGeometry(360, 24);
   const shoreWaterMat = new THREE.MeshLambertMaterial({
     color: 0x6A8A98,
     transparent: true,
@@ -60,19 +60,19 @@ export function createWorld(scene) {
   });
   const shoreWater = new THREE.Mesh(shoreWaterGeo, shoreWaterMat);
   shoreWater.rotation.x = -Math.PI / 2;
-  shoreWater.position.set(0, -0.3, 230);
+  shoreWater.position.set(0, -0.3, 138);
   scene.add(shoreWater);
 
   // ========== SUBTLE TERRAIN VARIATION ==========
   // Small raised patches to break up the flat feel
   const patchMat = new THREE.MeshLambertMaterial({ color: 0x797973 });
   const terrainPatches = [
-    { x: -60, z: 30, w: 30, d: 25 },
-    { x: 80, z: -30, w: 25, d: 30 },
-    { x: -100, z: -50, w: 20, d: 20 },
-    { x: 50, z: 100, w: 35, d: 25 },
-    { x: -30, z: 150, w: 25, d: 30 },
-    { x: 120, z: 80, w: 20, d: 25 },
+    { x: -36, z: 18, w: 30, d: 25 },
+    { x: 48, z: -18, w: 25, d: 30 },
+    { x: -60, z: -30, w: 20, d: 20 },
+    { x: 30, z: 60, w: 35, d: 25 },
+    { x: -18, z: 90, w: 25, d: 30 },
+    { x: 72, z: 48, w: 20, d: 25 },
   ];
   for (const p of terrainPatches) {
     const geo = new THREE.PlaneGeometry(p.w, p.d);

@@ -814,7 +814,7 @@ export function startNightSounds() {
 
   windGain = ctx.createGain();
   windGain.gain.value = 0;
-  windGain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 2);
+  windGain.gain.linearRampToValueAtTime(0.004, ctx.currentTime + 2);
 
   windNode.connect(filter);
   filter.connect(windGain);
@@ -838,7 +838,7 @@ function playCricketChirp() {
     osc.type = 'sine';
     osc.frequency.value = 4000 + Math.random() * 2000;
     const d = i * 0.06;
-    gain.gain.setValueAtTime(0.015, t + d);
+    gain.gain.setValueAtTime(0.0015, t + d);
     gain.gain.exponentialRampToValueAtTime(0.001, t + d + 0.04);
     osc.connect(gain);
     gain.connect(masterGain);

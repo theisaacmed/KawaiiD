@@ -10,11 +10,11 @@ import { showNotification } from './notifications.js';
 import { getRelationship } from './npc.js';
 
 // ---- Positions ----
-const GUS_POS = new THREE.Vector3(-75, 0, 195);
+const GUS_POS = new THREE.Vector3(-45, 0, 117);
 const GUS_INTERACT_RADIUS = 3;
 
 // Delivery crate just outside apartment door
-const CRATE_POS = new THREE.Vector3(12, 0, 7);
+const CRATE_POS = new THREE.Vector3(7.2, 0, 4.2);
 const CRATE_INTERACT_RADIUS = 2.5;
 
 // ---- Order tiers ----
