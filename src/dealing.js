@@ -476,12 +476,13 @@ function acceptDeal() {
   const itemType = offeredItem.type;
   const isGacha = itemType === 'gacha';
   const isSticker = itemType === 'sticker';
+  const isTutorialReward = isTutorialDealStep();
 
   // removeFromSlot now returns { type, contains? } for gacha items
   const removed = removeFromSlot(offeredItem.slotIndex);
   const gachaContains = isGacha && removed ? removed.contains : null;
 
-  if (!isTutorialDealStep()) addMoney(price);
+  if (!isTutorialReward) addMoney(price);
   activeNPC.purchaseCount++;
 
   // Track gacha purchases for addiction
@@ -491,8 +492,10 @@ function acceptDeal() {
   recordDeal(activeNPC.name, price);
   checkAffinityGrowth(activeNPC.name);
 
-  flashMoney(price);
-  showFloatingMoney(price);
+  if (!isTutorialReward) {
+    flashMoney(price);
+    showFloatingMoney(price);
+  }
   playDealComplete();
 
   // Spread color to nearby buildings (gacha treated as sticker-level spread)
@@ -520,7 +523,10 @@ function acceptDeal() {
     </div>
     <div style="padding:0 24px 24px">
       ${renderDialogueBubble(npcLine(npc, 'dealDoneLines'))}
-      <div style="text-align:center;margin-top:16px;font-size:24px;font-weight:bold;color:#6f6">+$${price}</div>
+      ${isTutorialReward
+        ? `<div style="text-align:center;margin-top:16px;font-size:22px;color:#f5e6d0">📱 Here, so we can stay in touch.</div>`
+        : `<div style="text-align:center;margin-top:16px;font-size:24px;font-weight:bold;color:#6f6">+$${price}</div>`
+      }
     </div>
   `;
 

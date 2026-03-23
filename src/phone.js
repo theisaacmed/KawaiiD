@@ -241,7 +241,7 @@ function createWaypointSprite(pos) {
 
 // --- Message Generation ---
 const SMS_TEMPLATES = {
-  Mei:    ["hey! got any stickers? im at {location} til {time}", "found the perfect wall for a sticker, come find me at {location}!"],
+  Mei:    ["hey! got any stickers? im at {location} til {time} \u{1F338}", "found the perfect wall for a sticker, come find me at {location}! \u{1F338}"],
   Hiro:   ["Need a plushie for my daughter. At {location} til {time}.", "Got anything soft? I'll be around {location}."],
   Luna:   ["hiii! looking for anything cute! meet me at {location}?", "omg come find me i need something cute!! at {location} til {time}"],
   Ash:    ["hey... do you have anything? im near {location}. be quick tho", "can we meet at {location}? need stickers"],

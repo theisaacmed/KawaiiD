@@ -347,7 +347,7 @@ export function showNotification(msg) {
       fontWeight: 'bold',
       cursor: 'pointer',
     });
-    acceptBtn.textContent = 'Accept';
+    acceptBtn.textContent = 'On my way';
     acceptBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (quickAcceptFn) {
@@ -372,7 +372,7 @@ export function showNotification(msg) {
       fontWeight: 'bold',
       cursor: 'pointer',
     });
-    declineBtn.textContent = 'Decline';
+    declineBtn.textContent = "Can't right now";
     declineBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (quickDeclineFn) quickDeclineFn(msg.id);
