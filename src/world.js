@@ -88,16 +88,16 @@ export function createWorld(scene) {
   scene.add(ambient);
 
   const sun = new THREE.DirectionalLight(0xc0c0c0, 0.8);
-  sun.position.set(50, 60, 30);
+  sun.position.set(30, 60, 18);
   sun.castShadow = true;
   sun.shadow.mapSize.width = 2048;
   sun.shadow.mapSize.height = 2048;
   sun.shadow.camera.near = 1;
-  sun.shadow.camera.far = 300;
-  sun.shadow.camera.left = -150;
-  sun.shadow.camera.right = 150;
-  sun.shadow.camera.top = 150;
-  sun.shadow.camera.bottom = -150;
+  sun.shadow.camera.far = 180;
+  sun.shadow.camera.left = -90;
+  sun.shadow.camera.right = 90;
+  sun.shadow.camera.top = 90;
+  sun.shadow.camera.bottom = -90;
   scene.add(sun);
 
   return { ground, groundMat };

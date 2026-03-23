@@ -159,25 +159,25 @@ function createCrosswalks(scene) {
   // At major intersections
   const intersections = [
     // Main Street x Cross Street
-    { x: 0, z: 50 },
+    { x: 0, z: 30 },
     // Main Street x Coast Road
-    { x: 0, z: 180 },
+    { x: 0, z: 108 },
     // Main Street x Industrial Road
-    { x: 0, z: -80 },
+    { x: 0, z: -48 },
     // Main Street x Town center
-    { x: 0, z: 20 },
+    { x: 0, z: 12 },
     // East Blvd x Cross Street
-    { x: 150, z: 50 },
+    { x: 90, z: 30 },
     // East Blvd x Coast Road
-    { x: 150, z: 180 },
+    { x: 90, z: 108 },
     // West Ave x Cross Street
-    { x: -150, z: 50 },
+    { x: -90, z: 30 },
     // West Ave x Coast Road
-    { x: -150, z: 180 },
+    { x: -90, z: 108 },
     // West Ave x Industrial
-    { x: -150, z: -80 },
+    { x: -90, z: -48 },
     // East Blvd x Industrial
-    { x: 150, z: -80 },
+    { x: 90, z: -48 },
   ];
 
   const cwMat = new THREE.MeshBasicMaterial({ color: 0xCCCCCC });
@@ -217,8 +217,8 @@ function createCrackedTransition(scene) {
   // Roads south of z = -120 get progressively cracked
   const crackMat = new THREE.MeshLambertMaterial({ color: 0x404040 });
   for (let i = 0; i < 40; i++) {
-    const x = (Math.random() - 0.5) * 200;
-    const z = -120 - Math.random() * 80;
+    const x = (Math.random() - 0.5) * 120;
+    const z = -72 - Math.random() * 48;
     const crack = new THREE.Mesh(
       new THREE.BoxGeometry(0.08, 0.025, 0.5 + Math.random() * 2),
       crackMat

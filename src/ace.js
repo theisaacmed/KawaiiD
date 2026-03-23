@@ -54,7 +54,7 @@ const FINE_AMOUNT = 30;
 const GRACE_PERIOD = 15;
 const ROTATE_SPEED = 3;
 const TRANSITION_SPEED = PLAYER_WALK_SPEED * 0.4;
-const RUINS_Z = -150;
+const RUINS_Z = -90;
 const OFFICER_RADIUS = 0.5;
 
 // Scanning
@@ -543,7 +543,7 @@ function updateMode() {
         lunchOfficer.state = 'TRANSITIONING';
         // Temporarily move checkpoint to a corner
         lunchOfficer._savedCheckpoint = lunchOfficer.checkpointPos.clone();
-        lunchOfficer.checkpointPos = new THREE.Vector3(18, 0, 20);
+        lunchOfficer.checkpointPos = new THREE.Vector3(10.8, 0, 12);
       }
     } else if (!lunchNow && lunchActive) {
       lunchActive = false;

@@ -4,10 +4,10 @@
 import * as THREE from 'three';
 import { isNight } from './time-system.js';
 
-const RUINS_Z_START = -150;  // where ruins begin (gradual transition)
-const RUINS_Z_END = -240;    // how far ruins extend
-const RUINS_X_MIN = -100;
-const RUINS_X_MAX = 100;
+const RUINS_Z_START = -90;   // where ruins begin (gradual transition)
+const RUINS_Z_END = -144;    // how far ruins extend
+const RUINS_X_MIN = -60;
+const RUINS_X_MAX = 60;
 
 // 20 rubble pile positions spread across the large ruins area
 const PILE_POSITIONS = [
@@ -191,7 +191,7 @@ function createRuinsLandmarks(scene) {
 
   // ===== COLLAPSED SCHOOL (flat wide rubble with playground frame — bent metal bars) =====
   const schoolGroup = new THREE.Group();
-  schoolGroup.position.set(-40, 0, -185);
+  schoolGroup.position.set(-24, 0, -111);
   // Main building (flattened)
   const schoolBody = new THREE.Mesh(new THREE.BoxGeometry(14, 2, 10), rubbleMat);
   schoolBody.position.y = 0.8;
@@ -246,7 +246,7 @@ function createRuinsLandmarks(scene) {
 
   // ===== KAWAII CORNER (partially standing, cracked sign — tutorial landmark) =====
   const kcGroup = new THREE.Group();
-  kcGroup.position.set(20, 0, -200);
+  kcGroup.position.set(12, 0, -120);
   // Two standing wall sections at different heights
   const wallA = new THREE.Mesh(new THREE.BoxGeometry(5, 4, 0.5), lightMat);
   wallA.position.set(-1, 2, 2.5);
@@ -301,7 +301,7 @@ function createRuinsLandmarks(scene) {
 
   // ===== DESTROYED FOUNTAIN (broken version of Town fountain — dry, cracked) =====
   const dfGroup = new THREE.Group();
-  dfGroup.position.set(0, 0, -190);
+  dfGroup.position.set(0, 0, -114);
   const stoneMat = new THREE.MeshLambertMaterial({ color: 0x5A5A5A });
   // Cracked base (two halves separated)
   const baseHalf1 = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.5, 0.5, 16, 1, false, 0, Math.PI), stoneMat);
@@ -348,7 +348,7 @@ function createRuinsLandmarks(scene) {
 
   // ===== TOPPLED CLOCK TOWER (matches Downtown's standing one) =====
   const ctGroup = new THREE.Group();
-  ctGroup.position.set(-10, 0, -220);
+  ctGroup.position.set(-6, 0, -132);
   const towerMat = new THREE.MeshLambertMaterial({ color: 0x5A5A5A });
   // Fallen tower body (horizontal)
   const towerBody = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 10), towerMat);
@@ -384,9 +384,9 @@ function createRuinsLandmarks(scene) {
   scene.add(ctGroup);
 
   // ===== ROW OF COLLAPSED HOUSES (residential street line) =====
-  const houseRowZ = -205;
+  const houseRowZ = -123;
   for (let i = 0; i < 6; i++) {
-    const hx = -50 + i * 12;
+    const hx = -30 + i * 7.2;
     const hGroup = new THREE.Group();
     hGroup.position.set(hx, 0, houseRowZ);
 

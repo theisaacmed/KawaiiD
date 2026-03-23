@@ -309,7 +309,7 @@ export function getNearbyLockedDistrict(px, pz) {
     if (barrier.removed) continue;
     const dx = px - barrier.x;
     const dz = pz - barrier.z;
-    if (Math.abs(dx) < 8 && Math.abs(dz) < 8) {
+    if (Math.abs(dx) < 5 && Math.abs(dz) < 5) {
       const district = DISTRICTS[barrier.district];
       if (district && !district.unlocked) {
         return {

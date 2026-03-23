@@ -27,263 +27,263 @@ const DOOR_COLOR_TARGETS = [0xCC7755, 0x7799BB, 0xBB88AA, 0x88AA77, 0xAA8866, 0x
 // Cross street at Z=-10 (E-W). Buildings line both sides of every road, 2-3 unit gaps within blocks.
 const TOWN_BUILDINGS = [
   // ====== MAIN STREET WEST SIDE (X ~ -8 to -14) — buildings facing Main St ======
-  { x: -12, z: -8, w: 8, d: 7, h: 7, btype: 'shop' },
-  { x: -12, z: 3, w: 8, d: 7, h: 9, btype: 'apartment' },
-  { x: -11, z: 14, w: 7, d: 7, h: 8, btype: 'residential' },
-  { x: -12, z: 25, w: 8, d: 7, h: 10, btype: 'luna_townhouse', named: 'luna_townhouse', namedSigColor: 0xAFA9EC },
-  { x: -11, z: 36, w: 7, d: 7, h: 7, btype: 'shop' },
-  { x: -12, z: 46, w: 8, d: 6, h: 9, btype: 'residential' },
+  { x: -7.2, z: -4.8, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: -7.2, z: 1.8, w: 8, d: 7, h: 9, btype: 'apartment' },
+  { x: -6.6, z: 8.4, w: 7, d: 7, h: 8, btype: 'residential' },
+  { x: -7.2, z: 15, w: 8, d: 7, h: 10, btype: 'luna_townhouse', named: 'luna_townhouse', namedSigColor: 0xAFA9EC },
+  { x: -6.6, z: 21.6, w: 7, d: 7, h: 7, btype: 'shop' },
+  { x: -7.2, z: 27.6, w: 8, d: 6, h: 9, btype: 'residential' },
 
   // ====== MAIN STREET EAST SIDE (X ~ 8 to 14) — buildings facing Main St ======
-  { x: 12, z: -8, w: 8, d: 7, h: 8, btype: 'shop' },
-  { x: 11, z: 3, w: 7, d: 7, h: 10, btype: 'apartment' },
-  { x: 12, z: 25, w: 8, d: 7, h: 9, btype: 'residential' },
-  { x: 11, z: 36, w: 7, d: 7, h: 8, btype: 'shop' },
-  { x: 12, z: 46, w: 8, d: 6, h: 10, btype: 'apartment' },
+  { x: 7.2, z: -4.8, w: 8, d: 7, h: 8, btype: 'shop' },
+  { x: 6.6, z: 1.8, w: 7, d: 7, h: 10, btype: 'apartment' },
+  { x: 7.2, z: 15, w: 8, d: 7, h: 9, btype: 'residential' },
+  { x: 6.6, z: 21.6, w: 7, d: 7, h: 8, btype: 'shop' },
+  { x: 7.2, z: 27.6, w: 8, d: 6, h: 10, btype: 'apartment' },
 
   // === Player apartment (on east side of Main St) ===
-  { x: 12, z: 14, w: 7, d: 7, h: 10, landmark: 'apartment', btype: 'player_apartment' },
+  { x: 7.2, z: 8.4, w: 7, d: 7, h: 10, landmark: 'apartment', btype: 'player_apartment' },
 
   // ====== WEST SECONDARY STREET (X=-40) — WEST SIDE (X ~ -48) ======
-  { x: -48, z: -8, w: 8, d: 7, h: 8, btype: 'residential' },
-  { x: -48, z: 3, w: 8, d: 7, h: 7, btype: 'residential' },
-  { x: -48, z: 14, w: 8, d: 7, h: 9, btype: 'apartment' },
-  { x: -48, z: 25, w: 8, d: 7, h: 7, btype: 'residential' },
-  { x: -48, z: 36, w: 8, d: 7, h: 10, btype: 'apartment' },
-  { x: -48, z: 46, w: 8, d: 6, h: 8, btype: 'residential' },
+  { x: -28.8, z: -4.8, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: -28.8, z: 1.8, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: -28.8, z: 8.4, w: 8, d: 7, h: 9, btype: 'apartment' },
+  { x: -28.8, z: 15, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: -28.8, z: 21.6, w: 8, d: 7, h: 10, btype: 'apartment' },
+  { x: -28.8, z: 27.6, w: 8, d: 6, h: 8, btype: 'residential' },
 
   // ====== WEST SECONDARY STREET (X=-40) — EAST SIDE (X ~ -32) ======
-  { x: -32, z: -8, w: 8, d: 7, h: 7, btype: 'shop' },
-  { x: -32, z: 3, w: 8, d: 7, h: 9, btype: 'residential' },
-  { x: -32, z: 14, w: 8, d: 7, h: 8, btype: 'apartment' },
-  { x: -32, z: 25, w: 8, d: 7, h: 10, btype: 'residential' },
-  { x: -32, z: 36, w: 8, d: 7, h: 7, btype: 'shop' },
-  { x: -32, z: 46, w: 8, d: 6, h: 9, btype: 'residential' },
+  { x: -19.2, z: -4.8, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: -19.2, z: 1.8, w: 8, d: 7, h: 9, btype: 'residential' },
+  { x: -19.2, z: 8.4, w: 8, d: 7, h: 8, btype: 'apartment' },
+  { x: -19.2, z: 15, w: 8, d: 7, h: 10, btype: 'residential' },
+  { x: -19.2, z: 21.6, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: -19.2, z: 27.6, w: 8, d: 6, h: 9, btype: 'residential' },
 
   // ====== EAST SECONDARY STREET (X=40) — WEST SIDE (X ~ 32) ======
-  { x: 32, z: -8, w: 8, d: 7, h: 9, btype: 'residential' },
-  { x: 32, z: 3, w: 8, d: 7, h: 7, btype: 'shop' },
-  { x: 32, z: 14, w: 8, d: 7, h: 8, btype: 'residential' },
-  { x: 32, z: 25, w: 8, d: 7, h: 10, btype: 'apartment' },
-  { x: 32, z: 36, w: 8, d: 7, h: 7, btype: 'residential' },
-  { x: 32, z: 46, w: 8, d: 6, h: 9, btype: 'shop' },
+  { x: 19.2, z: -4.8, w: 8, d: 7, h: 9, btype: 'residential' },
+  { x: 19.2, z: 1.8, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: 19.2, z: 8.4, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: 19.2, z: 15, w: 8, d: 7, h: 10, btype: 'apartment' },
+  { x: 19.2, z: 21.6, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: 19.2, z: 27.6, w: 8, d: 6, h: 9, btype: 'shop' },
 
   // ====== EAST SECONDARY STREET (X=40) — EAST SIDE (X ~ 48) ======
-  { x: 48, z: -8, w: 8, d: 7, h: 8, btype: 'residential' },
-  { x: 48, z: 3, w: 8, d: 7, h: 10, btype: 'apartment' },
-  { x: 48, z: 14, w: 8, d: 7, h: 7, btype: 'shop' },
-  { x: 48, z: 25, w: 8, d: 7, h: 10, btype: 'mei_apartment', named: 'mei_apartment', namedSigColor: 0xED93B1 },
-  { x: 48, z: 36, w: 8, d: 7, h: 8, btype: 'apartment' },
-  { x: 48, z: 46, w: 8, d: 6, h: 7, btype: 'residential' },
+  { x: 28.8, z: -4.8, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: 28.8, z: 1.8, w: 8, d: 7, h: 10, btype: 'apartment' },
+  { x: 28.8, z: 8.4, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: 28.8, z: 15, w: 8, d: 7, h: 10, btype: 'mei_apartment', named: 'mei_apartment', namedSigColor: 0xED93B1 },
+  { x: 28.8, z: 21.6, w: 8, d: 7, h: 8, btype: 'apartment' },
+  { x: 28.8, z: 27.6, w: 8, d: 6, h: 7, btype: 'residential' },
 
   // ====== CROSS STREET (Z=-10) — SOUTH SIDE (Z ~ -17) ======
-  { x: -28, z: -17, w: 7, d: 7, h: 8, btype: 'residential' },
-  { x: -18, z: -17, w: 7, d: 7, h: 7, btype: 'shop' },
-  { x: 18, z: -17, w: 7, d: 7, h: 9, btype: 'residential' },
-  { x: 28, z: -17, w: 7, d: 7, h: 7, btype: 'shop' },
+  { x: -16.8, z: -10.2, w: 7, d: 7, h: 8, btype: 'residential' },
+  { x: -10.8, z: -10.2, w: 7, d: 7, h: 7, btype: 'shop' },
+  { x: 10.8, z: -10.2, w: 7, d: 7, h: 9, btype: 'residential' },
+  { x: 16.8, z: -10.2, w: 7, d: 7, h: 7, btype: 'shop' },
 
   // ====== CORNER STORE at Main/Cross intersection ======
-  { x: 25, z: 32, w: 8, d: 6, h: 7, btype: 'cornerstore' },
+  { x: 15, z: 19.2, w: 8, d: 6, h: 7, btype: 'cornerstore' },
 
   // === Named buildings — mid-block fills ===
-  { x: -22, z: 14, w: 7, d: 6, h: 8, btype: 'kit_shop', named: 'kit_shop', namedSigColor: 0x9FE1CB },
+  { x: -13.2, z: 8.4, w: 7, d: 6, h: 8, btype: 'kit_shop', named: 'kit_shop', namedSigColor: 0x9FE1CB },
 ];
 
 // DOWNTOWN (north-center) — dense commercial/office district
 const DOWNTOWN_BUILDINGS = [
   // === Main St west side (X ~ -12), Z: 88-140 ===
-  { x: -12, z: 88, w: 9, d: 8, h: 12, btype: 'office' },
-  { x: -12, z: 100, w: 9, d: 8, h: 14, btype: 'office' },
-  { x: -12, z: 112, w: 10, d: 9, h: 11, btype: 'commercial' },
-  { x: -12, z: 124, w: 9, d: 8, h: 13, btype: 'office' },
-  { x: -12, z: 136, w: 10, d: 8, h: 10, landmark: 'market', btype: 'market' },
+  { x: -7.2, z: 52.8, w: 9, d: 8, h: 12, btype: 'office' },
+  { x: -7.2, z: 60, w: 9, d: 8, h: 14, btype: 'office' },
+  { x: -7.2, z: 67.2, w: 10, d: 9, h: 11, btype: 'commercial' },
+  { x: -7.2, z: 74.4, w: 9, d: 8, h: 13, btype: 'office' },
+  { x: -7.2, z: 81.6, w: 10, d: 8, h: 10, landmark: 'market', btype: 'market' },
   // === Main St east side (X ~ 12), Z: 88-140 ===
-  { x: 12, z: 88, w: 9, d: 8, h: 10, btype: 'nao_cafe', named: 'nao_cafe', namedSigColor: 0xFAC775 },
-  { x: 12, z: 100, w: 9, d: 8, h: 15, btype: 'office' },
-  { x: 8, z: 112, w: 5, d: 5, h: 12, landmark: 'clocktower', btype: 'clocktower' },
-  { x: 12, z: 124, w: 9, d: 8, h: 12, btype: 'dt_shop' },
-  { x: 12, z: 136, w: 9, d: 8, h: 11, btype: 'restaurant' },
+  { x: 7.2, z: 52.8, w: 9, d: 8, h: 10, btype: 'nao_cafe', named: 'nao_cafe', namedSigColor: 0xFAC775 },
+  { x: 7.2, z: 60, w: 9, d: 8, h: 15, btype: 'office' },
+  { x: 4.8, z: 67.2, w: 5, d: 5, h: 12, landmark: 'clocktower', btype: 'clocktower' },
+  { x: 7.2, z: 74.4, w: 9, d: 8, h: 12, btype: 'dt_shop' },
+  { x: 7.2, z: 81.6, w: 9, d: 8, h: 11, btype: 'restaurant' },
   // === Secondary street west (X ~ -35), Z: 88-130 ===
-  { x: -35, z: 90, w: 9, d: 8, h: 11, btype: 'harper_office', named: 'harper_office', namedSigColor: 0x85B7EB },
-  { x: -35, z: 102, w: 9, d: 8, h: 13, btype: 'commercial' },
-  { x: -35, z: 114, w: 9, d: 8, h: 10, btype: 'dt_shop' },
-  { x: -35, z: 126, w: 9, d: 8, h: 12, btype: 'office' },
+  { x: -21, z: 54, w: 9, d: 8, h: 11, btype: 'harper_office', named: 'harper_office', namedSigColor: 0x85B7EB },
+  { x: -21, z: 61.2, w: 9, d: 8, h: 13, btype: 'commercial' },
+  { x: -21, z: 68.4, w: 9, d: 8, h: 10, btype: 'dt_shop' },
+  { x: -21, z: 75.6, w: 9, d: 8, h: 12, btype: 'office' },
   // === East of Main St (X ~ 32-55), Z: 88-135 ===
-  { x: 32, z: 90, w: 9, d: 8, h: 10, btype: 'dt_shop' },
-  { x: 32, z: 102, w: 9, d: 8, h: 14, btype: 'office' },
-  { x: 32, z: 114, w: 9, d: 8, h: 11, btype: 'commercial' },
-  { x: 32, z: 126, w: 9, d: 8, h: 12, btype: 'dt_shop' },
-  { x: 50, z: 90, w: 9, d: 8, h: 11, btype: 'marco_restaurant', named: 'marco_restaurant', namedSigColor: 0xF0997B },
-  { x: 50, z: 102, w: 9, d: 8, h: 11, btype: 'office' },
-  { x: 50, z: 114, w: 9, d: 8, h: 10, btype: 'dt_shop' },
-  { x: 50, z: 126, w: 9, d: 8, h: 14, btype: 'office' },
+  { x: 19.2, z: 54, w: 9, d: 8, h: 10, btype: 'dt_shop' },
+  { x: 19.2, z: 61.2, w: 9, d: 8, h: 14, btype: 'office' },
+  { x: 19.2, z: 68.4, w: 9, d: 8, h: 11, btype: 'commercial' },
+  { x: 19.2, z: 75.6, w: 9, d: 8, h: 12, btype: 'dt_shop' },
+  { x: 30, z: 54, w: 9, d: 8, h: 11, btype: 'marco_restaurant', named: 'marco_restaurant', namedSigColor: 0xF0997B },
+  { x: 30, z: 61.2, w: 9, d: 8, h: 11, btype: 'office' },
+  { x: 30, z: 68.4, w: 9, d: 8, h: 10, btype: 'dt_shop' },
+  { x: 30, z: 75.6, w: 9, d: 8, h: 14, btype: 'office' },
 ];
 
 // NORTHTOWN (northeast) — orderly residential rows, chapel
 const NORTHTOWN_BUILDINGS = [
   // === Row 1 ===
-  { x: 105, z: 135, w: 8, d: 7, h: 8, btype: 'nt_residential' },
-  { x: 118, z: 135, w: 8, d: 7, h: 8, btype: 'nt_residential' },
-  { x: 130, z: 135, w: 7, d: 7, h: 5, landmark: 'chapel', btype: 'chapel' },
-  { x: 142, z: 135, w: 8, d: 7, h: 8, btype: 'nt_residential' },
-  { x: 155, z: 135, w: 8, d: 7, h: 7, btype: 'yuna_shop', named: 'yuna_shop', namedSigColor: 0xFAC775 },
+  { x: 63, z: 81, w: 8, d: 7, h: 8, btype: 'nt_residential' },
+  { x: 70.8, z: 81, w: 8, d: 7, h: 8, btype: 'nt_residential' },
+  { x: 78, z: 81, w: 7, d: 7, h: 5, landmark: 'chapel', btype: 'chapel' },
+  { x: 85.2, z: 81, w: 8, d: 7, h: 8, btype: 'nt_residential' },
+  { x: 93, z: 81, w: 8, d: 7, h: 7, btype: 'yuna_shop', named: 'yuna_shop', namedSigColor: 0xFAC775 },
   // === Row 2 ===
-  { x: 108, z: 152, w: 8, d: 7, h: 8, btype: 'nt_residential' },
-  { x: 121, z: 152, w: 8, d: 7, h: 9, btype: 'nt_residential' },
-  { x: 134, z: 152, w: 8, d: 7, h: 8, btype: 'nt_residential' },
-  { x: 147, z: 152, w: 8, d: 7, h: 8, btype: 'nt_residential' },
+  { x: 64.8, z: 91.2, w: 8, d: 7, h: 8, btype: 'nt_residential' },
+  { x: 72.6, z: 91.2, w: 8, d: 7, h: 9, btype: 'nt_residential' },
+  { x: 80.4, z: 91.2, w: 8, d: 7, h: 8, btype: 'nt_residential' },
+  { x: 88.2, z: 91.2, w: 8, d: 7, h: 8, btype: 'nt_residential' },
   // === Row 3 ===
-  { x: 110, z: 172, w: 8, d: 7, h: 7, btype: 'nt_residential' },
-  { x: 125, z: 172, w: 8, d: 7, h: 7, btype: 'nt_residential' },
-  { x: 140, z: 172, w: 8, d: 7, h: 8, btype: 'nt_residential' },
-  { x: 155, z: 165, w: 8, d: 7, h: 7, btype: 'shop' },
-  { x: 100, z: 150, w: 7, d: 6, h: 5, btype: 'kai_shack', named: 'kai_shack', namedSigColor: 0x85B7EB },
+  { x: 66, z: 103.2, w: 8, d: 7, h: 7, btype: 'nt_residential' },
+  { x: 75, z: 103.2, w: 8, d: 7, h: 7, btype: 'nt_residential' },
+  { x: 84, z: 103.2, w: 8, d: 7, h: 8, btype: 'nt_residential' },
+  { x: 93, z: 99, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: 60, z: 90, w: 7, d: 6, h: 5, btype: 'kai_shack', named: 'kai_shack', namedSigColor: 0x85B7EB },
 ];
 
 // BURBS (southeast) — suburban houses, playground, school
 const BURBS_BUILDINGS = [
   // === Block 1: south row ===
-  { x: 120, z: -40, w: 9, d: 7, h: 6, btype: 'suburb_house' },
-  { x: 138, z: -42, w: 9, d: 8, h: 6, btype: 'suburb_house' },
-  { x: 155, z: -38, w: 9, d: 7, h: 6, btype: 'tomas_cottage', named: 'tomas_cottage', namedSigColor: 0xF5C4B3 },
-  { x: 175, z: -42, w: 14, d: 10, h: 9, btype: 'the_school', named: 'the_school', namedSigColor: 0x85B7EB },
+  { x: 72, z: -24, w: 9, d: 7, h: 6, btype: 'suburb_house' },
+  { x: 82.8, z: -25.2, w: 9, d: 8, h: 6, btype: 'suburb_house' },
+  { x: 93, z: -22.8, w: 9, d: 7, h: 6, btype: 'tomas_cottage', named: 'tomas_cottage', namedSigColor: 0xF5C4B3 },
+  { x: 105, z: -25.2, w: 14, d: 10, h: 9, btype: 'the_school', named: 'the_school', namedSigColor: 0x85B7EB },
   // === Block 2: middle row ===
-  { x: 122, z: -18, w: 9, d: 7, h: 6, btype: 'suburb_house' },
-  { x: 140, z: -15, w: 9, d: 7, h: 7, btype: 'suburb_house' },
-  { x: 158, z: -20, w: 9, d: 8, h: 6, btype: 'suburb_house' },
-  { x: 178, z: -18, w: 9, d: 7, h: 6, btype: 'suburb_house' },
+  { x: 73.2, z: -10.8, w: 9, d: 7, h: 6, btype: 'suburb_house' },
+  { x: 84, z: -9, w: 9, d: 7, h: 7, btype: 'suburb_house' },
+  { x: 94.8, z: -12, w: 9, d: 8, h: 6, btype: 'suburb_house' },
+  { x: 106.8, z: -10.8, w: 9, d: 7, h: 6, btype: 'suburb_house' },
   // === Block 3: north row ===
-  { x: 125, z: 5, w: 8, d: 7, h: 6, landmark: 'playground', btype: 'suburb_house' },
-  { x: 142, z: 2, w: 9, d: 7, h: 6, btype: 'suburb_house' },
-  { x: 160, z: 5, w: 9, d: 8, h: 7, btype: 'suburb_house' },
-  { x: 180, z: 2, w: 9, d: 7, h: 7, btype: 'suburb_house' },
+  { x: 75, z: 3, w: 8, d: 7, h: 6, landmark: 'playground', btype: 'suburb_house' },
+  { x: 85.2, z: 1.2, w: 9, d: 7, h: 6, btype: 'suburb_house' },
+  { x: 96, z: 3, w: 9, d: 8, h: 7, btype: 'suburb_house' },
+  { x: 108, z: 1.2, w: 9, d: 7, h: 7, btype: 'suburb_house' },
   // === Extra houses ===
-  { x: 130, z: 22, w: 9, d: 7, h: 6, btype: 'suburb_house' },
-  { x: 155, z: 25, w: 9, d: 8, h: 6, btype: 'suburb_house' },
-  { x: 195, z: -30, w: 9, d: 7, h: 7, btype: 'suburb_house' },
+  { x: 78, z: 13.2, w: 9, d: 7, h: 6, btype: 'suburb_house' },
+  { x: 93, z: 15, w: 9, d: 8, h: 6, btype: 'suburb_house' },
+  { x: 117, z: -18, w: 9, d: 7, h: 7, btype: 'suburb_house' },
 ];
 
 // UPTOWN (east) — sleek offices, hotel, rooftop garden, high-end shops
 const UPTOWN_BUILDINGS = [
   // === South row ===
-  { x: 155, z: 58, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
-  { x: 168, z: 55, w: 9, d: 7, h: 14, btype: 'kenji_office', named: 'kenji_office', namedSigColor: 0xAFA9EC },
-  { x: 182, z: 58, w: 10, d: 8, h: 16, landmark: 'hotel', btype: 'hotel' },
-  { x: 195, z: 55, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
+  { x: 93, z: 34.8, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
+  { x: 100.8, z: 33, w: 9, d: 7, h: 14, btype: 'kenji_office', named: 'kenji_office', namedSigColor: 0xAFA9EC },
+  { x: 109.2, z: 34.8, w: 10, d: 8, h: 16, landmark: 'hotel', btype: 'hotel' },
+  { x: 117, z: 33, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
   // === Middle row ===
-  { x: 158, z: 78, w: 9, d: 7, h: 13, btype: 'uptown_office' },
-  { x: 172, z: 75, w: 10, d: 8, h: 15, btype: 'sora_building', named: 'sora_building', namedSigColor: 0xFAC775 },
-  { x: 188, z: 78, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
+  { x: 94.8, z: 46.8, w: 9, d: 7, h: 13, btype: 'uptown_office' },
+  { x: 103.2, z: 45, w: 10, d: 8, h: 15, btype: 'sora_building', named: 'sora_building', namedSigColor: 0xFAC775 },
+  { x: 112.8, z: 46.8, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
   // === North row ===
-  { x: 155, z: 98, w: 9, d: 7, h: 14, btype: 'uptown_office' },
-  { x: 170, z: 95, w: 9, d: 8, h: 13, btype: 'uptown_office' },
-  { x: 185, z: 98, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
-  { x: 198, z: 95, w: 9, d: 7, h: 14, btype: 'uptown_office' },
-  { x: 200, z: 75, w: 10, d: 7, h: 11, btype: 'uptown_shop' },
+  { x: 93, z: 58.8, w: 9, d: 7, h: 14, btype: 'uptown_office' },
+  { x: 102, z: 57, w: 9, d: 8, h: 13, btype: 'uptown_office' },
+  { x: 111, z: 58.8, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
+  { x: 118.8, z: 57, w: 9, d: 7, h: 14, btype: 'uptown_office' },
+  { x: 120, z: 45, w: 10, d: 7, h: 11, btype: 'uptown_shop' },
 ];
 
 // TOWER (west) — tallest in game, twin towers, dark canyons
 const TOWER_BUILDINGS = [
   // === Twin Towers — Tower A is Dante's lobby ===
-  { x: -160, z: 100, w: 10, d: 9, h: 28, btype: 'dante_tower', named: 'dante_tower', namedSigColor: 0xF0997B },
-  { x: -145, z: 100, w: 10, d: 9, h: 28, landmark: 'twintower2', btype: 'tower_corp' },
+  { x: -96, z: 60, w: 10, d: 9, h: 28, btype: 'dante_tower', named: 'dante_tower', namedSigColor: 0xF0997B },
+  { x: -87, z: 60, w: 10, d: 9, h: 28, landmark: 'twintower2', btype: 'tower_corp' },
   // === Other mega buildings ===
-  { x: -125, z: 102, w: 9, d: 9, h: 22, btype: 'tower_corp' },
-  { x: -165, z: 120, w: 10, d: 10, h: 30, btype: 'tower_corp' },
-  { x: -148, z: 122, w: 10, d: 9, h: 24, btype: 'tower_corp' },
-  { x: -128, z: 118, w: 10, d: 9, h: 26, btype: 'tower_corp' },
-  { x: -158, z: 142, w: 9, d: 10, h: 22, btype: 'tower_corp' },
-  { x: -140, z: 140, w: 10, d: 9, h: 30, btype: 'quinn_apt', named: 'quinn_apt', namedSigColor: 0xAFA9EC },
-  { x: -122, z: 138, w: 9, d: 9, h: 20, btype: 'tower_corp' },
-  { x: -135, z: 130, w: 6, d: 6, h: 6, btype: 'tower_service' },
+  { x: -75, z: 61.2, w: 9, d: 9, h: 22, btype: 'tower_corp' },
+  { x: -99, z: 72, w: 10, d: 10, h: 30, btype: 'tower_corp' },
+  { x: -88.8, z: 73.2, w: 10, d: 9, h: 24, btype: 'tower_corp' },
+  { x: -76.8, z: 70.8, w: 10, d: 9, h: 26, btype: 'tower_corp' },
+  { x: -94.8, z: 85.2, w: 9, d: 10, h: 22, btype: 'tower_corp' },
+  { x: -84, z: 84, w: 10, d: 9, h: 30, btype: 'quinn_apt', named: 'quinn_apt', namedSigColor: 0xAFA9EC },
+  { x: -73.2, z: 82.8, w: 9, d: 9, h: 20, btype: 'tower_corp' },
+  { x: -81, z: 78, w: 6, d: 6, h: 6, btype: 'tower_service' },
 ];
 
 // INDUSTRIAL (south-center) — warehouses, factory, workshops
 const INDUSTRIAL_BUILDINGS = [
   // === Row 1 ===
-  { x: -20, z: -85, w: 12, d: 9, h: 8, btype: 'ind_warehouse' },
-  { x: -5, z: -88, w: 14, d: 11, h: 10, btype: 'taro_factory', named: 'taro_factory', namedSigColor: 0xF5C4B3 },
-  { x: 15, z: -85, w: 12, d: 9, h: 8, btype: 'ind_warehouse' },
-  { x: 35, z: -88, w: 14, d: 11, h: 8, btype: 'workshop_property', named: 'workshop_property', namedSigColor: 0xF5C4B3 },
-  { x: 55, z: -85, w: 10, d: 9, h: 7, btype: 'vex_squat', named: 'vex_squat', namedSigColor: 0xED93B1 },
+  { x: -12, z: -51, w: 12, d: 9, h: 8, btype: 'ind_warehouse' },
+  { x: -3, z: -52.8, w: 14, d: 11, h: 10, btype: 'taro_factory', named: 'taro_factory', namedSigColor: 0xF5C4B3 },
+  { x: 9, z: -51, w: 12, d: 9, h: 8, btype: 'ind_warehouse' },
+  { x: 21, z: -52.8, w: 14, d: 11, h: 8, btype: 'workshop_property', named: 'workshop_property', namedSigColor: 0xF5C4B3 },
+  { x: 33, z: -51, w: 10, d: 9, h: 7, btype: 'vex_squat', named: 'vex_squat', namedSigColor: 0xED93B1 },
   // === Row 2 ===
-  { x: -22, z: -110, w: 12, d: 10, h: 7, btype: 'ind_warehouse' },
-  { x: -5, z: -112, w: 14, d: 9, h: 8, btype: 'ind_workshop' },
-  { x: 15, z: -108, w: 12, d: 11, h: 7, btype: 'ind_warehouse' },
-  { x: 35, z: -112, w: 14, d: 9, h: 8, btype: 'ind_workshop' },
-  { x: 55, z: -108, w: 12, d: 10, h: 7, btype: 'ind_warehouse' },
+  { x: -13.2, z: -66, w: 12, d: 10, h: 7, btype: 'ind_warehouse' },
+  { x: -3, z: -67.2, w: 14, d: 9, h: 8, btype: 'ind_workshop' },
+  { x: 9, z: -64.8, w: 12, d: 11, h: 7, btype: 'ind_warehouse' },
+  { x: 21, z: -67.2, w: 14, d: 9, h: 8, btype: 'ind_workshop' },
+  { x: 33, z: -64.8, w: 12, d: 10, h: 7, btype: 'ind_warehouse' },
   // === Row 3 ===
-  { x: -15, z: -130, w: 12, d: 9, h: 7, btype: 'ind_warehouse' },
-  { x: 10, z: -132, w: 14, d: 11, h: 7, btype: 'ind_warehouse' },
-  { x: 40, z: -128, w: 12, d: 9, h: 7, btype: 'ind_warehouse' },
-  { x: 60, z: -125, w: 9, d: 7, h: 10, btype: 'office' },
+  { x: -9, z: -78, w: 12, d: 9, h: 7, btype: 'ind_warehouse' },
+  { x: 6, z: -79.2, w: 14, d: 11, h: 7, btype: 'ind_warehouse' },
+  { x: 24, z: -76.8, w: 12, d: 9, h: 7, btype: 'ind_warehouse' },
+  { x: 36, z: -75, w: 9, d: 7, h: 10, btype: 'office' },
 ];
 
 // PORT (northwest coast) — docks, warehouses, lighthouse
 const PORT_BUILDINGS = [
-  { x: -100, z: 195, w: 14, d: 10, h: 8, btype: 'port_warehouse' },
-  { x: -75, z: 195, w: 12, d: 9, h: 7, btype: 'shipping_yard', named: 'shipping_yard', namedSigColor: 0x85B7EB },
-  { x: -95, z: 225, w: 5, d: 5, h: 3, landmark: 'lighthouse', btype: 'port_warehouse' },
-  { x: -55, z: 198, w: 9, d: 7, h: 7, btype: 'gus_office', named: 'gus_office', namedSigColor: 0x85B7EB },
-  { x: -110, z: 210, w: 9, d: 7, h: 6, btype: 'port_shed' },
-  { x: -60, z: 215, w: 9, d: 7, h: 6, btype: 'port_shed' },
-  { x: -85, z: 210, w: 10, d: 7, h: 6, btype: 'port_warehouse' },
-  { x: -48, z: 210, w: 8, d: 7, h: 5, btype: 'port_shed' },
+  { x: -60, z: 117, w: 14, d: 10, h: 8, btype: 'port_warehouse' },
+  { x: -45, z: 117, w: 12, d: 9, h: 7, btype: 'shipping_yard', named: 'shipping_yard', namedSigColor: 0x85B7EB },
+  { x: -57, z: 135, w: 5, d: 5, h: 3, landmark: 'lighthouse', btype: 'port_warehouse' },
+  { x: -33, z: 118.8, w: 9, d: 7, h: 7, btype: 'gus_office', named: 'gus_office', namedSigColor: 0x85B7EB },
+  { x: -66, z: 126, w: 9, d: 7, h: 6, btype: 'port_shed' },
+  { x: -36, z: 129, w: 9, d: 7, h: 6, btype: 'port_shed' },
+  { x: -51, z: 126, w: 10, d: 7, h: 6, btype: 'port_warehouse' },
+  { x: -28.8, z: 126, w: 8, d: 7, h: 5, btype: 'port_shed' },
 ];
 
 // ACE HQ (southwest) — main HQ, barracks, watchtower, compound
 const ACE_HQ_BUILDINGS = [
-  { x: -150, z: -55, w: 16, d: 14, h: 12, landmark: 'acehq', btype: 'ace_hq' },
-  { x: -125, z: -50, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
-  { x: -125, z: -60, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
-  { x: -125, z: -70, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
-  { x: -165, z: -70, w: 10, d: 8, h: 7, btype: 'ace_garage' },
-  { x: -130, z: -80, w: 4, d: 4, h: 3, landmark: 'watchtower', btype: 'ace_barracks' },
-  { x: -165, z: -48, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
-  { x: -145, z: -78, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
+  { x: -90, z: -33, w: 16, d: 14, h: 12, landmark: 'acehq', btype: 'ace_hq' },
+  { x: -75, z: -30, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
+  { x: -75, z: -36, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
+  { x: -75, z: -42, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
+  { x: -99, z: -42, w: 10, d: 8, h: 7, btype: 'ace_garage' },
+  { x: -78, z: -48, w: 4, d: 4, h: 3, landmark: 'watchtower', btype: 'ace_barracks' },
+  { x: -99, z: -28.8, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
+  { x: -87, z: -46.8, w: 9, d: 7, h: 7, btype: 'ace_barracks' },
 ];
 
 // ========== TRANSITION ZONE BUILDINGS ==========
 // These fill the gaps between districts for natural transitions (30-40 unit span)
 
-// TOWN → DOWNTOWN (z: 50-85): buildings get taller approaching downtown
+// TOWN → DOWNTOWN (z: 30-85): buildings get taller approaching downtown
 const TRANSITION_TOWN_DOWNTOWN = [
   // West side of Main St
-  { x: -12, z: 58, w: 8, d: 7, h: 9, btype: 'shop' },
-  { x: -12, z: 70, w: 8, d: 7, h: 11, btype: 'office' },
-  { x: -12, z: 82, w: 8, d: 7, h: 12, btype: 'office' },
+  { x: -7.2, z: 34.8, w: 8, d: 7, h: 9, btype: 'shop' },
+  { x: -7.2, z: 42, w: 8, d: 7, h: 11, btype: 'office' },
+  { x: -7.2, z: 49.2, w: 8, d: 7, h: 12, btype: 'office' },
   // East side of Main St
-  { x: 12, z: 58, w: 8, d: 7, h: 10, btype: 'residential' },
-  { x: 12, z: 70, w: 8, d: 7, h: 11, btype: 'office' },
-  { x: 12, z: 82, w: 8, d: 7, h: 13, btype: 'office' },
+  { x: 7.2, z: 34.8, w: 8, d: 7, h: 10, btype: 'residential' },
+  { x: 7.2, z: 42, w: 8, d: 7, h: 11, btype: 'office' },
+  { x: 7.2, z: 49.2, w: 8, d: 7, h: 13, btype: 'office' },
   // Further west
-  { x: -32, z: 60, w: 8, d: 7, h: 8, btype: 'shop' },
-  { x: -32, z: 72, w: 8, d: 7, h: 10, btype: 'residential' },
+  { x: -19.2, z: 36, w: 8, d: 7, h: 8, btype: 'shop' },
+  { x: -19.2, z: 43.2, w: 8, d: 7, h: 10, btype: 'residential' },
   // Further east
-  { x: 32, z: 60, w: 8, d: 7, h: 9, btype: 'shop' },
-  { x: 32, z: 72, w: 8, d: 7, h: 10, btype: 'residential' },
-  { x: 48, z: 65, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: 19.2, z: 36, w: 8, d: 7, h: 9, btype: 'shop' },
+  { x: 19.2, z: 43.2, w: 8, d: 7, h: 10, btype: 'residential' },
+  { x: 28.8, z: 39, w: 8, d: 7, h: 8, btype: 'residential' },
 ];
 
-// TOWN → RUINS (z: -20 to -120): buildings get damaged
+// TOWN → RUINS (z: -12 to -120): buildings get damaged
 const TRANSITION_TOWN_RUINS = [
   // West side of Main St — damaged buildings
-  { x: -12, z: -25, w: 8, d: 7, h: 7, btype: 'damaged_light' },
-  { x: -12, z: -40, w: 8, d: 7, h: 6, btype: 'damaged_medium' },
-  { x: -12, z: -55, w: 8, d: 7, h: 5, btype: 'damaged_medium' },
-  { x: -12, z: -70, w: 8, d: 7, h: 4, btype: 'damaged_heavy' },
+  { x: -7.2, z: -15, w: 8, d: 7, h: 7, btype: 'damaged_light' },
+  { x: -7.2, z: -24, w: 8, d: 7, h: 6, btype: 'damaged_medium' },
+  { x: -7.2, z: -33, w: 8, d: 7, h: 5, btype: 'damaged_medium' },
+  { x: -7.2, z: -42, w: 8, d: 7, h: 4, btype: 'damaged_heavy' },
   // East side of Main St — damaged buildings
-  { x: 12, z: -25, w: 8, d: 7, h: 8, btype: 'damaged_light' },
-  { x: 12, z: -40, w: 8, d: 7, h: 6, btype: 'damaged_medium' },
-  { x: 12, z: -55, w: 8, d: 7, h: 5, btype: 'damaged_heavy' },
-  { x: 12, z: -70, w: 8, d: 7, h: 4, btype: 'damaged_heavy' },
+  { x: 7.2, z: -15, w: 8, d: 7, h: 8, btype: 'damaged_light' },
+  { x: 7.2, z: -24, w: 8, d: 7, h: 6, btype: 'damaged_medium' },
+  { x: 7.2, z: -33, w: 8, d: 7, h: 5, btype: 'damaged_heavy' },
+  { x: 7.2, z: -42, w: 8, d: 7, h: 4, btype: 'damaged_heavy' },
   // Further out — half-demolished
-  { x: -30, z: -50, w: 8, d: 7, h: 5, btype: 'damaged_medium' },
-  { x: 30, z: -45, w: 8, d: 7, h: 6, btype: 'damaged_medium' },
-  { x: -15, z: -100, w: 8, d: 7, h: 4, btype: 'demolished' },
-  { x: 20, z: -105, w: 7, d: 6, h: 3, btype: 'demolished' },
-  { x: -35, z: -110, w: 8, d: 7, h: 5, btype: 'demolished' },
-  { x: 40, z: -115, w: 7, d: 7, h: 3, btype: 'demolished' },
+  { x: -18, z: -30, w: 8, d: 7, h: 5, btype: 'damaged_medium' },
+  { x: 18, z: -27, w: 8, d: 7, h: 6, btype: 'damaged_medium' },
+  { x: -9, z: -60, w: 8, d: 7, h: 4, btype: 'demolished' },
+  { x: 12, z: -63, w: 7, d: 6, h: 3, btype: 'demolished' },
+  { x: -21, z: -66, w: 8, d: 7, h: 5, btype: 'demolished' },
+  { x: 24, z: -69, w: 7, d: 7, h: 3, btype: 'demolished' },
 ];
 
 // ========== ALL DISTRICT BUILDING SETS ==========
@@ -2031,7 +2031,7 @@ function createBoat(scene, x, z) {
 function createACEFence(scene) {
   // High fence (2-unit tall) surrounding the ACE compound
   const fenceMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
-  // Compound bounds: roughly x: -175 to -115, z: -85 to -40
+  // Compound bounds: roughly x: -105 to -115, z: -51 to -40
   // North fence
   const north = new THREE.Mesh(new THREE.BoxGeometry(65, 2.5, 0.15), fenceMat);
   north.position.set(-145, 1.25, -40);
@@ -2142,9 +2142,9 @@ function createWatchtower(scene, x, z) {
 
 // Landmark positions that buildings must not overlap with
 const LANDMARK_ZONES = [
-  { x: 0, z: 20, w: 16, d: 16 },      // Town square / fountain
-  { x: 125, z: 5, w: 10, d: 8 },       // Playground
-  { x: -95, z: 225, w: 6, d: 6 },      // Lighthouse
+  { x: 0, z: 12, w: 16, d: 16 },      // Town square / fountain
+  { x: 75, z: 3, w: 10, d: 8 },       // Playground
+  { x: -57, z: 135, w: 6, d: 6 },      // Lighthouse
 ];
 
 // Check if a building's CENTER is inside a road rectangle (not just edge overlap).
@@ -2578,49 +2578,49 @@ export function getDoorMats() { return doorMats; }
 // ========== NPC SPAWN POINTS (future use) ==========
 export const NPC_SPAWN_POINTS = {
   burbs: [
-    { x: 130, z: -35 }, { x: 155, z: -15 }, { x: 175, z: -38 }, { x: 145, z: 8 },
+    { x: 78, z: -21 }, { x: 93, z: -9 }, { x: 105, z: -22.8 }, { x: 87, z: 4.8 },
   ],
   northtown: [
-    { x: 115, z: 140 }, { x: 140, z: 155 }, { x: 125, z: 168 }, { x: 155, z: 160 },
+    { x: 69, z: 84 }, { x: 84, z: 93 }, { x: 75, z: 100.8 }, { x: 93, z: 96 },
   ],
   uptown: [
-    { x: 160, z: 62 }, { x: 180, z: 62 }, { x: 165, z: 82 }, { x: 190, z: 95 },
+    { x: 96, z: 37.2 }, { x: 108, z: 37.2 }, { x: 99, z: 49.2 }, { x: 114, z: 57 },
   ],
   tower: [
-    { x: -155, z: 108 }, { x: -135, z: 125 }, { x: -148, z: 138 }, { x: -130, z: 112 },
+    { x: -93, z: 64.8 }, { x: -81, z: 75 }, { x: -88.8, z: 82.8 }, { x: -78, z: 67.2 },
   ],
   industrial: [
-    { x: -10, z: -92 }, { x: 25, z: -92 }, { x: 15, z: -115 }, { x: 45, z: -112 },
+    { x: -6, z: -55.2 }, { x: 15, z: -55.2 }, { x: 9, z: -69 }, { x: 27, z: -67.2 },
   ],
   port: [
-    { x: -90, z: 200 }, { x: -65, z: 200 }, { x: -55, z: 210 }, { x: -80, z: 218 },
+    { x: -54, z: 120 }, { x: -39, z: 120 }, { x: -33, z: 126 }, { x: -48, z: 130.8 },
   ],
   aceHQ: [
-    { x: -145, z: -50 }, { x: -135, z: -65 },
+    { x: -87, z: -30 }, { x: -81, z: -39 },
   ],
 };
 
 // ========== ACE PATROL WAYPOINTS (future use) ==========
 export const ACE_PATROL_WAYPOINTS = {
   burbs: [
-    { x: 130, z: -30 }, { x: 160, z: -30 }, { x: 160, z: 10 }, { x: 130, z: 10 },
+    { x: 78, z: -18 }, { x: 96, z: -18 }, { x: 96, z: 6 }, { x: 78, z: 6 },
   ],
   northtown: [
-    { x: 110, z: 140 }, { x: 150, z: 140 }, { x: 150, z: 170 }, { x: 110, z: 170 },
+    { x: 66, z: 84 }, { x: 90, z: 84 }, { x: 90, z: 102 }, { x: 66, z: 102 },
   ],
   uptown: [
-    { x: 158, z: 60 }, { x: 195, z: 60 }, { x: 195, z: 95 }, { x: 158, z: 95 },
+    { x: 94.8, z: 36 }, { x: 117, z: 36 }, { x: 117, z: 57 }, { x: 94.8, z: 57 },
   ],
   tower: [
-    { x: -165, z: 100 }, { x: -125, z: 100 }, { x: -125, z: 140 }, { x: -165, z: 140 },
+    { x: -99, z: 60 }, { x: -75, z: 60 }, { x: -75, z: 84 }, { x: -99, z: 84 },
   ],
   industrial: [
-    { x: -20, z: -85 }, { x: 55, z: -85 }, { x: 55, z: -130 }, { x: -20, z: -130 },
+    { x: -12, z: -51 }, { x: 33, z: -51 }, { x: 33, z: -78 }, { x: -12, z: -78 },
   ],
   port: [
-    { x: -100, z: 195 }, { x: -50, z: 195 }, { x: -50, z: 220 }, { x: -100, z: 220 },
+    { x: -60, z: 117 }, { x: -30, z: 117 }, { x: -30, z: 132 }, { x: -60, z: 132 },
   ],
   aceHQ: [
-    { x: -170, z: -45 }, { x: -120, z: -45 }, { x: -120, z: -82 }, { x: -170, z: -82 },
+    { x: -102, z: -27 }, { x: -72, z: -27 }, { x: -72, z: -49.2 }, { x: -102, z: -49.2 },
   ],
 };

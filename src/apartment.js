@@ -9,17 +9,17 @@ let sceneRef = null;
 
 // Apartment interior bounds (inside the building at x=12, z=14, 7x7)
 // Interior is slightly smaller than the building shell
-const APARTMENT_CENTER = new THREE.Vector3(12, 0, 14);
+const APARTMENT_CENTER = new THREE.Vector3(7.2, 0, 8.4);
 const INTERIOR_W = 5.5;
 const INTERIOR_D = 5.5;
 
 // Station placement positions (world coords)
 // Bed is already at (14, 0, 12) — south-east corner
 // Print station: against the north wall, west side
-export const PRINT_STATION_POS = new THREE.Vector3(10.0, 0, 16.5);
-export const SEWING_STATION_POS = new THREE.Vector3(14.0, 0, 16.5);   // north wall, east side
-export const STUFFING_STATION_POS = new THREE.Vector3(10.0, 0, 11.5); // south wall, west side
-export const CUTTING_TABLE_POS = new THREE.Vector3(9.5, 0, 14.0);     // west side wall, center
+export const PRINT_STATION_POS = new THREE.Vector3(5.2, 0, 10.9);
+export const SEWING_STATION_POS = new THREE.Vector3(9.2, 0, 10.9);    // north wall, east side
+export const STUFFING_STATION_POS = new THREE.Vector3(5.2, 0, 5.9);   // south wall, west side
+export const CUTTING_TABLE_POS = new THREE.Vector3(4.7, 0, 8.4);      // west side wall, center
 // Gacha machine already at (14, 0, 12) — south-east corner
 
 // Station slot placeholder positions — shown until a station is purchased
@@ -45,7 +45,7 @@ export function createApartment(scene) {
   // Small work table in the center (gives the studio feel)
   const tableMat = new THREE.MeshLambertMaterial({ color: 0x6b5b3a });
   const tableTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.06, 0.8), tableMat);
-  tableTop.position.set(12, 0.65, 14);
+  tableTop.position.set(7.2, 0.65, 8.4);
   tableTop.castShadow = true;
   tableTop.receiveShadow = true;
   apartmentGroup.add(tableTop);
@@ -56,13 +56,13 @@ export function createApartment(scene) {
   const offsets = [[-0.5, -0.3], [0.5, -0.3], [-0.5, 0.3], [0.5, 0.3]];
   for (const [ox, oz] of offsets) {
     const leg = new THREE.Mesh(legGeo, legMat);
-    leg.position.set(12 + ox, 0.325, 14 + oz);
+    leg.position.set(7.2 + ox, 0.325, 8.4 + oz);
     apartmentGroup.add(leg);
   }
 
   // Ambient light inside apartment (warm workshop glow)
   const warmLight = new THREE.PointLight(0xffe8c0, 0.4, 8);
-  warmLight.position.set(12, 3, 14);
+  warmLight.position.set(7.2, 3, 8.4);
   apartmentGroup.add(warmLight);
 
   // Floor markers at each station slot (tape outlines — always visible)
