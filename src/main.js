@@ -5,7 +5,7 @@ import { createRuins, updateRuinsGlow } from './ruins.js';
 import { createRoads, updateRoads } from './roads.js';
 import { createBuildings, getFountainData, showDistrictBuildings } from './buildings.js';
 import { createDistricts, checkDistrictUnlocks, checkDistrictUnlocksByRank, restoreDistrictState, getDistrictState, isDistrictUnlocked } from './districts.js';
-import { createWorldDetail, updateWorldDetail } from './world-detail.js';
+import { createWorldDetail, updateWorldDetail, createTownCenter } from './world-detail.js';
 import { createRuinsDetail } from './ruins-detail.js';
 import { initParticles, updateParticles, setFountainPosition, spawnSearchDust } from './particles.js';
 import { initEnvironment, updateEnvironment } from './environment.js';
@@ -158,6 +158,9 @@ async function boot() {
 
   // Build street furniture (benches, cars, etc)
   createWorldDetail(scene);
+
+  // Hand-placed Town center props
+  createTownCenter(scene);
 
   // Build the ruins zone
   const { piles, RUINS_Z_START } = createRuins(scene);
