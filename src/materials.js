@@ -2,16 +2,16 @@
 // Materials are a distinct inventory category from finished products (stickers, plushies, gacha)
 
 export const MATERIALS = {
-  sticker_paper:      { name: 'Sticker Paper',       stackMax: 20, price: 2, dailyStock: 30 },
+  sticker_paper:      { name: 'Sticker Paper',       stackMax: 10, price: 2, dailyStock: 30 },
   fabric_roll:        { name: 'Fabric Roll',          stackMax: 10, price: 8, dailyStock: 10 },
-  stuffing:           { name: 'Stuffing',             stackMax: 15, price: 3, dailyStock: 15 },
+  stuffing:           { name: 'Stuffing',             stackMax: 10, price: 3, dailyStock: 15 },
   capsule_shell:      { name: 'Capsule Shell',        stackMax: 10, price: 5, dailyStock: 10 },
-  thread_spool:       { name: 'Thread Spool',         stackMax: 20, price: 2, dailyStock: 20 },
-  fabric_scrap:       { name: 'Fabric Scrap',         stackMax: 20, price: 0, dailyStock: 0 },
-  plushie_pattern:    { name: 'Plushie Pattern',      stackMax: 15, price: 0, dailyStock: 0 },
+  thread_spool:       { name: 'Thread Spool',         stackMax: 10, price: 2, dailyStock: 20 },
+  fabric_scrap:       { name: 'Fabric Scrap',         stackMax: 10, price: 0, dailyStock: 0 },
+  plushie_pattern:    { name: 'Plushie Pattern',      stackMax: 10, price: 0, dailyStock: 0 },
   plushie_shell:      { name: 'Plushie Shell',        stackMax: 10, price: 0, dailyStock: 0 },
   plushie_shell_color:{ name: 'Color Plushie Shell',  stackMax: 10, price: 0, dailyStock: 0 },
-  color_ink:          { name: 'Color Ink',            stackMax: 15, price: 8, dailyStock: 5 },
+  color_ink:          { name: 'Color Ink',            stackMax: 10, price: 8, dailyStock: 10 },
 };
 
 // Returns inline CSS style object for material icons in inventory slots

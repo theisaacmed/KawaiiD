@@ -3,7 +3,7 @@
 
 import * as THREE from 'three';
 import { MATERIALS, getMaterialIconStyle } from './materials.js';
-import { addItem, getMoney, deductMoney, isFull } from './inventory.js';
+import { addItem, getMoney, deductMoney, isFull, roomFor } from './inventory.js';
 import { showInventoryFull } from './hud.js';
 import { isNPCActive } from './time-system.js';
 
@@ -29,7 +29,6 @@ const KIT_LINES = [
 let shopPanel = null;
 let shopOpen = false;
 let kitMesh = null;
-let quantities = {}; // per-item cart quantities
 
 export function resetKitStock() {
   for (const key of SHOP_ITEMS) {
@@ -129,9 +128,6 @@ export function openShop() {
   if (shopOpen) return;
   shopOpen = true;
 
-  // Reset cart quantities
-  for (const key of SHOP_ITEMS) quantities[key] = 0;
-
   // Release pointer lock for UI
   document.exitPointerLock();
 
@@ -180,7 +176,7 @@ export function openShop() {
   }
   shopPanel.appendChild(grid);
 
-  // Bottom: total + buttons
+  // Bottom row: balance + close
   const bottom = document.createElement('div');
   Object.assign(bottom.style, {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -188,39 +184,11 @@ export function openShop() {
     borderTop: '1px solid rgba(255,255,255,0.08)',
   });
 
-  // Total
-  const totalEl = document.createElement('div');
-  totalEl.id = 'shop-total';
-  Object.assign(totalEl.style, { fontSize: '16px', fontWeight: 'bold', color: '#6f6' });
-  totalEl.textContent = 'Total: $0';
-  bottom.appendChild(totalEl);
-
-  // Balance
   const balanceEl = document.createElement('div');
   balanceEl.id = 'shop-balance';
   Object.assign(balanceEl.style, { fontSize: '13px', color: '#888' });
   balanceEl.textContent = `Balance: $${getMoney()}`;
   bottom.appendChild(balanceEl);
-
-  shopPanel.appendChild(bottom);
-
-  // Buttons row
-  const btnRow = document.createElement('div');
-  Object.assign(btnRow.style, {
-    display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px',
-  });
-
-  const buyBtn = document.createElement('button');
-  buyBtn.id = 'shop-buy-btn';
-  Object.assign(buyBtn.style, {
-    background: 'rgba(100,200,100,0.2)', color: '#6f6',
-    border: '1px solid rgba(100,200,100,0.3)', borderRadius: '6px',
-    padding: '8px 20px', fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold',
-    cursor: 'pointer',
-  });
-  buyBtn.textContent = 'Buy';
-  buyBtn.addEventListener('click', handleBuy);
-  btnRow.appendChild(buyBtn);
 
   const closeBtn = document.createElement('button');
   Object.assign(closeBtn.style, {
@@ -231,9 +199,9 @@ export function openShop() {
   });
   closeBtn.textContent = 'Close';
   closeBtn.addEventListener('click', closeShop);
-  btnRow.appendChild(closeBtn);
+  bottom.appendChild(closeBtn);
 
-  shopPanel.appendChild(btnRow);
+  shopPanel.appendChild(bottom);
 
   // Feedback text
   const feedback = document.createElement('div');
@@ -265,6 +233,12 @@ export function closeShop() {
     shopPanel = null;
   }
   document.removeEventListener('keydown', shopKeyHandler);
+}
+
+function canBuyTen(key) {
+  return kitStock[key] >= 10
+    && getMoney() >= 10 * MATERIALS[key].price
+    && roomFor('material', key) >= 10;
 }
 
 function createShopRow(key, mat) {
@@ -307,73 +281,41 @@ function createShopRow(key, mat) {
   stockEl.textContent = `${kitStock[key]} left`;
   row.appendChild(stockEl);
 
-  // Quantity controls
-  const qtyWrap = document.createElement('div');
-  Object.assign(qtyWrap.style, { display: 'flex', alignItems: 'center', gap: '4px' });
-
-  const minusBtn = document.createElement('button');
-  Object.assign(minusBtn.style, btnStyle());
-  minusBtn.textContent = '-';
-  minusBtn.addEventListener('click', () => adjustQty(key, -1));
-  qtyWrap.appendChild(minusBtn);
-
-  const qtyEl = document.createElement('div');
-  qtyEl.id = `shop-qty-${key}`;
-  Object.assign(qtyEl.style, {
-    width: '28px', textAlign: 'center', fontSize: '14px', fontWeight: 'bold',
+  // Buy 10 button
+  const buyBtn = document.createElement('button');
+  buyBtn.id = `shop-buy10-${key}`;
+  const ok = canBuyTen(key);
+  Object.assign(buyBtn.style, {
+    padding: '5px 10px', borderRadius: '5px', fontFamily: 'monospace', fontSize: '12px',
+    fontWeight: 'bold', whiteSpace: 'nowrap',
+    background: ok ? 'rgba(100,200,100,0.15)' : 'rgba(255,255,255,0.03)',
+    border: `1px solid ${ok ? 'rgba(100,200,100,0.35)' : 'rgba(255,255,255,0.1)'}`,
+    color: ok ? '#6f6' : '#444',
+    cursor: ok ? 'pointer' : 'default',
   });
-  qtyEl.textContent = '0';
-  qtyWrap.appendChild(qtyEl);
+  buyBtn.textContent = `Buy 10 — $${10 * mat.price}`;
+  if (!ok) buyBtn.disabled = true;
+  buyBtn.addEventListener('click', () => buyTen(key));
+  row.appendChild(buyBtn);
 
-  const plusBtn = document.createElement('button');
-  Object.assign(plusBtn.style, btnStyle());
-  plusBtn.textContent = '+';
-  plusBtn.addEventListener('click', () => adjustQty(key, 1));
-  qtyWrap.appendChild(plusBtn);
-
-  row.appendChild(qtyWrap);
   return row;
 }
 
-function btnStyle() {
-  return {
-    width: '26px', height: '26px',
-    background: 'rgba(255,255,255,0.08)', color: '#fff',
-    border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px',
-    fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold',
-    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '0',
-  };
-}
-
-function adjustQty(key, delta) {
-  const current = quantities[key] || 0;
-  const newQty = Math.max(0, Math.min(kitStock[key], current + delta));
-  quantities[key] = newQty;
-  updateShopUI();
-}
-
-function getCartTotal() {
-  let total = 0;
+function refreshShopButtons() {
   for (const key of SHOP_ITEMS) {
-    total += (quantities[key] || 0) * MATERIALS[key].price;
+    const btn = document.getElementById(`shop-buy10-${key}`);
+    if (!btn) continue;
+    const ok = canBuyTen(key);
+    btn.disabled = !ok;
+    Object.assign(btn.style, {
+      background: ok ? 'rgba(100,200,100,0.15)' : 'rgba(255,255,255,0.03)',
+      border: `1px solid ${ok ? 'rgba(100,200,100,0.35)' : 'rgba(255,255,255,0.1)'}`,
+      color: ok ? '#6f6' : '#444',
+      cursor: ok ? 'pointer' : 'default',
+    });
+    const stockEl = document.getElementById(`shop-stock-${key}`);
+    if (stockEl) stockEl.textContent = `${kitStock[key]} left`;
   }
-  return total;
-}
-
-function getCartItemCount() {
-  let count = 0;
-  for (const key of SHOP_ITEMS) count += (quantities[key] || 0);
-  return count;
-}
-
-function updateShopUI() {
-  for (const key of SHOP_ITEMS) {
-    const qtyEl = document.getElementById(`shop-qty-${key}`);
-    if (qtyEl) qtyEl.textContent = quantities[key] || 0;
-  }
-  const totalEl = document.getElementById('shop-total');
-  if (totalEl) totalEl.textContent = `Total: $${getCartTotal()}`;
   const balanceEl = document.getElementById('shop-balance');
   if (balanceEl) balanceEl.textContent = `Balance: $${getMoney()}`;
 }
@@ -387,61 +329,16 @@ function showFeedback(text, color) {
   setTimeout(() => { el.style.opacity = '0'; }, 2000);
 }
 
-function handleBuy() {
-  const total = getCartTotal();
-  if (total <= 0) return;
-
-  if (getMoney() < total) {
-    showFeedback('Not enough money!', '#c66');
-    return;
+function buyTen(key) {
+  if (!canBuyTen(key)) return;
+  const cost = 10 * MATERIALS[key].price;
+  deductMoney(cost);
+  for (let i = 0; i < 10; i++) {
+    addItem('material', key);
+    kitStock[key]--;
   }
-
-  // Check if inventory can hold at least some items
-  if (isFull()) {
-    showInventoryFull();
-    showFeedback('Inventory full!', '#c66');
-    return;
-  }
-
-  // Add items to inventory, deduct stock
-  let totalAdded = 0;
-  let totalCost = 0;
-
-  for (const key of SHOP_ITEMS) {
-    const qty = quantities[key] || 0;
-    if (qty <= 0) continue;
-
-    for (let i = 0; i < qty; i++) {
-      if (addItem('material', key)) {
-        kitStock[key]--;
-        totalCost += MATERIALS[key].price;
-        totalAdded++;
-      } else {
-        // Inventory full mid-purchase
-        break;
-      }
-    }
-  }
-
-  if (totalCost > 0) {
-    deductMoney(totalCost);
-  }
-
-  if (totalAdded > 0) {
-    showFeedback(`Bought ${totalAdded} item${totalAdded > 1 ? 's' : ''}!`, '#6f6');
-  } else {
-    showFeedback('Inventory full!', '#c66');
-  }
-
-  // Reset cart and update UI
-  for (const key of SHOP_ITEMS) quantities[key] = 0;
-
-  // Update stock display
-  for (const key of SHOP_ITEMS) {
-    const stockEl = document.getElementById(`shop-stock-${key}`);
-    if (stockEl) stockEl.textContent = `${kitStock[key]} left`;
-  }
-  updateShopUI();
+  showFeedback(`Bought 10 ${MATERIALS[key].name}!`, '#6f6');
+  refreshShopButtons();
 }
 
 // ============================================================
@@ -451,7 +348,7 @@ function handleBuy() {
 const YUNA_POS = new THREE.Vector3(155, 0, 165);
 const YUNA_INTERACT_RADIUS = 3;
 const YUNA_INK_PRICE = 8;
-const YUNA_INK_DAILY_STOCK = 5;
+const YUNA_INK_DAILY_STOCK = 10;
 
 let yunaInkStock = YUNA_INK_DAILY_STOCK;
 let yunaShopPanel = null;
@@ -487,8 +384,6 @@ export function openYunaShop() {
   yunaShopOpen = true;
   document.exitPointerLock();
 
-  let inkQty = 0;
-
   yunaShopPanel = document.createElement('div');
   Object.assign(yunaShopPanel.style, {
     position: 'fixed', top: '50%', left: '50%',
@@ -505,9 +400,17 @@ export function openYunaShop() {
     userSelect: 'none',
   });
 
+  const BULK = 10;
+  const bulkCost = BULK * YUNA_INK_PRICE;
+
+  function canBuyInk() {
+    return yunaInkStock >= BULK
+      && getMoney() >= bulkCost
+      && roomFor('material', 'color_ink') >= BULK;
+  }
+
   function render() {
-    const money = getMoney();
-    const canBuy = inkQty > 0 && money >= inkQty * YUNA_INK_PRICE && !isFull();
+    const ok = canBuyInk();
     yunaShopPanel.innerHTML = `
       <div style="font-size:18px;font-weight:bold;color:#d080ff;text-align:center;margin-bottom:6px">Yuna's Ink</div>
       <div style="text-align:center;color:#999;font-size:12px;margin-bottom:14px;font-style:italic">
@@ -521,47 +424,28 @@ export function openYunaShop() {
             <div style="font-size:11px;color:#d080ff">$${YUNA_INK_PRICE} each · ${yunaInkStock} left today</div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <button id="yuna-minus" style="width:24px;height:24px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:#fff;font-size:14px;font-weight:bold;cursor:pointer;font-family:monospace">-</button>
-          <span id="yuna-qty" style="min-width:20px;text-align:center;font-size:15px;font-weight:bold">${inkQty}</span>
-          <button id="yuna-plus" style="width:24px;height:24px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:#fff;font-size:14px;font-weight:bold;cursor:pointer;font-family:monospace">+</button>
-        </div>
+        <button id="yuna-buy" style="padding:6px 12px;border-radius:5px;font-family:monospace;font-size:12px;font-weight:bold;white-space:nowrap;cursor:${ok ? 'pointer' : 'default'};border:1px solid ${ok ? 'rgba(200,80,220,0.4)' : 'rgba(255,255,255,0.1)'};background:${ok ? 'rgba(200,80,220,0.15)' : 'rgba(255,255,255,0.03)'};color:${ok ? '#d080ff' : '#444'}" ${ok ? '' : 'disabled'}>Buy 10 — $${bulkCost}</button>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <span style="font-size:15px;font-weight:bold;color:#6f6">Total: $${inkQty * YUNA_INK_PRICE}</span>
-        <span style="font-size:12px;color:#888">Balance: $${money}</span>
+        <span style="font-size:12px;color:#888">Balance: $${getMoney()}</span>
       </div>
       <div id="yuna-feedback" style="font-size:12px;text-align:center;min-height:16px;margin-bottom:8px;transition:opacity 0.5s;opacity:0"></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button id="yuna-buy" style="padding:7px 18px;border-radius:6px;font-family:monospace;font-size:13px;font-weight:bold;cursor:${canBuy ? 'pointer' : 'default'};border:1px solid ${canBuy ? 'rgba(200,80,220,0.4)' : 'rgba(255,255,255,0.1)'};background:${canBuy ? 'rgba(200,80,220,0.15)' : 'rgba(255,255,255,0.03)'};color:${canBuy ? '#d080ff' : '#444'}" ${canBuy ? '' : 'disabled'}>Buy</button>
         <button id="yuna-close" style="padding:7px 18px;border-radius:6px;font-family:monospace;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:#888">Close</button>
       </div>
     `;
 
-    yunaShopPanel.querySelector('#yuna-plus').addEventListener('click', () => {
-      if (inkQty < yunaInkStock) inkQty = Math.min(yunaInkStock, inkQty + 1);
-      render();
-    });
-    yunaShopPanel.querySelector('#yuna-minus').addEventListener('click', () => {
-      inkQty = Math.max(0, inkQty - 1);
-      render();
-    });
     yunaShopPanel.querySelector('#yuna-buy').addEventListener('click', () => {
-      if (inkQty <= 0 || getMoney() < inkQty * YUNA_INK_PRICE) return;
-      let bought = 0;
-      for (let i = 0; i < inkQty; i++) {
-        if (isFull()) break;
-        if (addItem('material', 'color_ink')) {
-          yunaInkStock--;
-          deductMoney(YUNA_INK_PRICE);
-          bought++;
-        } else break;
+      if (!canBuyInk()) return;
+      deductMoney(bulkCost);
+      for (let i = 0; i < BULK; i++) {
+        addItem('material', 'color_ink');
+        yunaInkStock--;
       }
-      inkQty = 0;
       const fb = yunaShopPanel.querySelector('#yuna-feedback');
       if (fb) {
-        fb.textContent = bought > 0 ? `Bought ${bought} ink!` : 'Inventory full!';
-        fb.style.color = bought > 0 ? '#d080ff' : '#c66';
+        fb.textContent = `Bought ${BULK} Color Ink!`;
+        fb.style.color = '#d080ff';
         fb.style.opacity = '1';
         setTimeout(() => { fb.style.opacity = '0'; }, 2000);
       }

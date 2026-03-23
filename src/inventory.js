@@ -153,6 +153,19 @@ export function isFull() {
   return state.slots.length >= MAX_SLOTS;
 }
 
+// Returns how many more items of (type, subtype) can be added to current inventory
+export function roomFor(type, subtype) {
+  const stackKey = getStackKey(type, subtype);
+  const maxStack = MAX_STACK[stackKey] || Infinity;
+  let room = 0;
+  for (const slot of state.slots) {
+    if (slotsMatch(slot, type, subtype)) room += maxStack - slot.count;
+  }
+  const emptySlots = MAX_SLOTS - state.slots.length;
+  room += emptySlots * maxStack;
+  return room;
+}
+
 export function onInventoryChange(fn) {
   state.listeners.push(fn);
 }
