@@ -3,6 +3,7 @@ import { getBarrierBoxes } from './districts.js';
 import { isNoclip, getSpeedMult } from './admin.js';
 import { getAllBuildingBlocks } from './buildings.js';
 import { getTerrainHeight } from './world.js';
+import { isDebugMode } from './debug-placer.js';
 
 const PLAYER_HEIGHT = 1.7;
 const WALK_SPEED = 5;
@@ -74,6 +75,7 @@ export class Player {
 
   _initKeyboard() {
     const onKey = (e, pressed) => {
+      if (isDebugMode()) return;
       switch (e.code) {
         case 'KeyW': this.keys.forward = pressed; break;
         case 'KeyS': this.keys.back = pressed; break;

@@ -6,6 +6,7 @@ import { MATERIALS, getMaterialIconStyle } from './materials.js';
 import { addItem, getMoney, deductMoney, isFull, roomFor } from './inventory.js';
 import { showInventoryFull } from './hud.js';
 import { isNPCActive } from './time-system.js';
+import { getTerrainHeight } from './world.js';
 
 // Kit's position — hidden alley off a secondary road in Town
 const KIT_POS = new THREE.Vector3(28, 0, 25);
@@ -65,6 +66,7 @@ export function isKitAvailable() {
 export function createKit(scene) {
   const group = new THREE.Group();
   group.position.copy(KIT_POS);
+  group.position.y = getTerrainHeight(KIT_POS.x, KIT_POS.z);
 
   // Body
   const bodyMat = new THREE.MeshLambertMaterial({ color: 0x5a7a5a }); // muted green

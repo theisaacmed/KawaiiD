@@ -54,6 +54,7 @@ import {
 } from './notifications.js';
 import { initMultiplayer, updateMultiplayer, sendDealComplete, isMultiplayerActive } from './multiplayer.js';
 import { showHUDBadge, removeHUDBadge } from './multiplayer-ui.js';
+import { initDebugPlacer } from './debug-placer.js';
 
 // --- District unlock helpers ---
 function performDistrictUnlocks(totalDeals, scene, npcs) {
@@ -419,6 +420,9 @@ async function boot() {
     onQuit: () => { window.location.reload(); },
     isPausable: () => !isDealOpen() && !isPhoneVisible() && !isGachaUIOpen() && !isSleepingNow() && !isPrintStationOpen(),
   });
+
+  // Debug placer (T to toggle)
+  initDebugPlacer(buildings, camera, scene);
 
   // Admin / debug panel
   initAdmin(player, npcs, () => {
