@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kawaii Dealer — Town Center Map</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; }
+  #controls { position: fixed; top: 12px; left: 12px; z-index: 100; background: rgba(0,0,0,0.85); padding: 12px 16px; border-radius: 8px; font-size: 12px; color: #aaa; }
+  #controls b { color: #e91e8f; }
+  #info { position: fixed; top: 12px; right: 12px; z-index: 100; background: rgba(0,0,0,0.85); padding: 12px 16px; border-radius: 8px; font-size: 12px; color: #0f0; font-family: monospace; min-width: 200px; display: none; }
+  #export-btn { position: fixed; bottom: 12px; right: 12px; z-index: 100; background: #e91e8f; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; }
+  #export-btn:hover { background: #c4167a; }
+  #export-output { position: fixed; bottom: 60px; right: 12px; z-index: 100; background: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; font-size: 11px; padding: 12px; border-radius: 8px; max-height: 300px; max-width: 400px; overflow: auto; display: none; white-space: pre; }
+  canvas { display: block; cursor: crosshair; }
+</style>
+</head>
+<body>
+<div id="controls">
+  <b>Town Center Map Editor</b><br><br>
+  Click building to select<br>
+  Drag to move<br>
+  Scroll to zoom<br>
+  Right-drag to pan<br>
+  <b>R</b> = rotate selected 90°<br>
+  <b>Delete</b> = remove building<br>
+  <b>Grid</b>: 5 unit squares
+</div>
+<div id="info"></div>
+<button id="export-btn">Export JSON</button>
+<div id="export-output"></div>
+
+<canvas id="map"></canvas>
+
+<script>
+const canvas = document.getElementById('map');
+const ctx = canvas.getContext('2d');
+const info = document.getElementById('info');
+const exportBtn = document.getElementById('export-btn');
+const exportOutput = document.getElementById('export-output');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; draw(); });
+
+// Camera
+let camX = 0, camZ = 0, zoom = 8; // pixels per game unit
+
+// Town center proposed layout
+const buildings = [
+  // Town district (center around 0, 12)
+  { id: 'player_apartment', name: 'Player Apt', x: 8, z: 8, w: 6, d: 5, rot: 0, color: '#4a90d9', district: 'Town' },
+  { id: 'kit_shop', name: "Kit's Shop", x: -8, z: 14, w: 5, d: 4, rot: 0, color: '#d9a04a', district: 'Town' },
+  { id: 'mei_apartment', name: "Mei's Apt", x: 6, z: 18, w: 5, d: 4, rot: 0, color: '#e91e8f', district: 'Town' },
+  { id: 'luna_townhouse', name: "Luna's House", x: -7, z: 6, w: 5, d: 5, rot: 0, color: '#8f4ae9', district: 'Town' },
+  { id: 'fountain_square', name: 'Fountain', x: 0, z: 12, w: 3, d: 3, rot: 0, color: '#6ab7c9', district: 'Town', isLandmark: true },
+
+  // Downtown (north, around 0, 35)
+  { id: 'nao_cafe', name: "Nao's Cafe", x: -5, z: 32, w: 5, d: 4, rot: 0, color: '#4ad9a0', district: 'Downtown' },
+  { id: 'marco_restaurant', name: "Marco's", x: 6, z: 34, w: 6, d: 4, rot: 0, color: '#d94a4a', district: 'Downtown' },
+  { id: 'clock_tower', name: 'Clock Tower', x: 0, z: 38, w: 3, d: 3, rot: 0, color: '#d9d94a', district: 'Downtown', isLandmark: true },
+  { id: 'harper_office', name: "Harper's Office", x: -8, z: 40, w: 5, d: 4, rot: 0, color: '#9ad94a', district: 'Downtown' },
+
+  // Burbs (east, around 30, 10)
+  { id: 'playground', name: 'Playground', x: 28, z: 8, w: 6, d: 6, rot: 0, color: '#4ad96a', district: 'Burbs', isLandmark: true },
+  { id: 'tomas_cottage', name: "Tomas's Cottage", x: 32, z: 16, w: 5, d: 4, rot: 0, color: '#a06830', district: 'Burbs' },
+  { id: 'school', name: 'School', x: 25, z: 14, w: 7, d: 5, rot: 0, color: '#4a7ad9', district: 'Burbs' },
+
+  // Industrial (south, around 0, -25)
+  { id: 'taro_factory', name: "Taro's Factory", x: -5, z: -22, w: 8, d: 6, rot: 0, color: '#888', district: 'Industrial' },
+  { id: 'workshop_property', name: 'Workshop', x: 7, z: -28, w: 8, d: 6, rot: 0, color: '#666', district: 'Industrial' },
+  { id: 'vex_squat', name: "Vex's Squat", x: -8, z: -30, w: 5, d: 4, rot: 0, color: '#555', district: 'Industrial' },
+
+  // Northtown (northeast, around 25, 35)
+  { id: 'yuna_flower_shop', name: "Yuna's Flowers", x: 22, z: 33, w: 5, d: 4, rot: 0, color: '#d94a90', district: 'Northtown' },
+  { id: 'chapel', name: 'Chapel', x: 28, z: 38, w: 5, d: 6, rot: 0, color: '#c9b88a', district: 'Northtown', isLandmark: true },
+  { id: 'kai_shack', name: "Kai's Shack", x: 30, z: 30, w: 4, d: 3, rot: 0, color: '#6a8aa0', district: 'Northtown' },
+
+  // Uptown (far east, around 35, 25)
+  { id: 'sora_building', name: "Sora's Building", x: 38, z: 23, w: 5, d: 5, rot: 0, color: '#d9a0d9', district: 'Uptown' },
+  { id: 'kenji_office', name: "Kenji's Office", x: 35, z: 28, w: 6, d: 5, rot: 0, color: '#a0a0d9', district: 'Uptown' },
+  { id: 'the_hotel', name: 'Hotel', x: 40, z: 18, w: 6, d: 7, rot: 0, color: '#d9d9a0', district: 'Uptown' },
+
+  // Tower (west, around -25, 20)
+  { id: 'twin_towers', name: 'Twin Towers', x: -25, z: 20, w: 6, d: 6, rot: 0, color: '#a0c9d9', district: 'Tower', isLandmark: true },
+  { id: 'quinn_apartment', name: "Quinn's Apt", x: -22, z: 14, w: 5, d: 4, rot: 0, color: '#70a0c0', district: 'Tower' },
+
+  // Port (northwest, around -20, 45)
+  { id: 'gus_dock_office', name: "Gus's Office", x: -18, z: 44, w: 5, d: 4, rot: 0, color: '#8a6a50', district: 'Port' },
+  { id: 'marina_lighthouse', name: 'Lighthouse', x: -24, z: 48, w: 3, d: 3, rot: 0, color: '#d9d9d9', district: 'Port', isLandmark: true },
+  { id: 'shipping_yard', name: 'Shipping Yard', x: -15, z: 50, w: 8, d: 5, rot: 0, color: '#6a6a50', district: 'Port' },
+
+  // Ruins (south, around 0, -55)
+  { id: 'ruins_entrance', name: 'Ruins Entrance', x: 0, z: -45, w: 2, d: 2, rot: 0, color: '#444', district: 'Ruins', isLandmark: true },
+];
+
+// Roads
+const roads = [
+  // Main Street (north-south through center)
+  { x1: 0, z1: -50, x2: 0, z2: 55, width: 5, name: 'Main Street' },
+  // Cross Street (east-west through town)
+  { x1: -30, z1: 12, x2: 45, z2: 12, width: 4, name: 'Cross Street' },
+  // Road to Downtown
+  { x1: 0, z1: 25, x2: 0, z2: 45, width: 4, name: 'North Road' },
+  // Road to Burbs
+  { x1: 10, z1: 12, x2: 35, z2: 12, width: 3, name: 'East Blvd' },
+  // Road to Industrial
+  { x1: 0, z1: -10, x2: 0, z2: -35, width: 4, name: 'South Road' },
+];
+
+// District boundaries
+const districts = [
+  { name: 'Town', cx: 0, cz: 12, r: 18, color: 'rgba(233,30,143,0.08)' },
+  { name: 'Downtown', cx: 0, cz: 36, r: 15, color: 'rgba(74,217,160,0.08)' },
+  { name: 'Burbs', cx: 30, cz: 12, r: 14, color: 'rgba(74,217,106,0.08)' },
+  { name: 'Industrial', cx: 0, cz: -26, r: 14, color: 'rgba(136,136,136,0.08)' },
+  { name: 'Northtown', cx: 26, cz: 35, r: 12, color: 'rgba(217,74,144,0.08)' },
+  { name: 'Uptown', cx: 38, cz: 24, r: 12, color: 'rgba(160,160,217,0.08)' },
+  { name: 'Tower', cx: -24, cz: 18, r: 10, color: 'rgba(160,201,217,0.08)' },
+  { name: 'Port', cx: -20, cz: 48, r: 12, color: 'rgba(138,106,80,0.08)' },
+  { name: 'Ruins', cx: 0, cz: -55, r: 18, color: 'rgba(68,68,68,0.08)' },
+];
+
+let selected = null;
+let dragging = false;
+let panning = false;
+let panStartX, panStartZ, panCamStartX, panCamStartZ;
+
+function worldToScreen(wx, wz) {
+  return {
+    x: canvas.width/2 + (wx - camX) * zoom,
+    y: canvas.height/2 + (wz - camZ) * zoom
+  };
+}
+
+function screenToWorld(sx, sy) {
+  return {
+    x: (sx - canvas.width/2) / zoom + camX,
+    z: (sy - canvas.height/2) / zoom + camZ
+  };
+}
+
+function draw() {
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Grid
+  const gridSize = 5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  const tl = screenToWorld(0, 0);
+  const br = screenToWorld(canvas.width, canvas.height);
+  const startX = Math.floor(tl.x / gridSize) * gridSize;
+  const startZ = Math.floor(tl.z / gridSize) * gridSize;
+  for (let x = startX; x <= br.x; x += gridSize) {
+    const s = worldToScreen(x, 0);
+    ctx.beginPath(); ctx.moveTo(s.x, 0); ctx.lineTo(s.x, canvas.height); ctx.stroke();
+  }
+  for (let z = startZ; z <= br.z; z += gridSize) {
+    const s = worldToScreen(0, z);
+    ctx.beginPath(); ctx.moveTo(0, s.y); ctx.lineTo(canvas.width, s.y); ctx.stroke();
+  }
+
+  // Origin crosshair
+  const o = worldToScreen(0, 0);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(o.x, 0); ctx.lineTo(o.x, canvas.height); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, o.y); ctx.lineTo(canvas.width, o.y); ctx.stroke();
+
+  // Districts
+  districts.forEach(d => {
+    const c = worldToScreen(d.cx, d.cz);
+    const r = d.r * zoom;
+    ctx.fillStyle = d.color;
+    ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = d.color.replace('0.08', '0.25');
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, Math.PI*2); ctx.stroke();
+    // Label
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = `${Math.max(10, zoom*1.5)}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText(d.name, c.x, c.y - r - 4);
+  });
+
+  // Roads
+  roads.forEach(r => {
+    const s1 = worldToScreen(r.x1, r.z1);
+    const s2 = worldToScreen(r.x2, r.z2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = r.width * zoom;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(s1.x, s1.y); ctx.lineTo(s2.x, s2.y); ctx.stroke();
+    // Dashed center line
+    ctx.strokeStyle = 'rgba(255,255,200,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(s1.x, s1.y); ctx.lineTo(s2.x, s2.y); ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Buildings
+  buildings.forEach(b => {
+    const s = worldToScreen(b.x, b.z);
+    const sw = b.w * zoom;
+    const sd = b.d * zoom;
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(s.x - sw/2 + 2, s.y - sd/2 + 2, sw, sd);
+
+    // Building fill
+    ctx.fillStyle = b.color;
+    ctx.fillRect(s.x - sw/2, s.y - sd/2, sw, sd);
+
+    // Selection highlight
+    if (b === selected) {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(s.x - sw/2 - 2, s.y - sd/2 - 2, sw + 4, sd + 4);
+    }
+
+    // Landmark marker
+    if (b.isLandmark) {
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y - sd/2 - 6, 3, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Label
+    if (zoom > 4) {
+      ctx.fillStyle = '#fff';
+      ctx.font = `${Math.max(8, Math.min(12, zoom * 0.9))}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.fillText(b.name, s.x, s.y + 3);
+    }
+  });
+
+  // Player spawn marker
+  const ps = worldToScreen(7.2, 11.4);
+  ctx.fillStyle = '#0f0';
+  ctx.beginPath();
+  ctx.moveTo(ps.x, ps.y - 8);
+  ctx.lineTo(ps.x - 5, ps.y + 4);
+  ctx.lineTo(ps.x + 5, ps.y + 4);
+  ctx.closePath();
+  ctx.fill();
+  if (zoom > 5) {
+    ctx.fillStyle = '#0f0';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('SPAWN', ps.x, ps.y + 16);
+  }
+
+  // Coordinate display
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '11px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Zoom: ${zoom.toFixed(1)}x  |  Center: (${camX.toFixed(0)}, ${camZ.toFixed(0)})`, 12, canvas.height - 12);
+}
+
+// Mouse handling
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button === 2) { // Right click = pan
+    panning = true;
+    panStartX = e.clientX;
+    panStartZ = e.clientY;
+    panCamStartX = camX;
+    panCamStartZ = camZ;
+    return;
+  }
+
+  const w = screenToWorld(e.clientX, e.clientY);
+  // Check building hit
+  let hit = null;
+  for (let i = buildings.length - 1; i >= 0; i--) {
+    const b = buildings[i];
+    if (w.x >= b.x - b.w/2 && w.x <= b.x + b.w/2 && w.z >= b.z - b.d/2 && w.z <= b.z + b.d/2) {
+      hit = b;
+      break;
+    }
+  }
+
+  if (hit) {
+    selected = hit;
+    dragging = true;
+    info.style.display = 'block';
+    updateInfo();
+  } else {
+    selected = null;
+    info.style.display = 'none';
+  }
+  draw();
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (panning) {
+    camX = panCamStartX - (e.clientX - panStartX) / zoom;
+    camZ = panCamStartZ - (e.clientY - panStartZ) / zoom;
+    draw();
+    return;
+  }
+  if (dragging && selected) {
+    const w = screenToWorld(e.clientX, e.clientY);
+    selected.x = Math.round(w.x * 2) / 2; // snap to 0.5
+    selected.z = Math.round(w.z * 2) / 2;
+    updateInfo();
+    draw();
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  dragging = false;
+  panning = false;
+});
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+  zoom = Math.max(2, Math.min(30, zoom * zoomFactor));
+  draw();
+});
+
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'r' || e.key === 'R') {
+    if (selected) {
+      selected.rot = ((selected.rot || 0) + 90) % 360;
+      // Swap width and depth
+      const tmp = selected.w;
+      selected.w = selected.d;
+      selected.d = tmp;
+      updateInfo();
+      draw();
+    }
+  }
+  if (e.key === 'Delete' && selected) {
+    const idx = buildings.indexOf(selected);
+    if (idx >= 0) buildings.splice(idx, 1);
+    selected = null;
+    info.style.display = 'none';
+    draw();
+  }
+});
+
+function updateInfo() {
+  if (!selected) return;
+  info.innerHTML = `<b style="color:#e91e8f">${selected.name}</b><br>ID: ${selected.id}<br>X: ${selected.x}<br>Z: ${selected.z}<br>W: ${selected.w} × D: ${selected.d}<br>Rot: ${selected.rot || 0}°<br>District: ${selected.district}`;
+}
+
+exportBtn.addEventListener('click', () => {
+  const data = buildings.map(b => ({
+    id: b.id,
+    name: b.name,
+    x: b.x,
+    z: b.z,
+    w: b.w,
+    d: b.d,
+    rotationY: (b.rot || 0) * Math.PI / 180,
+    district: b.district
+  }));
+  const json = JSON.stringify(data, null, 2);
+  exportOutput.textContent = json;
+  exportOutput.style.display = exportOutput.style.display === 'none' ? 'block' : 'none';
+  navigator.clipboard.writeText(json).catch(() => {});
+  console.log(json);
+});
+
+// Initial view centered on Town
+camX = 5;
+camZ = 10;
+zoom = 8;
+draw();
+</script>
+</body>
+</html>
