@@ -162,8 +162,19 @@ export function generateBuilding(scene, b, idx, district) {
   const { group, windows, doors, bodyMesh } = result;
 
   // Position the group in the world, offset for terrain height
-  group.position.set(b.x, getTerrainHeight(b.x, b.z), b.z);
+  const buildingY = getTerrainHeight(b.x, b.z);
+  group.position.set(b.x, buildingY, b.z);
   scene.add(group);
+
+  // Foundation — fills gap between building base and ground on sloped terrain
+  if (buildingY > 0.2) {
+    const foundation = new THREE.Mesh(
+      new THREE.BoxGeometry(varied.w + 0.4, buildingY, varied.d + 0.4),
+      new THREE.MeshLambertMaterial({ color: 0x666666 })
+    );
+    foundation.position.set(b.x, buildingY / 2, b.z);
+    scene.add(foundation);
+  }
 
   // The bodyMesh is the main wall — it will be colored by the color system
   // Its world position is (b.x, varied.h/2, b.z) since it's at (0, h/2, 0) in the group

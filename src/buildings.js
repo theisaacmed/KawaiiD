@@ -444,9 +444,20 @@ function createBuilding(scene, b, idx, district) {
   const geo = new THREE.BoxGeometry(b.w, b.h, b.d);
   const mat = new THREE.MeshLambertMaterial({ color: 0x707070 });
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(b.x, getTerrainHeight(b.x, b.z) + b.h / 2, b.z);
+  const legacyY = getTerrainHeight(b.x, b.z);
+  mesh.position.set(b.x, legacyY + b.h / 2, b.z);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
+
+  // Foundation
+  if (legacyY > 0.2) {
+    const foundation = new THREE.Mesh(
+      new THREE.BoxGeometry(b.w + 0.4, legacyY, b.d + 0.4),
+      new THREE.MeshLambertMaterial({ color: 0x666666 })
+    );
+    foundation.position.set(b.x, legacyY / 2, b.z);
+    scene.add(foundation);
+  }
 
   // Named building: stamp signature color on the mesh for the color system
   if (b.namedSigColor) mesh.userData.namedSigColor = b.namedSigColor;

@@ -515,7 +515,7 @@ export function createTownCenter(scene) {
   const treeMat = new THREE.MeshLambertMaterial({ color: 0x686868 });
   const trunkMat = new THREE.MeshLambertMaterial({ color: 0x665544 });
   const treePositions = [
-    [5, 15], [-5, 10], [8, 18], [-3, 5],
+    [10, 18], [-10, 8], [12, 5], [-5, 20],
   ];
   for (const [tx, tz] of treePositions) {
     const ty = getTerrainHeight(tx, tz);
@@ -534,8 +534,8 @@ export function createTownCenter(scene) {
   const poleMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
   const lampMat = new THREE.MeshLambertMaterial({ color: 0x888888 });
   const lampPositions = [
-    [2, 5], [2, 15], [2, 25],
-    [-2, 5], [-2, 15], [-2, 25],
+    [2, 5], [2, 12], [2, 20],
+    [-2, 5], [-2, 12], [-2, 20],
   ];
   for (const [lx, lz] of lampPositions) {
     const ly = getTerrainHeight(lx, lz);
@@ -551,7 +551,7 @@ export function createTownCenter(scene) {
   // --- Benches (3, near fountain) ---
   const benchMat = new THREE.MeshLambertMaterial({ color: 0x665544 });
   const benchPositions = [
-    [3, 12], [-3, 12], [0, 15],
+    [3, 12], [-3, 12], [0, 15],  // face fountain
   ];
   for (const [bx, bz] of benchPositions) {
     const by = getTerrainHeight(bx, bz);

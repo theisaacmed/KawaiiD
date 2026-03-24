@@ -18,7 +18,7 @@ export class Player {
     // State
     this.velocity = new THREE.Vector3();
     this.direction = new THREE.Vector3();
-    this.position = new THREE.Vector3(7.2, PLAYER_HEIGHT, 11.4); // Spawn outside apartment door
+    this.position = new THREE.Vector3(8, PLAYER_HEIGHT, 11); // Spawn outside apartment door facing fountain
     this.yaw = 0;
     this.pitch = 0;
     this.isOnGround = true;
