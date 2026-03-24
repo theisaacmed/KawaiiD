@@ -3,6 +3,7 @@ import { getBarrierBoxes } from './districts.js';
 import { isNoclip, getSpeedMult } from './admin.js';
 import { getAllBuildingBlocks } from './buildings.js';
 import { getTerrainHeight } from './world.js';
+import { isDebugMode } from './debug-placer.js';
 
 const PLAYER_HEIGHT = 1.7;
 const WALK_SPEED = 5;
@@ -40,6 +41,7 @@ export class Player {
 
   _initPointerLock() {
     this.domElement.addEventListener('click', () => {
+      if (isDebugMode()) return;
       if (!document.pointerLockElement) {
         this.domElement.requestPointerLock().catch(() => {});
       }

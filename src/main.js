@@ -54,6 +54,7 @@ import {
 } from './notifications.js';
 import { initMultiplayer, updateMultiplayer, sendDealComplete, isMultiplayerActive } from './multiplayer.js';
 import { showHUDBadge, removeHUDBadge } from './multiplayer-ui.js';
+import { initDebugPlacer, isDebugMode } from './debug-placer.js';
 
 // --- District unlock helpers ---
 function performDistrictUnlocks(totalDeals, scene, npcs) {
@@ -149,6 +150,7 @@ async function boot() {
 
   // Build buildings (all districts)
   const { buildings, windowMats, doorMats } = createBuildings(scene);
+  initDebugPlacer(buildings, camera, scene);
 
   // Async: swap named buildings to GLTF models (falls back to primitives if files missing)
   // building GLTFs removed — primitive meshes only
