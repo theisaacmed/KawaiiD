@@ -118,6 +118,13 @@ const DOWNTOWN_BUILDINGS = [
   { x: 30, z: 61.2, w: 9, d: 8, h: 11, btype: 'office' },
   { x: 30, z: 68.4, w: 9, d: 8, h: 10, btype: 'dt_shop' },
   { x: 30, z: 75.6, w: 9, d: 8, h: 14, btype: 'office' },
+  // Along new Downtown-Tower E-W connector (Z=72)
+  { x: -33, z: 68, w: 9, d: 7, h: 11, btype: 'commercial' },
+  { x: -42, z: 68, w: 9, d: 7, h: 10, btype: 'office' },
+  { x: -52, z: 68, w: 9, d: 7, h: 12, btype: 'office' },
+  { x: -33, z: 76, w: 9, d: 7, h: 10, btype: 'dt_shop' },
+  { x: -44, z: 76, w: 9, d: 7, h: 11, btype: 'commercial' },
+  { x: -55, z: 76, w: 9, d: 7, h: 13, btype: 'office' },
 ];
 
 // NORTHTOWN (northeast) — orderly residential rows, chapel
@@ -139,6 +146,10 @@ const NORTHTOWN_BUILDINGS = [
   { x: 84, z: 103.2, w: 8, d: 7, h: 8, btype: 'nt_residential' },
   { x: 93, z: 99, w: 8, d: 7, h: 7, btype: 'shop' },
   { x: 60, z: 90, w: 7, d: 6, h: 5, btype: 'kai_shack', named: 'kai_shack', namedSigColor: 0x85B7EB },
+  // Along new Northtown E-W link (Z=90)
+  { x: 42, z: 86, w: 8, d: 7, h: 8, btype: 'nt_residential' },
+  { x: 52, z: 86, w: 8, d: 7, h: 7, btype: 'nt_residential' },
+  { x: 42, z: 94, w: 8, d: 7, h: 7, btype: 'nt_residential' },
 ];
 
 // BURBS (southeast) — suburban houses, playground, school
@@ -162,6 +173,14 @@ const BURBS_BUILDINGS = [
   { x: 78, z: 13.2, w: 9, d: 7, h: 6, btype: 'suburb_house' },
   { x: 93, z: 15, w: 9, d: 8, h: 6, btype: 'suburb_house' },
   { x: 117, z: -18, w: 9, d: 7, h: 7, btype: 'suburb_house' },
+  // Along new Burbs E-W cross (Z=-24) and N-S mid (X=108)
+  { x: 126, z: -28, w: 9, d: 7, h: 6, btype: 'suburb_house' },
+  { x: 138, z: -28, w: 9, d: 7, h: 6, btype: 'suburb_house' },
+  { x: 148, z: -28, w: 9, d: 7, h: 7, btype: 'suburb_house' },
+  { x: 126, z: -20, w: 9, d: 7, h: 6, btype: 'suburb_house' },
+  { x: 138, z: -20, w: 9, d: 7, h: 7, btype: 'suburb_house' },
+  { x: 112, z: 6, w: 8, d: 7, h: 6, btype: 'suburb_house' },
+  { x: 112, z: -6, w: 8, d: 7, h: 7, btype: 'suburb_house' },
 ];
 
 // UPTOWN (east) — sleek offices, hotel, rooftop garden, high-end shops
@@ -181,6 +200,9 @@ const UPTOWN_BUILDINGS = [
   { x: 111, z: 58.8, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
   { x: 118.8, z: 57, w: 9, d: 7, h: 14, btype: 'uptown_office' },
   { x: 120, z: 45, w: 10, d: 7, h: 11, btype: 'uptown_shop' },
+  // Along new Uptown E-W link (Z=60)
+  { x: 126, z: 56, w: 9, d: 7, h: 13, btype: 'uptown_office' },
+  { x: 126, z: 64, w: 9, d: 7, h: 12, btype: 'uptown_shop' },
 ];
 
 // TOWER (west) — tallest in game, twin towers, dark canyons
@@ -197,6 +219,10 @@ const TOWER_BUILDINGS = [
   { x: -84, z: 84, w: 10, d: 9, h: 30, btype: 'quinn_apt', named: 'quinn_apt', namedSigColor: 0xAFA9EC },
   { x: -73.2, z: 82.8, w: 9, d: 9, h: 20, btype: 'tower_corp' },
   { x: -81, z: 78, w: 6, d: 6, h: 6, btype: 'tower_service' },
+  // Along new Tower N-S mid (X=-72, Z=96)
+  { x: -66, z: 93, w: 9, d: 8, h: 20, btype: 'tower_corp' },
+  { x: -78, z: 93, w: 9, d: 8, h: 22, btype: 'tower_corp' },
+  { x: -66, z: 102, w: 9, d: 8, h: 18, btype: 'tower_corp' },
 ];
 
 // INDUSTRIAL (south-center) — warehouses, factory, workshops
@@ -218,6 +244,11 @@ const INDUSTRIAL_BUILDINGS = [
   { x: 6, z: -79.2, w: 14, d: 11, h: 7, btype: 'ind_warehouse' },
   { x: 24, z: -76.8, w: 12, d: 9, h: 7, btype: 'ind_warehouse' },
   { x: 36, z: -75, w: 9, d: 7, h: 10, btype: 'office' },
+  // Along new Industrial E-W cross (Z=-72)
+  { x: -33, z: -68, w: 12, d: 9, h: 7, btype: 'ind_warehouse' },
+  { x: -45, z: -68, w: 12, d: 9, h: 8, btype: 'ind_warehouse' },
+  { x: -33, z: -76, w: 12, d: 9, h: 7, btype: 'ind_workshop' },
+  { x: -45, z: -76, w: 12, d: 9, h: 6, btype: 'ind_warehouse' },
 ];
 
 // PORT (northwest coast) — docks, warehouses, lighthouse
@@ -230,6 +261,9 @@ const PORT_BUILDINGS = [
   { x: -36, z: 129, w: 9, d: 7, h: 6, btype: 'port_shed' },
   { x: -51, z: 126, w: 10, d: 7, h: 6, btype: 'port_warehouse' },
   { x: -28.8, z: 126, w: 8, d: 7, h: 5, btype: 'port_shed' },
+  // Along new Port connector (X=-60)
+  { x: -55, z: 105, w: 9, d: 7, h: 7, btype: 'port_warehouse' },
+  { x: -65, z: 105, w: 9, d: 7, h: 6, btype: 'port_shed' },
 ];
 
 // ACE HQ (southwest) — main HQ, barracks, watchtower, compound
@@ -264,6 +298,13 @@ const TRANSITION_TOWN_DOWNTOWN = [
   { x: 19.2, z: 36, w: 8, d: 7, h: 9, btype: 'shop' },
   { x: 19.2, z: 43.2, w: 8, d: 7, h: 10, btype: 'residential' },
   { x: 28.8, z: 39, w: 8, d: 7, h: 8, btype: 'residential' },
+  // Along new Town-Downtown connector road (Z=48)
+  { x: -19.2, z: 51, w: 8, d: 7, h: 10, btype: 'office' },
+  { x: -28.8, z: 51, w: 8, d: 7, h: 9, btype: 'residential' },
+  { x: 19.2, z: 51, w: 8, d: 7, h: 11, btype: 'office' },
+  // Along new Town N internal road (Z=18)
+  { x: -19.2, z: 21, w: 8, d: 7, h: 8, btype: 'shop' },
+  { x: 19.2, z: 21, w: 8, d: 7, h: 9, btype: 'residential' },
 ];
 
 // TOWN → RUINS (z: -12 to -120): buildings get damaged
@@ -287,21 +328,191 @@ const TRANSITION_TOWN_RUINS = [
   { x: 24, z: -69, w: 7, d: 7, h: 3, btype: 'demolished' },
 ];
 
+// ========== GAP-FILL BUILDINGS ==========
+// Fill empty roads between districts so the world feels dense
+
+// CROSS STREET EAST (Z=30, X: 35-80) — Town → Burbs connector
+const FILL_CROSS_EAST = [
+  // North side of Cross Street
+  { x: 38, z: 35, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: 47, z: 35, w: 8, d: 7, h: 9, btype: 'shop' },
+  { x: 56, z: 34, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: 65, z: 35, w: 8, d: 7, h: 10, btype: 'apartment' },
+  { x: 74, z: 34, w: 8, d: 7, h: 8, btype: 'shop' },
+  { x: 83, z: 35, w: 8, d: 7, h: 9, btype: 'residential' },
+  // South side of Cross Street
+  { x: 38, z: 24, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: 47, z: 24, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: 56, z: 25, w: 8, d: 7, h: 10, btype: 'apartment' },
+  { x: 65, z: 24, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: 74, z: 25, w: 8, d: 7, h: 9, btype: 'shop' },
+  { x: 83, z: 24, w: 8, d: 7, h: 8, btype: 'residential' },
+];
+
+// CROSS STREET WEST (Z=30, X: -35 to -80) — Town → Tower/ACE connector
+const FILL_CROSS_WEST = [
+  // North side
+  { x: -38, z: 35, w: 8, d: 7, h: 9, btype: 'residential' },
+  { x: -47, z: 34, w: 8, d: 7, h: 8, btype: 'shop' },
+  { x: -56, z: 35, w: 8, d: 7, h: 10, btype: 'apartment' },
+  { x: -65, z: 34, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: -74, z: 35, w: 8, d: 7, h: 9, btype: 'shop' },
+  { x: -83, z: 34, w: 8, d: 7, h: 8, btype: 'residential' },
+  // South side
+  { x: -38, z: 24, w: 8, d: 7, h: 8, btype: 'shop' },
+  { x: -47, z: 25, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: -56, z: 24, w: 8, d: 7, h: 9, btype: 'apartment' },
+  { x: -65, z: 25, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: -74, z: 24, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: -83, z: 25, w: 8, d: 7, h: 10, btype: 'residential' },
+];
+
+// COAST ROAD MIDDLE (Z=108, X: -20 to 55) — Downtown → Northtown connector
+const FILL_COAST_MIDDLE = [
+  // North side
+  { x: -15, z: 112, w: 9, d: 7, h: 11, btype: 'commercial' },
+  { x: -4, z: 113, w: 9, d: 7, h: 12, btype: 'office' },
+  { x: 8, z: 112, w: 9, d: 7, h: 10, btype: 'dt_shop' },
+  { x: 20, z: 113, w: 9, d: 7, h: 11, btype: 'office' },
+  { x: 32, z: 112, w: 9, d: 7, h: 9, btype: 'commercial' },
+  { x: 44, z: 113, w: 9, d: 7, h: 10, btype: 'office' },
+  { x: 55, z: 112, w: 9, d: 7, h: 8, btype: 'nt_residential' },
+  // South side
+  { x: -15, z: 102, w: 9, d: 7, h: 10, btype: 'office' },
+  { x: -4, z: 103, w: 9, d: 7, h: 13, btype: 'commercial' },
+  { x: 8, z: 102, w: 9, d: 7, h: 11, btype: 'dt_shop' },
+  { x: 20, z: 103, w: 9, d: 7, h: 12, btype: 'office' },
+  { x: 32, z: 102, w: 9, d: 7, h: 10, btype: 'commercial' },
+  { x: 44, z: 103, w: 9, d: 7, h: 9, btype: 'dt_shop' },
+  { x: 55, z: 102, w: 9, d: 7, h: 8, btype: 'nt_residential' },
+];
+
+// WEST AVE (X=-90, Z: -20 to 55) — Tower → ACE connector
+const FILL_WEST_AVE = [
+  // East side
+  { x: -84, z: -15, w: 9, d: 7, h: 9, btype: 'residential' },
+  { x: -84, z: -6, w: 9, d: 7, h: 8, btype: 'shop' },
+  { x: -84, z: 3, w: 9, d: 7, h: 10, btype: 'apartment' },
+  { x: -84, z: 12, w: 9, d: 7, h: 8, btype: 'residential' },
+  { x: -84, z: 21, w: 9, d: 7, h: 9, btype: 'shop' },
+  { x: -84, z: 30, w: 9, d: 7, h: 11, btype: 'apartment' },
+  { x: -84, z: 39, w: 9, d: 7, h: 10, btype: 'residential' },
+  { x: -84, z: 48, w: 9, d: 7, h: 12, btype: 'office' },
+  // West side
+  { x: -97, z: -15, w: 9, d: 7, h: 8, btype: 'residential' },
+  { x: -97, z: -6, w: 9, d: 7, h: 7, btype: 'shop' },
+  { x: -97, z: 3, w: 9, d: 7, h: 9, btype: 'residential' },
+  { x: -97, z: 12, w: 9, d: 7, h: 8, btype: 'apartment' },
+  { x: -97, z: 21, w: 9, d: 7, h: 7, btype: 'shop' },
+  { x: -97, z: 30, w: 9, d: 7, h: 10, btype: 'residential' },
+  { x: -97, z: 39, w: 9, d: 7, h: 9, btype: 'apartment' },
+  { x: -97, z: 48, w: 9, d: 7, h: 11, btype: 'office' },
+];
+
+// EAST BLVD MIDDLE (X=90, Z: 10-30) — Burbs → Uptown connector
+const FILL_EAST_BLVD = [
+  // West side
+  { x: 84, z: 10, w: 9, d: 7, h: 8, btype: 'suburb_house' },
+  { x: 84, z: 18, w: 9, d: 7, h: 10, btype: 'uptown_shop' },
+  { x: 84, z: 26, w: 9, d: 7, h: 11, btype: 'uptown_shop' },
+  // East side
+  { x: 97, z: 10, w: 9, d: 7, h: 7, btype: 'suburb_house' },
+  { x: 97, z: 18, w: 9, d: 7, h: 9, btype: 'shop' },
+  { x: 97, z: 26, w: 9, d: 7, h: 10, btype: 'uptown_shop' },
+];
+
+// INDUSTRIAL RD WEST (Z=-48, X: -55 to -110) — Industrial → ACE connector
+const FILL_INDUSTRIAL_WEST = [
+  // North side
+  { x: -57, z: -42, w: 12, d: 9, h: 7, btype: 'ind_warehouse' },
+  { x: -69, z: -42, w: 12, d: 9, h: 8, btype: 'ind_workshop' },
+  { x: -81, z: -42, w: 10, d: 8, h: 7, btype: 'ind_warehouse' },
+  // South side
+  { x: -57, z: -55, w: 12, d: 9, h: 6, btype: 'ind_warehouse' },
+  { x: -69, z: -55, w: 12, d: 9, h: 7, btype: 'ind_workshop' },
+];
+
+// MAIN STREET DEEP SOUTH (X=0, Z: -85 to -120) — Industrial → Ruins
+const FILL_MAIN_SOUTH = [
+  { x: -7.2, z: -90, w: 8, d: 7, h: 4, btype: 'demolished' },
+  { x: 7.2, z: -90, w: 8, d: 7, h: 3, btype: 'demolished' },
+  { x: -7.2, z: -100, w: 8, d: 7, h: 3, btype: 'demolished' },
+  { x: 7.2, z: -100, w: 8, d: 7, h: 2, btype: 'demolished' },
+  { x: -7.2, z: -110, w: 8, d: 7, h: 2, btype: 'demolished' },
+  { x: 7.2, z: -110, w: 7, d: 6, h: 2, btype: 'demolished' },
+  { x: -18, z: -90, w: 7, d: 6, h: 3, btype: 'demolished' },
+  { x: 18, z: -93, w: 7, d: 6, h: 3, btype: 'demolished' },
+  { x: -15, z: -105, w: 7, d: 6, h: 2, btype: 'demolished' },
+  { x: 15, z: -108, w: 6, d: 5, h: 2, btype: 'demolished' },
+];
+
+// DOWNTOWN → TOWER GAP (X: -30 to -60, Z: 55-65) — secondary fills
+const FILL_DT_TOWER = [
+  { x: -33, z: 58, w: 9, d: 7, h: 12, btype: 'office' },
+  { x: -42, z: 57, w: 9, d: 7, h: 11, btype: 'commercial' },
+  { x: -52, z: 58, w: 9, d: 7, h: 13, btype: 'office' },
+  { x: -33, z: 50, w: 9, d: 7, h: 10, btype: 'dt_shop' },
+  { x: -42, z: 50, w: 9, d: 7, h: 11, btype: 'commercial' },
+];
+
+// EAST SPREAD (X: 35-65, Z: -15 to 20) — Town-East to Burbs fill
+const FILL_EAST_SPREAD = [
+  // Along Z=-6 cross
+  { x: 36, z: -10, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: 45, z: -10, w: 8, d: 7, h: 8, btype: 'shop' },
+  { x: 54, z: -10, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: 63, z: -10, w: 8, d: 7, h: 6, btype: 'shop' },
+  // Along Z=18
+  { x: 36, z: 15, w: 8, d: 7, h: 8, btype: 'apartment' },
+  { x: 45, z: 15, w: 8, d: 7, h: 9, btype: 'residential' },
+  { x: 54, z: 16, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: 63, z: 15, w: 8, d: 7, h: 8, btype: 'residential' },
+  // Infill between
+  { x: 40, z: 3, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: 50, z: 3, w: 8, d: 7, h: 8, btype: 'shop' },
+  { x: 60, z: 3, w: 8, d: 7, h: 7, btype: 'residential' },
+];
+
+// WEST SPREAD (X: -35 to -65, Z: -15 to 20) — Town-West fill
+const FILL_WEST_SPREAD = [
+  { x: -36, z: -10, w: 8, d: 7, h: 7, btype: 'residential' },
+  { x: -45, z: -10, w: 8, d: 7, h: 8, btype: 'shop' },
+  { x: -54, z: -10, w: 8, d: 7, h: 6, btype: 'residential' },
+  { x: -63, z: -10, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: -36, z: 15, w: 8, d: 7, h: 9, btype: 'apartment' },
+  { x: -45, z: 15, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: -54, z: 16, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: -63, z: 15, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: -40, z: 3, w: 8, d: 7, h: 8, btype: 'residential' },
+  { x: -50, z: 3, w: 8, d: 7, h: 7, btype: 'shop' },
+  { x: -60, z: 3, w: 8, d: 7, h: 7, btype: 'residential' },
+];
+
+// Aggregate all fill buildings into their closest district
+const ALL_FILL_BUILDINGS = [
+  ...FILL_CROSS_EAST, ...FILL_CROSS_WEST,
+  ...FILL_COAST_MIDDLE, ...FILL_WEST_AVE,
+  ...FILL_EAST_BLVD, ...FILL_INDUSTRIAL_WEST,
+  ...FILL_MAIN_SOUTH, ...FILL_DT_TOWER,
+  ...FILL_EAST_SPREAD, ...FILL_WEST_SPREAD,
+];
+
 // ========== ALL DISTRICT BUILDING SETS ==========
 const DISTRICT_BUILDING_SETS = {
-  town: [...TOWN_BUILDINGS, ...TRANSITION_TOWN_DOWNTOWN, ...TRANSITION_TOWN_RUINS],
-  downtown: DOWNTOWN_BUILDINGS,
+  town: [...TOWN_BUILDINGS, ...TRANSITION_TOWN_DOWNTOWN, ...TRANSITION_TOWN_RUINS,
+         ...FILL_CROSS_EAST, ...FILL_CROSS_WEST, ...FILL_EAST_SPREAD, ...FILL_WEST_SPREAD],
+  downtown: [...DOWNTOWN_BUILDINGS, ...FILL_COAST_MIDDLE, ...FILL_DT_TOWER],
   northtown: NORTHTOWN_BUILDINGS,
   burbs: BURBS_BUILDINGS,
-  uptown: UPTOWN_BUILDINGS,
+  uptown: [...UPTOWN_BUILDINGS, ...FILL_EAST_BLVD],
   tower: TOWER_BUILDINGS,
-  industrial: INDUSTRIAL_BUILDINGS,
+  industrial: [...INDUSTRIAL_BUILDINGS, ...FILL_INDUSTRIAL_WEST, ...FILL_MAIN_SOUTH],
   port: PORT_BUILDINGS,
-  aceHQ: ACE_HQ_BUILDINGS,
+  aceHQ: [...ACE_HQ_BUILDINGS, ...FILL_WEST_AVE],
 };
 
 // ========== BUILDING CREATION ==========
-function addWindows(scene, b, idx) {
+function addWindows(scene, b, idx, terrainY = 0) {
   const winBaseMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
   const floors = Math.max(1, Math.floor(b.h / 1.8));
   const perFloor = Math.max(1, Math.floor(b.w / 1.5));
@@ -314,7 +525,7 @@ function addWindows(scene, b, idx) {
       const wx = b.x - b.w / 2 + 0.6 + w * (b.w - 1) / Math.max(1, perFloor - 1);
       const wy = 1.2 + f * 1.8;
       if (wy > b.h - 0.3) continue;
-      win.position.set(wx, wy, b.z + b.d / 2 + 0.02);
+      win.position.set(wx, terrainY + wy, b.z + b.d / 2 + 0.02);
       scene.add(win);
       windowMats.push({ material: wMat, x: b.x, z: b.z });
     }
@@ -327,23 +538,23 @@ function addWindows(scene, b, idx) {
       const win = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.6, 0.5), wMat);
       const wy = 1.2 + f * 1.8;
       if (wy > b.h - 0.3) continue;
-      win.position.set(b.x + b.w / 2 + 0.02, wy, b.z);
+      win.position.set(b.x + b.w / 2 + 0.02, terrainY + wy, b.z);
       scene.add(win);
       windowMats.push({ material: wMat, x: b.x, z: b.z });
     }
   }
 }
 
-function addDoor(scene, b, idx) {
+function addDoor(scene, b, idx, terrainY = 0) {
   const doorMat = new THREE.MeshLambertMaterial({ color: 0x5A5A5A });
   const door = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.4, 0.04), doorMat);
-  door.position.set(b.x, 0.7, b.z + b.d / 2 + 0.02);
+  door.position.set(b.x, terrainY + 0.7, b.z + b.d / 2 + 0.02);
   scene.add(door);
 
   // Door frame
   const frameMat = new THREE.MeshLambertMaterial({ color: 0x4A4A4A });
   const frameTop = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.06, 0.05), frameMat);
-  frameTop.position.set(b.x, 1.43, b.z + b.d / 2 + 0.02);
+  frameTop.position.set(b.x, terrainY + 1.43, b.z + b.d / 2 + 0.02);
   scene.add(frameTop);
 
   doorMats.push({
@@ -353,7 +564,7 @@ function addDoor(scene, b, idx) {
   });
 }
 
-function addRoofVariety(scene, b, idx) {
+function addRoofVariety(scene, b, idx, terrainY = 0) {
   const variety = idx % 6;
 
   if (variety === 0) {
@@ -361,7 +572,7 @@ function addRoofVariety(scene, b, idx) {
     const roofH = b.h * 0.2;
     const roofGeo = new THREE.ConeGeometry(Math.max(b.w, b.d) * 0.55, roofH, 4);
     const roof = new THREE.Mesh(roofGeo, new THREE.MeshLambertMaterial({ color: 0x606060 }));
-    roof.position.set(b.x, b.h + roofH / 2, b.z);
+    roof.position.set(b.x, terrainY + b.h + roofH / 2, b.z);
     roof.rotation.y = Math.PI / 4;
     roof.castShadow = true;
     scene.add(roof);
@@ -372,14 +583,14 @@ function addRoofVariety(scene, b, idx) {
       new THREE.BoxGeometry(b.w * 0.7, setbackH, b.d * 0.7),
       new THREE.MeshLambertMaterial({ color: 0x686868 })
     );
-    setback.position.set(b.x, b.h + setbackH / 2, b.z);
+    setback.position.set(b.x, terrainY + b.h + setbackH / 2, b.z);
     setback.castShadow = true;
     scene.add(setback);
   } else if (variety === 2) {
     // Balcony
     const balconyMat = new THREE.MeshLambertMaterial({ color: 0x656565 });
     const balcony = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.5, 0.08, 0.6), balconyMat);
-    balcony.position.set(b.x, b.h * 0.6, b.z + b.d / 2 + 0.3);
+    balcony.position.set(b.x, terrainY + b.h * 0.6, b.z + b.d / 2 + 0.3);
     balcony.castShadow = true;
     scene.add(balcony);
   } else if (variety === 3) {
@@ -388,7 +599,7 @@ function addRoofVariety(scene, b, idx) {
       new THREE.BoxGeometry(b.w * 0.7, 0.06, 1.0),
       new THREE.MeshLambertMaterial({ color: 0x5A5A5A })
     );
-    awning.position.set(b.x, 2.3, b.z + b.d / 2 + 0.4);
+    awning.position.set(b.x, terrainY + 2.3, b.z + b.d / 2 + 0.4);
     awning.rotation.x = -0.15;
     awning.castShadow = true;
     scene.add(awning);
@@ -399,7 +610,7 @@ function addRoofVariety(scene, b, idx) {
       new THREE.BoxGeometry(b.w * 0.3, rtH, b.d * 0.3),
       new THREE.MeshLambertMaterial({ color: 0x5E5E5E })
     );
-    rooftop.position.set(b.x + b.w * 0.15, b.h + rtH / 2, b.z - b.d * 0.15);
+    rooftop.position.set(b.x + b.w * 0.15, terrainY + b.h + rtH / 2, b.z - b.d * 0.15);
     rooftop.castShadow = true;
     scene.add(rooftop);
   }
@@ -414,6 +625,7 @@ function createBuilding(scene, b, idx, district) {
     // Named building: stamp signature color on the mesh for the color system
     if (b.namedSigColor) mainMesh.userData.namedSigColor = b.namedSigColor;
     if (b.named) mainMesh.userData.namedId = b.named;
+    mainMesh.userData.district = district;
 
     // Track the main body mesh for the color system
     allBuildings.push({ mesh: mainMesh, district, block: b });
@@ -425,14 +637,15 @@ function createBuilding(scene, b, idx, district) {
 
     // Still add btype-specific extras (corner store extension, outdoor seating already in template, etc.)
     // Only add extras not covered by templates
+    const tY = getTerrainHeight(b.x, b.z);
     if (b.btype === 'cornerstore') {
-      addCornerStoreExtension(scene, { ...b, w, h, d });
+      addCornerStoreExtension(scene, { ...b, w, h, d }, tY);
     }
     if (b.btype === 'player_apartment') {
       // Brighter door overlay to stand out
       const brightDoorMat = new THREE.MeshLambertMaterial({ color: 0x808080 });
       const brightDoor = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.6, 0.05), brightDoorMat);
-      brightDoor.position.set(b.x, 0.8, b.z + d / 2 + 0.04);
+      brightDoor.position.set(b.x, tY + 0.8, b.z + d / 2 + 0.04);
       scene.add(brightDoor);
       doorMats.push({ material: brightDoorMat, x: b.x, z: b.z, targetColor: new THREE.Color(0xCCBB88) });
     }
@@ -451,6 +664,7 @@ function createBuilding(scene, b, idx, district) {
   // Named building: stamp signature color on the mesh for the color system
   if (b.namedSigColor) mesh.userData.namedSigColor = b.namedSigColor;
   if (b.named) mesh.userData.namedId = b.named;
+  mesh.userData.district = district;
 
   mesh.visible = true;
 
@@ -459,19 +673,20 @@ function createBuilding(scene, b, idx, district) {
   allBuildingBlocks.push({ x: b.x, z: b.z, w: b.w, d: b.d, h: b.h, district });
 
   // Legacy visual details for damaged buildings
-  addRoofVariety(scene, b, idx);
-  addWindows(scene, b, idx);
-  addDoor(scene, b, idx);
-  addBuildingTypeDetail(scene, b, idx);
+  const terrainY = getTerrainHeight(b.x, b.z);
+  addRoofVariety(scene, b, idx, terrainY);
+  addWindows(scene, b, idx, terrainY);
+  addDoor(scene, b, idx, terrainY);
+  addBuildingTypeDetail(scene, b, idx, terrainY);
 
   return mesh;
 }
 
 // Corner store: add an L-shaped extension perpendicular to main body
-function addCornerStoreExtension(scene, b) {
+function addCornerStoreExtension(scene, b, terrainY = 0) {
   const extMat = new THREE.MeshLambertMaterial({ color: 0x707070 });
   const ext = new THREE.Mesh(new THREE.BoxGeometry(4, b.h, b.d * 0.6), extMat);
-  ext.position.set(b.x + b.w / 2 + 1.8, b.h / 2, b.z - b.d * 0.3);
+  ext.position.set(b.x + b.w / 2 + 1.8, terrainY + b.h / 2, b.z - b.d * 0.3);
   ext.castShadow = true;
   ext.receiveShadow = true;
   scene.add(ext);
@@ -479,19 +694,19 @@ function addCornerStoreExtension(scene, b) {
 }
 
 // Add type-specific building details
-function addBuildingTypeDetail(scene, b, idx) {
+function addBuildingTypeDetail(scene, b, idx, terrainY = 0) {
   const btype = b.btype || '';
 
   if (btype === 'shop' || btype === 'dt_shop') {
     // Wide shop-front window on ground floor
     const shopWinMat = new THREE.MeshLambertMaterial({ color: 0x4A4A55 });
     const shopWin = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.7, 1.4, 0.05), shopWinMat);
-    shopWin.position.set(b.x, 1.0, b.z + b.d / 2 + 0.03);
+    shopWin.position.set(b.x, terrainY + 1.0, b.z + b.d / 2 + 0.03);
     scene.add(shopWin);
     // Blank sign rectangle above shop
     const signMat = new THREE.MeshLambertMaterial({ color: 0x606060 });
     const sign = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.6, 0.5, 0.06), signMat);
-    sign.position.set(b.x, 2.2, b.z + b.d / 2 + 0.03);
+    sign.position.set(b.x, terrainY + 2.2, b.z + b.d / 2 + 0.03);
     scene.add(sign);
   }
 
@@ -499,7 +714,7 @@ function addBuildingTypeDetail(scene, b, idx) {
     // Awning over storefront
     const awningMat = new THREE.MeshLambertMaterial({ color: 0x5A5A5A });
     const awning = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.8, 0.06, 1.2), awningMat);
-    awning.position.set(b.x, 2.6, b.z + b.d / 2 + 0.5);
+    awning.position.set(b.x, terrainY + 2.6, b.z + b.d / 2 + 0.5);
     awning.rotation.x = -0.12;
     awning.castShadow = true;
     scene.add(awning);
@@ -513,18 +728,18 @@ function addBuildingTypeDetail(scene, b, idx) {
       const tz = b.z + b.d / 2 + 1.5;
       // Table top
       const top = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.04, 0.6), tableMat);
-      top.position.set(tx, 0.7, tz);
+      top.position.set(tx, terrainY + 0.7, tz);
       top.castShadow = true;
       scene.add(top);
       // Table leg
       const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.7, 4), tableMat);
-      leg.position.set(tx, 0.35, tz);
+      leg.position.set(tx, terrainY + 0.35, tz);
       scene.add(leg);
     }
     // Awning
     const awningMat = new THREE.MeshLambertMaterial({ color: 0x585858 });
     const awning = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.8, 0.06, 1.5), awningMat);
-    awning.position.set(b.x, 2.8, b.z + b.d / 2 + 0.6);
+    awning.position.set(b.x, terrainY + 2.8, b.z + b.d / 2 + 0.6);
     awning.rotation.x = -0.1;
     awning.castShadow = true;
     scene.add(awning);
@@ -539,7 +754,7 @@ function addBuildingTypeDetail(scene, b, idx) {
       if (wy > b.h - 0.3) continue;
       // Left side
       const wl = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.6, 0.5), winMat.clone());
-      wl.position.set(b.x - b.w / 2 - 0.02, wy, b.z);
+      wl.position.set(b.x - b.w / 2 - 0.02, terrainY + wy, b.z);
       scene.add(wl);
       windowMats.push({ material: wl.material, x: b.x, z: b.z });
     }
@@ -549,7 +764,7 @@ function addBuildingTypeDetail(scene, b, idx) {
     // Brighter door to stand out
     const brightDoorMat = new THREE.MeshLambertMaterial({ color: 0x808080 });
     const brightDoor = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.6, 0.05), brightDoorMat);
-    brightDoor.position.set(b.x, 0.8, b.z + b.d / 2 + 0.04);
+    brightDoor.position.set(b.x, terrainY + 0.8, b.z + b.d / 2 + 0.04);
     scene.add(brightDoor);
     doorMats.push({ material: brightDoorMat, x: b.x, z: b.z, targetColor: new THREE.Color(0xCCBB88) });
   }
@@ -569,7 +784,7 @@ function addBuildingTypeDetail(scene, b, idx) {
       if (wy > b.h - 0.3) continue;
       const wMat = winMat.clone();
       const win = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.5, 0.4), wMat);
-      win.position.set(b.x - b.w / 2 - 0.02, wy, b.z);
+      win.position.set(b.x - b.w / 2 - 0.02, terrainY + wy, b.z);
       scene.add(win);
       windowMats.push({ material: wMat, x: b.x, z: b.z });
     }
@@ -580,7 +795,7 @@ function addBuildingTypeDetail(scene, b, idx) {
     for (let i = 0; i < 2; i++) {
       const dMat = new THREE.MeshLambertMaterial({ color: 0x5A5A5A });
       const d = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.4, 0.04), dMat);
-      d.position.set(b.x - b.w * 0.2 + i * b.w * 0.4, 0.7, b.z + b.d / 2 + 0.02);
+      d.position.set(b.x - b.w * 0.2 + i * b.w * 0.4, terrainY + 0.7, b.z + b.d / 2 + 0.02);
       scene.add(d);
       doorMats.push({ material: dMat, x: b.x, z: b.z, targetColor: new THREE.Color(DOOR_COLOR_TARGETS[(idx + i) % DOOR_COLOR_TARGETS.length]) });
     }
@@ -594,7 +809,7 @@ function addBuildingTypeDetail(scene, b, idx) {
       const patch = new THREE.Mesh(new THREE.BoxGeometry(1 + Math.random(), 0.8 + Math.random(), 0.05), patchMat);
       patch.position.set(
         b.x + (Math.random() - 0.5) * b.w * 0.6,
-        1 + Math.random() * (b.h - 2),
+        terrainY + 1 + Math.random() * (b.h - 2),
         b.z + b.d / 2 + 0.03
       );
       scene.add(patch);
@@ -608,7 +823,7 @@ function addBuildingTypeDetail(scene, b, idx) {
       const patch = new THREE.Mesh(new THREE.BoxGeometry(0.8 + Math.random(), 0.6 + Math.random() * 0.5, 0.05), patchMat);
       patch.position.set(
         b.x + (Math.random() - 0.5) * b.w * 0.7,
-        0.8 + Math.random() * (b.h - 1.5),
+        terrainY + 0.8 + Math.random() * (b.h - 1.5),
         b.z + b.d / 2 + 0.03
       );
       scene.add(patch);
@@ -617,11 +832,11 @@ function addBuildingTypeDetail(scene, b, idx) {
     const plankMat = new THREE.MeshLambertMaterial({ color: 0x5A5050 });
     const plankX = b.x + (idx % 2 === 0 ? -1 : 1);
     const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.0, 0.04), plankMat);
-    p1.position.set(plankX, 1.5, b.z + b.d / 2 + 0.04);
+    p1.position.set(plankX, terrainY + 1.5, b.z + b.d / 2 + 0.04);
     p1.rotation.z = 0.6;
     scene.add(p1);
     const p2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.0, 0.04), plankMat);
-    p2.position.set(plankX, 1.5, b.z + b.d / 2 + 0.04);
+    p2.position.set(plankX, terrainY + 1.5, b.z + b.d / 2 + 0.04);
     p2.rotation.z = -0.6;
     scene.add(p2);
   }
@@ -633,7 +848,7 @@ function addBuildingTypeDetail(scene, b, idx) {
       const patch = new THREE.Mesh(new THREE.BoxGeometry(0.5 + Math.random() * 1.5, 0.5 + Math.random(), 0.05), darkWallMat);
       patch.position.set(
         b.x + (Math.random() - 0.5) * b.w * 0.8,
-        0.5 + Math.random() * (b.h - 1),
+        terrainY + 0.5 + Math.random() * (b.h - 1),
         b.z + b.d / 2 + 0.03
       );
       scene.add(patch);
@@ -647,7 +862,7 @@ function addBuildingTypeDetail(scene, b, idx) {
       );
       d.position.set(
         b.x + (Math.random() - 0.5) * b.w,
-        0.15,
+        terrainY + 0.15,
         b.z + b.d / 2 + 0.5 + Math.random() * 0.5
       );
       d.rotation.set(Math.random() * 0.3, Math.random() * Math.PI, Math.random() * 0.2);
@@ -662,7 +877,7 @@ function addBuildingTypeDetail(scene, b, idx) {
     // One standing wall fragment
     const wallH = b.h + Math.random();
     const wallFrag = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.4, wallH, 0.3), wallMat);
-    wallFrag.position.set(b.x + b.w * 0.2, wallH / 2, b.z + b.d / 2);
+    wallFrag.position.set(b.x + b.w * 0.2, terrainY + wallH / 2, b.z + b.d / 2);
     wallFrag.rotation.z = (Math.random() - 0.5) * 0.1;
     wallFrag.castShadow = true;
     scene.add(wallFrag);
@@ -675,7 +890,7 @@ function addBuildingTypeDetail(scene, b, idx) {
       );
       d.position.set(
         b.x + (Math.random() - 0.5) * (b.w + 2),
-        Math.random() * 0.3,
+        terrainY + Math.random() * 0.3,
         b.z + (Math.random() - 0.5) * (b.d + 2)
       );
       d.rotation.set(Math.random() * 0.3, Math.random() * Math.PI, Math.random() * 0.2);
@@ -1397,21 +1612,10 @@ function createLandmarks(scene) {
   createStreetLamp(scene, 115, 175);
   createStreetLamp(scene, 140, 175);
   // 1 propaganda poster
-  createPropagandaPoster(scene, 108, 155);
-  // 1 parked car
-  createParkedCar(scene, 145, 145, 0);
+
 
   // ========== BURBS ==========
   createPlayground(scene, 125, 5);
-  // Parked cars — 2 per block (car-oriented)
-  createParkedCar(scene, 130, -38, 0);
-  createParkedCar(scene, 148, -38, Math.PI);
-  createParkedCar(scene, 130, -15, 0);
-  createParkedCar(scene, 165, -15, Math.PI);
-  createParkedCar(scene, 150, 5, 0);
-  createParkedCar(scene, 170, 5, Math.PI);
-  createParkedCar(scene, 140, 25, 0);
-  createParkedCar(scene, 185, -35, Math.PI);
   // Street lamps (fewer, wider spacing)
   createStreetLamp(scene, 125, -30);
   createStreetLamp(scene, 155, -30);
@@ -1420,11 +1624,10 @@ function createLandmarks(scene) {
   createStreetLamp(scene, 155, -5);
   createStreetLamp(scene, 125, 15);
   // 2 propaganda posters
-  createPropagandaPoster(scene, 140, -15);
-  createPropagandaPoster(scene, 160, 5);
+
+
 
   // ========== UPTOWN ==========
-  createHotelSign(scene, 182, 58);
   createRooftopGarden(scene, 172, 75, 15.0);
   // Street lamps (clean, well-spaced)
   createStreetLamp(scene, 160, 65);
@@ -1435,8 +1638,6 @@ function createLandmarks(scene) {
   createStreetLamp(scene, 160, 100);
   createStreetLamp(scene, 190, 100);
   // NO propaganda posters (Uptown is "above" that)
-  // 1 parked car (nicer area)
-  createParkedCar(scene, 190, 60, Math.PI / 2);
 
   // ========== TOWER ==========
   createSkyBridge(scene, -160, 100, -145, 100, 22);
@@ -1448,12 +1649,6 @@ function createLandmarks(scene) {
   createStreetLamp(scene, -135, 108);
   createStreetLamp(scene, -150, 130);
   createStreetLamp(scene, -130, 130);
-  // Many propaganda posters (most suppressed)
-  createPropagandaPoster(scene, -160, 100);
-  createPropagandaPoster(scene, -145, 100);
-  createPropagandaPoster(scene, -148, 122);
-  createPropagandaPoster(scene, -128, 118);
-  createPropagandaPoster(scene, -140, 140);
 
   // ========== INDUSTRIAL ==========
   // Note: factory template buildings already include smokestacks via templateFactory
@@ -1474,11 +1669,6 @@ function createLandmarks(scene) {
   createStreetLamp(scene, 50, -115);
   createStreetLamp(scene, 0, -130);
   createStreetLamp(scene, 30, -130);
-  // Propaganda posters (many)
-  createPropagandaPoster(scene, -5, -88);
-  createPropagandaPoster(scene, 35, -88);
-  createPropagandaPoster(scene, 15, -108);
-  createPropagandaPoster(scene, -5, -112);
 
   // ========== PORT ==========
   createLighthouse(scene, -95, 225);
@@ -1497,12 +1687,8 @@ function createLandmarks(scene) {
   createStreetLamp(scene, -70, 200);
   createStreetLamp(scene, -55, 200);
   createStreetLamp(scene, -80, 215);
-  // Propaganda posters (moderate)
-  createPropagandaPoster(scene, -100, 195);
-  createPropagandaPoster(scene, -75, 195);
 
   // ========== ACE HQ ==========
-  createACESign(scene, -150, -55, 12);
   createWatchtower(scene, -130, -80);
   // High fence surrounding compound
   createACEFence(scene);
@@ -1518,8 +1704,6 @@ function createLandmarks(scene) {
   createStreetLamp(scene, -145, -65);
   createStreetLamp(scene, -130, -55);
   createStreetLamp(scene, -160, -55);
-  // 1 propaganda poster (inside compound)
-  createPropagandaPoster(scene, -150, -55);
 }
 
 function createTownSquare(scene, x, z) {
@@ -1530,65 +1714,13 @@ function createTownSquare(scene, x, z) {
   squareGround.receiveShadow = true;
   scene.add(squareGround);
 
-  // Fountain in center
-  const group = new THREE.Group();
-  group.position.set(x, 0, z);
-  const stoneMat = new THREE.MeshLambertMaterial({ color: 0x707070 });
-
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.5, 0.5, 16), stoneMat);
-  base.position.y = 0.25;
-  base.castShadow = true;
-  base.receiveShadow = true;
-  group.add(base);
-
-  const innerMat = new THREE.MeshLambertMaterial({ color: 0x505560 });
-  const inner = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 0.1, 16), innerMat);
-  inner.position.y = 0.5;
-  group.add(inner);
-
-  const column = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 1.8, 8), stoneMat);
-  column.position.y = 1.3;
-  column.castShadow = true;
-  group.add(column);
-
-  const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.35, 0.35, 12), stoneMat);
-  bowl.position.y = 2.3;
-  bowl.castShadow = true;
-  group.add(bowl);
-
-  scene.add(group);
-  _fountainData = { x, z, group, material: stoneMat };
-
-  // 4 benches around the fountain (square arrangement)
-  const benchMat = new THREE.MeshLambertMaterial({ color: 0x606060 });
-  const benchPositions = [
-    { bx: x - 5, bz: z, rot: Math.PI / 2 },
-    { bx: x + 5, bz: z, rot: -Math.PI / 2 },
-    { bx: x, bz: z - 5, rot: 0 },
-    { bx: x, bz: z + 5, rot: Math.PI },
-  ];
-  for (const bp of benchPositions) {
-    const bg = new THREE.Group();
-    bg.position.set(bp.bx, 0, bp.bz);
-    bg.rotation.y = bp.rot;
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.08, 0.5), benchMat);
-    seat.position.y = 0.45; seat.castShadow = true; bg.add(seat);
-    for (const lx of [-0.45, 0.45]) {
-      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.4), benchMat);
-      leg.position.set(lx, 0.225, 0); bg.add(leg);
-    }
-    const back = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 0.06), benchMat);
-    back.position.set(0, 0.7, -0.22); back.castShadow = true; bg.add(back);
-    scene.add(bg);
-  }
-
   // 2 trees flanking the square
   createTree(scene, x - 7, z - 5);
   createTree(scene, x + 7, z + 5);
 }
 
 let _fountainData = null;
-export function getFountainData() { return _fountainData; }
+export function getFountainData() { return null; } // fountain removed
 
 function createClockTower(scene, x, z) {
   // Extra tall narrow building with clock face
@@ -2148,63 +2280,71 @@ const LANDMARK_ZONES = [
   { x: -57, z: 135, w: 6, d: 6 },      // Lighthouse
 ];
 
-// Check if a building's CENTER is inside a road rectangle (not just edge overlap).
-// Buildings alongside roads with minor edge overlap are fine — only catch buildings
-// that are actually sitting on top of a road.
+// Check if any part of the building footprint overlaps the road surface.
+// Uses actual road surface width (roadWidth) not full segment extent.
 function overlapsRoadBuffer(bx, bz, bw, bd, roads) {
+  const bMinX = bx - bw / 2;
+  const bMaxX = bx + bw / 2;
+  const bMinZ = bz - bd / 2;
+  const bMaxZ = bz + bd / 2;
+
   for (const road of roads) {
     const isHoriz = road.w > road.d;
-    const roadHalfW = road.roadWidth / 2;
+    const halfRoadW = road.roadWidth / 2;
+    let rMinX, rMaxX, rMinZ, rMaxZ;
 
-    // Check if building center is within the road's narrow dimension
-    // AND within the road's long dimension (length)
     if (isHoriz) {
-      const roadMinX = road.x - road.w / 2;
-      const roadMaxX = road.x + road.w / 2;
-      // Building center must be within road length AND within road width
-      if (bx >= roadMinX && bx <= roadMaxX && Math.abs(bz - road.z) < roadHalfW) {
-        return {
-          road, isHoriz,
-          rMinX: roadMinX, rMaxX: roadMaxX,
-          rMinZ: road.z - roadHalfW, rMaxZ: road.z + roadHalfW
-        };
-      }
+      rMinX = road.x - road.w / 2;
+      rMaxX = road.x + road.w / 2;
+      rMinZ = road.z - halfRoadW;
+      rMaxZ = road.z + halfRoadW;
     } else {
-      const roadMinZ = road.z - road.d / 2;
-      const roadMaxZ = road.z + road.d / 2;
-      if (bz >= roadMinZ && bz <= roadMaxZ && Math.abs(bx - road.x) < roadHalfW) {
-        return {
-          road, isHoriz,
-          rMinX: road.x - roadHalfW, rMaxX: road.x + roadHalfW,
-          rMinZ: roadMinZ, rMaxZ: roadMaxZ
-        };
-      }
+      rMinX = road.x - halfRoadW;
+      rMaxX = road.x + halfRoadW;
+      rMinZ = road.z - road.d / 2;
+      rMaxZ = road.z + road.d / 2;
+    }
+
+    // AABB overlap test
+    const overlapX = Math.max(0, Math.min(bMaxX, rMaxX) - Math.max(bMinX, rMinX));
+    const overlapZ = Math.max(0, Math.min(bMaxZ, rMaxZ) - Math.max(bMinZ, rMinZ));
+    if (overlapX > 0.5 && overlapZ > 0.5) {
+      return { road, isHoriz, rMinX, rMaxX, rMinZ, rMaxZ };
     }
   }
   return null;
 }
 
-// Stricter check: does the building footprint significantly overlap the road?
-// Used in the final validation pass. Returns true if >25% of building footprint overlaps road.
+// Stricter check: does the building footprint overlap the road at all?
+// Returns overlap info if any part of the building sits on the road surface.
 function significantlyOverlapsRoad(bx, bz, bw, bd, roads) {
   const bMinX = bx - bw / 2;
   const bMaxX = bx + bw / 2;
   const bMinZ = bz - bd / 2;
   const bMaxZ = bz + bd / 2;
-  const bArea = bw * bd;
 
   for (const road of roads) {
-    const rMinX = road.x - road.w / 2;
-    const rMaxX = road.x + road.w / 2;
-    const rMinZ = road.z - road.d / 2;
-    const rMaxZ = road.z + road.d / 2;
+    // Use the actual road surface width (roadWidth), not the full segment extent
+    const isHoriz = road.w > road.d;
+    let rMinX, rMaxX, rMinZ, rMaxZ;
+    if (isHoriz) {
+      rMinX = road.x - road.w / 2;
+      rMaxX = road.x + road.w / 2;
+      rMinZ = road.z - road.roadWidth / 2;
+      rMaxZ = road.z + road.roadWidth / 2;
+    } else {
+      rMinX = road.x - road.roadWidth / 2;
+      rMaxX = road.x + road.roadWidth / 2;
+      rMinZ = road.z - road.d / 2;
+      rMaxZ = road.z + road.d / 2;
+    }
 
     const overlapX = Math.max(0, Math.min(bMaxX, rMaxX) - Math.max(bMinX, rMinX));
     const overlapZ = Math.max(0, Math.min(bMaxZ, rMaxZ) - Math.max(bMinZ, rMinZ));
     const overlapArea = overlapX * overlapZ;
 
-    if (overlapArea / bArea > 0.25) {
-      const isHoriz = road.w > road.d;
+    // Any overlap > 1 sq unit with the road surface = needs fixing
+    if (overlapArea > 1.0) {
       return { road, isHoriz, rMinX, rMaxX, rMinZ, rMaxZ };
     }
   }
@@ -2490,7 +2630,7 @@ function validateAndFixPlacements(districtSets) {
   }
   } // end pass2iter
 
-  // Pass 3: Final validation — check for significant road overlap after repositioning
+  // Pass 3: Final validation — push buildings off roads, remove if still overlapping
   for (let i = 0; i < allPlaced.length; i++) {
     const b = allPlaced[i];
     if (b.landmark === 'apartment' || b.btype === 'player_apartment') continue;
@@ -2501,12 +2641,20 @@ function validateAndFixPlacements(districtSets) {
       const halfRoadW = road.roadWidth / 2;
       if (isHoriz) {
         const side = b.z >= road.z ? 1 : -1;
-        b.z = road.z + side * (halfRoadW + b.d / 2 + 0.6); // 0.6 gap (scaled 40%)
+        b.z = road.z + side * (halfRoadW + b.d / 2 + 0.6);
       } else {
         const side = b.x >= road.x ? 1 : -1;
-        b.x = road.x + side * (halfRoadW + b.w / 2 + 0.6); // 0.6 gap (scaled 40%)
+        b.x = road.x + side * (halfRoadW + b.w / 2 + 0.6);
       }
       repositioned++;
+
+      // If STILL overlapping a road after the shift (e.g. near intersection), remove it
+      if (significantlyOverlapsRoad(b.x, b.z, b.w, b.d, roads)) {
+        allPlaced.splice(i, 1);
+        i--;
+        removed++;
+        continue;
+      }
     }
   }
 
@@ -2535,8 +2683,6 @@ export function createBuildings(scene) {
     try {
       console.log(`Generating ${district}: ${buildings.length} buildings`);
       for (const b of buildings) {
-        // DEV MODE: skip procedural/filler buildings, keep only named story buildings
-        if (!b.named) continue;
         createBuilding(scene, b, globalIdx, district);
         globalIdx++;
       }

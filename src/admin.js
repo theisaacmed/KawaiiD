@@ -6,6 +6,7 @@ import { getGameHour, setGameHour, getDayNumber, setDayNumber, isNight, getTimeP
 import { getOfficers } from './ace.js';
 import { getWorldColor, spreadColor, getBuildingColors } from './color-system.js';
 import { getPhoneStats } from './phone.js';
+import { getJP, addJP, getRankName, getCurrentRankIndex, getNextRank, RANKS } from './jp-system.js';
 import { unlockGacha, isGachaUnlocked } from './gacha.js';
 import { getUnlockedDistricts, DISTRICTS } from './districts.js';
 import { triggerSave } from './save-system.js';
@@ -183,6 +184,24 @@ function buildHTML() {
       <button id="adm-unlock-east">Unlock Eastside</button>
     </div>
 
+    <!-- JOY POINTS -->
+    <div class="section">
+      <div class="section-title">JOY POINTS</div>
+      <div id="adm-jp-info"></div>
+      <button id="adm-jp-10">+10 JP</button>
+      <button id="adm-jp-50">+50 JP</button>
+      <button id="adm-jp-100">+100 JP</button>
+      <button id="adm-jp-500">+500 JP</button>
+      <br>
+      <button id="adm-jp-minus50">-50 JP</button>
+      <button id="adm-jp-minus100">-100 JP</button>
+      <br>
+      <label>Set JP: <input type="number" id="adm-jp-val" min="0" max="9999" step="1" value="0"></label>
+      <button id="adm-jp-set">Set</button>
+      <br>
+      <button id="adm-jp-rank-max">Max Rank</button>
+    </div>
+
     <!-- ACE -->
     <div class="section">
       <div class="section-title">ACE OFFICERS</div>
@@ -280,6 +299,23 @@ function wireEvents() {
     refreshStats();
   });
 
+  // Joy Points
+  btn('adm-jp-10', () => { addJP(10); refreshStats(); });
+  btn('adm-jp-50', () => { addJP(50); refreshStats(); });
+  btn('adm-jp-100', () => { addJP(100); refreshStats(); });
+  btn('adm-jp-500', () => { addJP(500); refreshStats(); });
+  btn('adm-jp-minus50', () => { addJP(-50); refreshStats(); });
+  btn('adm-jp-minus100', () => { addJP(-100); refreshStats(); });
+  btn('adm-jp-set', () => {
+    const target = parseInt(document.getElementById('adm-jp-val').value);
+    if (!isNaN(target) && target >= 0) {
+      const current = getJP();
+      addJP(target - current);
+      refreshStats();
+    }
+  });
+  btn('adm-jp-rank-max', () => { addJP(2000 - getJP()); refreshStats(); });
+
   // ACE
   btn('adm-tp-away-ace', () => {
     const officers = getOfficers();
@@ -333,6 +369,20 @@ function refreshStats() {
     <div class="stat-line">ACE: <span class="stat-value">${aceInfo}</span></div>
     <div class="stat-line">Speed: <span class="stat-value">${speedMult}x</span> | God: <span class="stat-value">${godMode ? 'ON' : 'off'}</span> | Noclip: <span class="stat-value">${noclip ? 'ON' : 'off'}</span></div>
   `;
+
+  // Update JP section
+  const jpEl = document.getElementById('adm-jp-info');
+  if (jpEl) {
+    const jp = getJP();
+    const rankIdx = getCurrentRankIndex();
+    const rankName = getRankName();
+    const nextRank = getNextRank();
+    const nextJP = nextRank ? nextRank.jp : 'MAX';
+    jpEl.innerHTML = `
+      <div class="stat-line">JP: <span class="stat-value">${jp}</span> | Rank: <span class="stat-value">${rankName}</span> (${rankIdx}/7)</div>
+      <div class="stat-line">Next rank at: <span class="stat-value">${nextJP}</span> JP</div>
+    `;
+  }
 
   // Update ACE section too
   const aceEl = document.getElementById('adm-ace-info');

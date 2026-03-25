@@ -9,13 +9,14 @@ import { createWorldDetail, updateWorldDetail, createTownCenter } from './world-
 import { createRuinsDetail } from './ruins-detail.js';
 import { initParticles, updateParticles, setFountainPosition, spawnSearchDust } from './particles.js';
 import { initEnvironment, updateEnvironment } from './environment.js';
-import { createHUD, flashMoney, showFloatingMoney } from './hud.js';
+import { createHUD, flashMoney, showFloatingMoney, updateWorldColorHUD } from './hud.js';
 import { initActiveDealsHUD } from './active-deals-hud.js';
 import { initInteraction, updateInteraction } from './interaction.js';
-import { createNPCs, updateNPCs, resetNPCPurchases, enableDistrictNPCs, enableNPCByName, checkReferrals, getNPCColorModifier, getNPCAffinity, resetDailyDeals, initPathfinding, resetRoutinesForNewDay, getRelationships, getRelationship, setOnRelLevelUpCallback, getReferralState } from './npc.js';
+import { createNPCs, updateNPCs, resetNPCPurchases, enableDistrictNPCs, enableNPCByName, getNPCColorModifier, getNPCAffinity, resetDailyDeals, initPathfinding, resetRoutinesForNewDay, getRelationships, setOnRelLevelUpCallback, initRebuilders, updateRebuilders } from './npc.js';
 import { initDealing, isDealOpen, setOnDealCallback, setOnPhoneDealCallback } from './dealing.js';
-import { initPhone, updatePhone, setDealFunctions, onPhoneDealCompleted, isPhoneVisible, setGachaUnlockCallback, getPhoneStats, acceptMessage, declineMessage, openPhoneToMessage, getUnreadCount } from './phone.js';
-import { createACEOfficers, initACE, updateACE, getOfficers, setOnCaughtCallback, setOnEscapeCallback, isAnyOfficerWithinRange } from './ace.js';
+import { initPhone, updatePhone, setDealFunctions, onPhoneDealCompleted, isPhoneVisible, getPhoneStats, acceptMessage, declineMessage, openPhoneToMessage, getUnreadCount } from './phone.js';
+// STRIPPED: ACE system disabled for core-loop focus
+// import { createACEOfficers, initACE, updateACE, getOfficers, setOnCaughtCallback, setOnEscapeCallback, isAnyOfficerWithinRange } from './ace.js';
 import { initColorSystem, updateColorSystem, spreadColorBonus, addBuildings, getWorldColor, setNPCColorModifierFn, setNPCsForColorSystem, setOnBuildingThresholdCallback, syncBuildingThresholds } from './color-system.js';
 import { initLighting, updateLighting } from './lighting.js';
 import {
@@ -25,7 +26,8 @@ import {
 import { initMinimap, updateMinimap } from './minimap.js';
 import { restoreInventory, addMoney, setMaxSlots } from './inventory.js';
 import { hasSave, loadSave, clearSave, applySave, initSaveSystem, triggerSave } from './save-system.js';
-import { initGacha, setRevealCallbacks, unlockGacha, isGachaUIOpen } from './gacha.js';
+// STRIPPED: Gacha system disabled
+// import { initGacha, setRevealCallbacks, unlockGacha, isGachaUIOpen } from './gacha.js';
 import { showTitleScreen } from './title-screen.js';
 import { initPauseMenu, isPauseMenuOpen } from './pause-menu.js';
 import { initProgression, setVictoryCallback, checkDealMilestone, checkColorMilestone, getProgressionState, restoreProgressionState, showRankMessage } from './progression.js';
@@ -36,24 +38,36 @@ import {
   startNightSounds, stopNightSounds,
 } from './audio.js';
 import { initAdmin } from './admin.js';
-import { createKit, updateKit, resetKitStock, resetYunaInkStock, isShopOpen } from './shop.js';
-import { createApartment } from './apartment.js';
-import { initStationShop, isStationShopOpen, restoreStationShopState, applyRestoredPurchases } from './station-shop.js';
-import { initSmuggling, updateSmuggling, isSmuggleUIOpen } from './smuggling.js';
-import { initScavenger, updateScavenger, onNewDayScavenger } from './scavenger-system.js';
-import { initStoryEvents, setStoryCallbacks, syncStoryEffects, onStoryTrigger, updateStoryEvents } from './story-events.js';
-import { initWorkshop, updateWorkshop, isWorkshopStorageOpen } from './workshop.js';
+// STRIPPED: Shop, apartment, stations, smuggling, scavenger, story, workshop disabled
+// import { createKit, updateKit, resetKitStock, resetYunaInkStock, isShopOpen } from './shop.js';
+// import { createApartment } from './apartment.js';
+// import { initStationShop, isStationShopOpen, restoreStationShopState, applyRestoredPurchases } from './station-shop.js';
+// import { initSmuggling, updateSmuggling, isSmuggleUIOpen } from './smuggling.js';
+// import { initScavenger, updateScavenger, onNewDayScavenger } from './scavenger-system.js';
+// import { initStoryEvents, setStoryCallbacks, syncStoryEffects, onStoryTrigger, updateStoryEvents } from './story-events.js';
+// import { initWorkshop, updateWorkshop, isWorkshopStorageOpen } from './workshop.js';
 import { initTutorial, updateTutorial, onTutorialDealComplete } from './tutorial.js';
-import { initPrintStation, updatePrintStation, isPrintStationOpen } from './stations/print-station.js';
-import { initCuttingTable, updateCuttingTable, isCuttingTableOpen } from './stations/cutting-table.js';
-import { initSewingMachine, updateSewingMachine, isSewingMachineOpen } from './stations/sewing-machine.js';
-import { initStuffingStation, updateStuffingStation, isStuffingStationOpen } from './stations/stuffing-station.js';
+import { createSmoke, updateSmoke } from './smoke-emitters.js';
+import { createLaundry, updateLaundry } from './laundry-lines.js';
+import { createBirds, updateBirds } from './rooftop-birds.js';
+import { createCritters, updateCritters } from './living-critters.js';
+import { createGraffiti, updateGraffiti } from './graffiti.js';
+import { createAmbiance, updateAmbiance } from './ambiance.js';
+import { createMusicians, updateMusicians } from './street-musicians.js';
+import { initConversations, updateConversations } from './npc-conversations.js';
+import { createStreetLights, updateStreetLights } from './street-lights.js';
+// STRIPPED: All manufacturing stations disabled
+// import { initPrintStation, updatePrintStation, isPrintStationOpen } from './stations/print-station.js';
+// import { initCuttingTable, updateCuttingTable, isCuttingTableOpen } from './stations/cutting-table.js';
+// import { initSewingMachine, updateSewingMachine, isSewingMachineOpen } from './stations/sewing-machine.js';
+// import { initStuffingStation, updateStuffingStation, isStuffingStationOpen } from './stations/stuffing-station.js';
 import {
   initNotifications, setNotifBlockedCheck, setQuickAcceptFn, setQuickDeclineFn,
   setOpenPhoneToMsgFn, setUnreadCountFn, flushNotifQueue,
 } from './notifications.js';
-import { initMultiplayer, updateMultiplayer, sendDealComplete, isMultiplayerActive } from './multiplayer.js';
-import { showHUDBadge, removeHUDBadge } from './multiplayer-ui.js';
+// STRIPPED: Multiplayer disabled
+// import { initMultiplayer, updateMultiplayer, sendDealComplete, isMultiplayerActive } from './multiplayer.js';
+// import { showHUDBadge, removeHUDBadge } from './multiplayer-ui.js';
 
 // --- District unlock helpers ---
 function performDistrictUnlocks(totalDeals, scene, npcs) {
@@ -162,6 +176,13 @@ async function boot() {
   // Hand-placed Town center props
   createTownCenter(scene);
 
+  // Living world — smoke, laundry, birds, critters
+  createSmoke(scene);
+  createLaundry(scene);
+  createBirds(scene);
+  createCritters(scene);
+  createGraffiti(scene);
+
   // Build the ruins zone
   const { piles, RUINS_Z_START } = createRuins(scene);
 
@@ -181,73 +202,32 @@ async function boot() {
   // Player controller
   const player = new Player(camera, renderer.domElement);
 
+  // Ambiance (needs player ref)
+  createAmbiance(scene, player);
+
+  // Street musicians (appear when color returns)
+  createMusicians(scene);
+
+  // Atmospheric street lights (staggered dusk activation)
+  createStreetLights(scene);
+
   // NPCs & pathfinding
   initPathfinding();
   const npcs = createNPCs(scene);
+  initRebuilders(scene);
+
+  // NPC pair conversations (needs NPCs)
+  initConversations(scene, npcs);
 
   // Lighting system
   initLighting(scene);
 
-  // Register time pause predicates
+  // Register time pause predicates (core only)
   registerPausePredicate(() => isPhoneVisible());
   registerPausePredicate(() => isDealOpen());
-  registerPausePredicate(() => isGachaUIOpen());
   registerPausePredicate(() => isPauseMenuOpen());
-  registerPausePredicate(() => isShopOpen());
-  registerPausePredicate(() => isPrintStationOpen());
-  registerPausePredicate(() => isCuttingTableOpen());
-  registerPausePredicate(() => isSewingMachineOpen());
-  registerPausePredicate(() => isStuffingStationOpen());
-  registerPausePredicate(() => isStationShopOpen());
-  registerPausePredicate(() => isSmuggleUIOpen());
-  registerPausePredicate(() => isWorkshopStorageOpen());
 
-  // Kit supplier NPC
-  createKit(scene);
-  initSmuggling(scene);
-
-  // Scavenger hire system
-  initScavenger(scene, npcs);
-
-  // Story events
-  initStoryEvents(scene);
-  setStoryCallbacks(addJP, getRelationship);
-
-  // Apartment interior (workshop)
-  createApartment(scene);
-
-  // Station shop (purchase counter in apartment)
-  initStationShop(scene);
-
-  // Print station (first manufacturing station)
-  initPrintStation(scene, player);
-
-  // Plushie workshop stations
-  initCuttingTable(scene, player);
-  initSewingMachine(scene, player);
-  initStuffingStation(scene, player);
-
-  // Workshop property (Industrial district second production location)
-  initWorkshop(scene, player);
-
-  // ACE patrol officers
-  createACEOfficers(scene);
-  initACE(player);
-
-  // Multiplayer
-  initMultiplayer(scene, {
-    onRoomCreated: () => {},
-    onJoined: () => { showHUDBadge(); },
-    onGuestJoined: () => { showHUDBadge(); },
-    onPeerDisconnected: () => { removeHUDBadge(); },
-    onDealComplete: (msg) => {
-      if (msg.buildingColors && Array.isArray(msg.buildingColors)) {
-        for (const { index, colorAmount } of msg.buildingColors) {
-          spreadColorBonus({ x: 0, z: 0 }, colorAmount);
-        }
-      }
-    },
-  });
+  // STRIPPED: Kit, smuggling, scavenger, story, apartment, stations, ACE, multiplayer all disabled
 
   // HUD
   createHUD();
@@ -287,12 +267,7 @@ async function boot() {
   // Notification system
   initNotifications();
   setNotifBlockedCheck(() => {
-    // Block during: ACE chase, sleeping, progression overlay, deal panel, shop
     if (isSleepingNow()) return true;
-    // Check if any ACE officer is in CHASE state
-    const officers = getOfficers();
-    if (officers.some(o => o.state === 'CHASE')) return true;
-    // Check progression overlay
     const overlay = document.getElementById('progression-overlay');
     if (overlay && overlay.style.display !== 'none' && overlay.style.opacity !== '0') return true;
     return false;
@@ -309,19 +284,7 @@ async function boot() {
   });
   setUnreadCountFn(() => getUnreadCount());
 
-  // Gacha system
-  initGacha(scene);
-  setRevealCallbacks(
-    (amount) => {
-      addMoney(amount);
-      flashMoney(amount);
-      showFloatingMoney(amount);
-    },
-    (npcPos, bonusAmount) => {
-      if (npcPos) spreadColorBonus(npcPos, bonusAmount);
-    }
-  );
-  setGachaUnlockCallback(() => unlockGacha());
+  // STRIPPED: Gacha system disabled
 
   // Progression system
   initProgression();
@@ -332,7 +295,7 @@ async function boot() {
   // Interaction system
   initInteraction(player, piles, RUINS_Z_START, npcs, scene);
 
-  // Sleep callback — new day reset
+  // Sleep callback — new day reset (core only)
   setSleepCallback(() => {
     for (const pile of piles) {
       pile.searched = false;
@@ -342,9 +305,6 @@ async function boot() {
     resetNPCPurchases(npcs);
     resetDailyDeals();
     resetRoutinesForNewDay();
-    resetKitStock();
-    resetYunaInkStock();
-    onNewDayScavenger();
     triggerSave('New day!');
   });
 
@@ -396,28 +356,20 @@ async function boot() {
     restoreAllProps(scene, getRelationships());
     // Restore inventory expansion from JP rank (Dealer rank = index 2 → 10 slots)
     if (getCurrentRankIndex() >= 2) setMaxSlots(10);
-    // Restore station purchases (enables/shows purchased station meshes)
-    if (savedData.stationShop) restoreStationShopState(savedData.stationShop);
-    applyRestoredPurchases();
-    // Sync story event visual effects after state restored in applySave
-    syncStoryEffects(getReferralState());
-    // Workshop restore is handled in save-system.js applySave (via restoreWorkshopState)
-  } else {
-    // New game — apply any already-restored purchases (none, but future-proof)
-    applyRestoredPurchases();
+    // STRIPPED: station shop, story effects, workshop restore disabled
   }
 
   // Tutorial — init after state is restored so new vs continue is known
   initTutorial(scene, !savedData);
 
-  // Init save system
-  initSaveSystem(player, npcs, piles, getOfficers());
+  // Init save system (no ACE officers)
+  initSaveSystem(player, npcs, piles, []);
 
   // Pause menu
   initPauseMenu({
     onSave: () => triggerSave('Game saved!'),
     onQuit: () => { window.location.reload(); },
-    isPausable: () => !isDealOpen() && !isPhoneVisible() && !isGachaUIOpen() && !isSleepingNow() && !isPrintStationOpen(),
+    isPausable: () => !isDealOpen() && !isPhoneVisible() && !isSleepingNow(),
   });
 
   // Admin / debug panel
@@ -425,19 +377,6 @@ async function boot() {
     // Debug: unlock all districts
     checkDistrictUnlocks(999);
   });
-
-  // Helper: process referral results from deal
-  function handleDealReferrals(npcName, totalDeals) {
-    const result = checkReferrals(npcName, totalDeals);
-    if (result) {
-      if (result.type === 'referral' && result.npc) {
-        // Enable the newly referred NPC
-        enableNPCByName(npcs, result.npc);
-      }
-      // Fire story events if social flags were set this deal
-      onStoryTrigger(result, getReferralState());
-    }
-  }
 
   // --- JP callbacks ---
 
@@ -458,45 +397,26 @@ async function boot() {
     spawnPropsIfNeeded(scene, npcName, level);
   });
 
-  // ACE escape → +20 JP
-  setOnEscapeCallback(() => addJP(20));
-
-  // --- Wire save triggers ---
+  // --- Wire save triggers (core loop only) ---
   setOnDealCallback((npcName, itemType, price) => {
     onTutorialDealComplete();
     triggerSave('Saving...');
     const stats = getPhoneStats();
     checkDealMilestone(stats.totalDeals);
-    // Check legacy deal-count district unlocks
     performDistrictUnlocks(stats.totalDeals, scene, npcs);
-    // Check referral/social unlocks
-    if (npcName) handleDealReferrals(npcName, stats.totalDeals);
-    // JP: base deal award
-    addJP(10);
+    // JP: base deal award (bumped from 10→15 to compensate for removed ACE/risky JP)
+    addJP(15);
     // JP: love-affinity bonus
     if (npcName && itemType && getNPCAffinity(npcName, itemType) >= 2) addJP(5);
-    // JP: risky deal bonus (officer within 30 units)
-    if (isAnyOfficerWithinRange(30)) addJP(10);
-    // Notify co-op partner
-    if (isMultiplayerActive()) {
-      sendDealComplete({ npcName, itemType });
-    }
-  });
-  setOnCaughtCallback(() => {
-    addJP(-15);
-    triggerSave('Saving...');
   });
   setOnPhoneDealCallback((npcName, itemType, price) => {
     onPhoneDealCompleted(npcName, itemType, price);
     const stats = getPhoneStats();
     checkDealMilestone(stats.totalDeals);
     performDistrictUnlocks(stats.totalDeals, scene, npcs);
-    // Check referral/social unlocks
-    if (npcName) handleDealReferrals(npcName, stats.totalDeals);
-    // JP awards for phone deals
-    addJP(10);
+    // JP: base deal award (bumped from 10→15)
+    addJP(15);
     if (npcName && itemType && getNPCAffinity(npcName, itemType) >= 2) addJP(5);
-    if (isAnyOfficerWithinRange(30)) addJP(10);
   });
 
   // Handle resize
@@ -520,18 +440,8 @@ async function boot() {
     updateTime(dt);
     player.update(dt);
     updateNPCs(npcs, player.position, dt);
-    // DEV MODE: ACE disabled
-    // updateACE(dt);
-    updateKit();
-    updateSmuggling();
-    updateStoryEvents(dt);
-    updateWorkshop();
+    updateRebuilders(player.position, dt);
     updateTutorial(dt, player.position, piles);
-    updateScavenger(dt);
-    updatePrintStation(dt);
-    updateCuttingTable(dt);
-    updateSewingMachine(dt);
-    updateStuffingStation(dt);
     updateRuinsGlow(piles, elapsed);
     updatePhone(dt);
     updateInteraction(dt);
@@ -540,6 +450,17 @@ async function boot() {
     updateMinimap();
     updateRoads(dt);
     updateWorldDetail(dt);
+
+    // Living world
+    updateSmoke(dt, elapsed);
+    updateLaundry(dt, elapsed);
+    updateBirds(dt, elapsed, player.position);
+    updateCritters(dt, elapsed, player.position);
+    updateGraffiti(dt);
+    updateAmbiance(dt, elapsed);
+    updateMusicians(dt, elapsed, player.position);
+    updateConversations(dt, elapsed);
+    updateStreetLights(dt, elapsed);
 
     // Particle systems
     updateParticles(dt, elapsed);
@@ -565,13 +486,11 @@ async function boot() {
 
     // NPC bobbing
 
-    // Color milestones
+    // Color milestones + HUD indicator
     if (Math.floor(elapsed * 10) % 6 === 0) {
       checkColorMilestone(worldColor);
+      updateWorldColorHUD(worldColor);
     }
-
-    // Multiplayer sync
-    updateMultiplayer(camera.position, camera.rotation.y);
 
     // Flush queued notifications when blocking events end
     flushNotifQueue();

@@ -68,6 +68,27 @@ const SECONDARY_ROADS = [
   // ACE HQ
   { x: -72, z: -36, w: 3, d: 30 },
   { x: -90, z: -24, w: 24, d: 3 },
+  // Additional grid roads — filling gaps
+  // Town-Downtown connector (E-W at Z=48)
+  { x: 0, z: 48, w: 60, d: 3 },
+  // Burbs E-W cross (Z=-24, connecting East Blvd interior)
+  { x: 120, z: -24, w: 60, d: 3 },
+  // Burbs N-S mid (X=108)
+  { x: 108, z: -12, w: 3, d: 36 },
+  // Uptown E-W link (Z=60, connecting Uptown to East Blvd)
+  { x: 108, z: 60, w: 36, d: 3 },
+  // Downtown-Tower E-W connector (Z=72)
+  { x: -42, z: 72, w: 60, d: 3 },
+  // Tower N-S mid (X=-72)
+  { x: -72, z: 96, w: 3, d: 24 },
+  // Industrial E-W cross (Z=-72)
+  { x: -30, z: -72, w: 60, d: 3 },
+  // Port connector (N-S at X=-60)
+  { x: -60, z: 114, w: 3, d: 30 },
+  // Town N internal (E-W at Z=18)
+  { x: 0, z: 18, w: 48, d: 3 },
+  // Northtown E-W link (Z=90)
+  { x: 48, z: 90, w: 36, d: 3 },
 ];
 
 // ========== ALLEYS (1.5 units wide, #585858) ==========
@@ -258,8 +279,7 @@ export function createRoads(scene) {
     createRoadSurface(scene, road, 0x585858);
   }
 
-  // Crosswalks at major intersections
-  createCrosswalks(scene);
+  // Crosswalks removed
 
   // Cracked transition to ruins
   createCrackedTransition(scene);

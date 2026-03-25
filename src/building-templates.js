@@ -694,6 +694,184 @@ export function templateChurch(w, h, d) {
 }
 
 // ============================================================
+// TEMPLATE 13: DUPLEX — two-unit house, shared wall, two doors, mirrored windows
+// ============================================================
+export function templateDuplex(w, h, d) {
+  const group = new THREE.Group();
+  const windows = [];
+  const doors = [];
+
+  // Main body
+  const body = box(w, h, d, WALL_GRAY, 0, h / 2, 0);
+  body.userData.isMainBody = true;
+  group.add(body);
+
+  // Center divider (vertical line on front)
+  group.add(box(0.08, h, 0.06, 0x5A5A5A, 0, h / 2, d / 2 + 0.02));
+
+  // Pitched roof
+  const roofH = h * 0.3;
+  const roofR = Math.max(w, d) * 0.58;
+  const roofGeo = new THREE.ConeGeometry(roofR, roofH, 4);
+  const roof = new THREE.Mesh(roofGeo, new THREE.MeshLambertMaterial({ color: ROOF_GRAY }));
+  roof.position.set(0, h + roofH / 2, 0);
+  roof.rotation.y = Math.PI / 4;
+  roof.castShadow = true;
+  group.add(roof);
+
+  // Two doors (mirrored)
+  for (const side of [-1, 1]) {
+    const { doorMesh, doorMaterial, frameMesh } = makeDoor(w, h, d, 0.7, 1.5, DOOR_GRAY, side * w * 0.25);
+    group.add(doorMesh);
+    group.add(frameMesh);
+    doors.push({ mesh: doorMesh, material: doorMaterial });
+  }
+
+  // Mirrored windows per unit
+  for (const side of [-1, 1]) {
+    const mat = new THREE.MeshLambertMaterial({ color: WINDOW_GRAY });
+    const win = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.04), mat);
+    win.position.set(side * w * 0.35, h * 0.6, d / 2 + 0.02);
+    group.add(win);
+    windows.push({ mesh: win, material: mat });
+    // Ground floor window
+    const gMat = new THREE.MeshLambertMaterial({ color: WINDOW_GRAY });
+    const gWin = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.04), gMat);
+    gWin.position.set(side * w * 0.35, 1.1, d / 2 + 0.02);
+    group.add(gWin);
+    windows.push({ mesh: gWin, material: gMat });
+  }
+
+  return { group, windows, doors, bodyMesh: body };
+}
+
+// ============================================================
+// TEMPLATE 14: LOFT — tall narrow, large industrial windows, flat roof, fire escape
+// ============================================================
+export function templateLoft(w, h, d) {
+  const group = new THREE.Group();
+  const windows = [];
+  const doors = [];
+
+  // Main body
+  const body = box(w, h, d, WALL_GRAY, 0, h / 2, 0);
+  body.userData.isMainBody = true;
+  group.add(body);
+
+  // Flat roof with water tank
+  group.add(box(w + 0.2, 0.12, d + 0.2, 0x5E5E5E, 0, h + 0.06, 0));
+  group.add(cyl(0.5, 1.0, 0x555555, w * 0.3, h + 0.6, -d * 0.25));
+
+  // Large industrial windows (tall, narrow)
+  const floors = Math.max(2, Math.floor(h / 2.0));
+  for (let f = 0; f < floors; f++) {
+    const wy = 1.2 + f * 2.0;
+    if (wy > h - 0.5) continue;
+    const mat = new THREE.MeshLambertMaterial({ color: 0x4A4A55 });
+    const win = new THREE.Mesh(new THREE.BoxGeometry(w * 0.6, 1.5, 0.04), mat);
+    win.position.set(0, wy, d / 2 + 0.02);
+    group.add(win);
+    windows.push({ mesh: win, material: mat });
+  }
+
+  // Fire escape on side (zigzag stairs)
+  for (let f = 0; f < Math.min(floors, 4); f++) {
+    const fy = 1.5 + f * 2.0;
+    if (fy > h - 0.5) continue;
+    group.add(box(0.8, 0.06, 0.8, 0x4A4A4A, w / 2 + 0.4, fy, 0));
+    // Railing
+    group.add(box(0.06, 0.6, 0.8, 0x4A4A4A, w / 2 + 0.78, fy + 0.3, 0));
+  }
+
+  // Door
+  const { doorMesh, doorMaterial, frameMesh } = makeDoor(w, h, d, 0.9, 1.8, DOOR_GRAY, -w * 0.2);
+  group.add(doorMesh);
+  group.add(frameMesh);
+  doors.push({ mesh: doorMesh, material: doorMaterial });
+
+  return { group, windows, doors, bodyMesh: body };
+}
+
+// ============================================================
+// TEMPLATE 15: GALLERY — wide glass front, minimal, flat roof, art-adjacent
+// ============================================================
+export function templateGallery(w, h, d) {
+  const group = new THREE.Group();
+  const windows = [];
+  const doors = [];
+
+  // Main body
+  const body = box(w, h, d, WALL_GRAY, 0, h / 2, 0);
+  body.userData.isMainBody = true;
+  group.add(body);
+
+  // Full glass front (large single pane)
+  const glassMat = new THREE.MeshLambertMaterial({ color: 0x4A4A55 });
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(w * 0.85, h * 0.65, 0.04), glassMat);
+  glass.position.set(0, h * 0.4, d / 2 + 0.02);
+  group.add(glass);
+  windows.push({ mesh: glass, material: glassMat });
+
+  // Flat overhanging roof
+  group.add(box(w + 1.5, 0.15, d + 0.8, 0x5C5C5C, 0, h + 0.075, 0.3));
+
+  // Door (glass, centered)
+  const { doorMesh, doorMaterial, frameMesh } = makeDoor(w, h, d, 1.0, 2.0, 0x555560, 0);
+  group.add(doorMesh);
+  group.add(frameMesh);
+  doors.push({ mesh: doorMesh, material: doorMaterial });
+
+  // Side window
+  const sideMat = new THREE.MeshLambertMaterial({ color: WINDOW_GRAY });
+  const sideWin = new THREE.Mesh(new THREE.BoxGeometry(0.04, h * 0.5, d * 0.5), sideMat);
+  sideWin.position.set(w / 2 + 0.02, h * 0.45, 0);
+  group.add(sideWin);
+  windows.push({ mesh: sideWin, material: sideMat });
+
+  return { group, windows, doors, bodyMesh: body };
+}
+
+// ============================================================
+// TEMPLATE 16: ROWHOUSE — narrow, tall, brick-style horizontal lines, stoop
+// ============================================================
+export function templateRowhouse(w, h, d) {
+  const group = new THREE.Group();
+  const windows = [];
+  const doors = [];
+
+  // Main body
+  const body = box(w, h, d, WALL_GRAY, 0, h / 2, 0);
+  body.userData.isMainBody = true;
+  group.add(body);
+
+  // Horizontal brick lines
+  const lineCount = Math.floor(h / 0.5);
+  for (let i = 0; i < lineCount; i++) {
+    group.add(box(w + 0.02, 0.02, 0.05, 0x6E6E6E, 0, 0.25 + i * 0.5, d / 2 + 0.03));
+  }
+
+  // Flat roof with parapet
+  group.add(box(w + 0.1, 0.25, 0.1, 0x656565, 0, h + 0.125, d / 2));
+
+  // Stoop (small raised entry)
+  group.add(box(w * 0.5, 0.3, 0.8, 0x656565, 0, 0.15, d / 2 + 0.4));
+
+  // Window grid
+  const wg = makeWindowGrid(w, h, d, 0.45, 0.65, 1.6, WINDOW_GRAY);
+  for (const ww of wg) { group.add(ww.mesh); windows.push(ww); }
+
+  // Door
+  const { doorMesh, doorMaterial, frameMesh } = makeDoor(w, h, d, 0.7, 1.5, DOOR_GRAY, 0);
+  doorMesh.position.z = d / 2 + 0.42;
+  frameMesh.position.z = d / 2 + 0.42;
+  group.add(doorMesh);
+  group.add(frameMesh);
+  doors.push({ mesh: doorMesh, material: doorMaterial });
+
+  return { group, windows, doors, bodyMesh: body };
+}
+
+// ============================================================
 // TEMPLATE REGISTRY
 // ============================================================
 export const TEMPLATES = {
@@ -709,12 +887,16 @@ export const TEMPLATES = {
   factory: templateFactory,
   tower: templateTower,
   church: templateChurch,
+  duplex: templateDuplex,
+  loft: templateLoft,
+  gallery: templateGallery,
+  rowhouse: templateRowhouse,
 };
 
 // Template categories for district weighting
 export const TEMPLATE_CATEGORIES = {
-  residential: ['basicHouse', 'townhouse', 'apartmentBlock', 'cottage'],
-  commercial: ['shop', 'office', 'restaurant', 'marketStall'],
+  residential: ['basicHouse', 'townhouse', 'apartmentBlock', 'cottage', 'duplex', 'rowhouse'],
+  commercial: ['shop', 'office', 'restaurant', 'marketStall', 'gallery', 'loft'],
   industrial: ['warehouse', 'factory'],
-  unique: ['tower', 'church'],
+  unique: ['tower', 'church', 'gallery'],
 };

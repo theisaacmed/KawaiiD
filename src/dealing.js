@@ -3,9 +3,11 @@
 import { removeFromSlot, addMoney } from './inventory.js';
 import { flashMoney, showFloatingMoney, onItemDrop, isDragging } from './hud.js';
 import { generateOffer, npcLine, BASE_VALUES, willAcceptGacha, rollAcceptance, generateDealOffer, getNPCAffinity, getAffinityIcon, getAffinityRejectLine, getAffinityAcceptLine, recordDeal, checkAffinityGrowth, getRelationship, freezeForDeal, unfreezeFromDeal, checkDealAvailability } from './npc.js';
+import { NPC_APPEARANCE } from './npc-models.js';
 import { spreadColor } from './color-system.js';
 import { triggerReveal } from './gacha.js';
 import { playDealComplete } from './audio.js';
+import { spawnNPCSparkle } from './particles.js';
 import { getGameHour } from './time-system.js';
 import { isTutorialDealStep } from './tutorial.js';
 
@@ -491,6 +493,12 @@ function acceptDeal() {
   // Record deal for relationship tracking
   recordDeal(activeNPC.name, price);
   checkAffinityGrowth(activeNPC.name);
+
+  // Sparkle burst at NPC position in their personality color
+  const npcApp = NPC_APPEARANCE[activeNPC.name];
+  if (npcApp) {
+    spawnNPCSparkle(activeNPC.worldPos, npcApp.personalityColor, 12);
+  }
 
   if (!isTutorialReward) {
     flashMoney(price);

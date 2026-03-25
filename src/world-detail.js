@@ -28,7 +28,7 @@ const ROAD_MARKING_PASTEL = [
 
 const worldObjects = [];
 const _c = new THREE.Color();
-let fountainParts = null;
+// Fountain removed
 
 function createBenches(scene) {
   // Benches placed around Town district — doubled count, positions ×0.6
@@ -482,35 +482,12 @@ export function createWorldDetail(scene) {
   // createNewspaperBoxes(scene);
   // createConstructionBarriers(scene);
 
-  // Shared
-  createACEPosters(scene);
+  // ACE posters removed
 
   return { worldObjects, fountainParts: null, parkTrees: [] };
 }
 
 export function createTownCenter(scene) {
-  // --- Fountain at (0, 0, 12) ---
-  const stoneMat = new THREE.MeshLambertMaterial({ color: 0x999999 });
-
-  const fountainBase = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.5, 16), stoneMat);
-  const fbY = getTerrainHeight(0, 12);
-  fountainBase.position.set(0, fbY + 0.25, 12);
-  scene.add(fountainBase);
-
-  const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 2, 8), stoneMat);
-  spout.position.set(0, fbY + 1.5, 12);
-  scene.add(spout);
-
-  // --- Player apartment sign at (8.4, 0, 7.2) ---
-  const signMat = new THREE.MeshLambertMaterial({ color: 0x776655 });
-  const signPost = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.5, 6), signMat);
-  const spY = getTerrainHeight(8.4, 7.2);
-  signPost.position.set(8.4, spY + 1.25, 7.2);
-  scene.add(signPost);
-  const signBoard = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 0.06), signMat);
-  signBoard.position.set(8.4, spY + 2.5, 7.2);
-  scene.add(signBoard);
-
   // --- Trees (4) ---
   const treeMat = new THREE.MeshLambertMaterial({ color: 0x686868 });
   const trunkMat = new THREE.MeshLambertMaterial({ color: 0x665544 });
@@ -548,24 +525,6 @@ export function createTownCenter(scene) {
     scene.add(bulb);
   }
 
-  // --- Benches (3, near fountain) ---
-  const benchMat = new THREE.MeshLambertMaterial({ color: 0x665544 });
-  const benchPositions = [
-    [3, 12], [-3, 12], [0, 15],
-  ];
-  for (const [bx, bz] of benchPositions) {
-    const by = getTerrainHeight(bx, bz);
-    const group = new THREE.Group();
-    group.position.set(bx, by, bz);
-
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.4, 0.5), benchMat);
-    seat.position.y = 0.45;
-    seat.castShadow = true;
-    group.add(seat);
-
-    scene.add(group);
-    worldObjects.push({ mesh: group, material: benchMat, type: 'bench', targetColor: BENCH_COLOR, x: bx, z: bz });
-  }
 }
 
 // Per-frame update: color world objects based on nearby building color

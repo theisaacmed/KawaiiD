@@ -37,6 +37,17 @@ const SECONDARY_ROADS = [
   { x: -36, z: 117, w: 3, d: 24 },
   { x: -72, z: -36, w: 3, d: 30 },
   { x: -90, z: -24, w: 24, d: 3 },
+  // Additional grid roads
+  { x: 0, z: 48, w: 60, d: 3 },
+  { x: 120, z: -24, w: 60, d: 3 },
+  { x: 108, z: -12, w: 3, d: 36 },
+  { x: 108, z: 60, w: 36, d: 3 },
+  { x: -42, z: 72, w: 60, d: 3 },
+  { x: -72, z: 96, w: 3, d: 24 },
+  { x: -30, z: -72, w: 60, d: 3 },
+  { x: -60, z: 114, w: 3, d: 30 },
+  { x: 0, z: 18, w: 48, d: 3 },
+  { x: 48, z: 90, w: 36, d: 3 },
 ];
 
 const ALLEYS = [
@@ -352,6 +363,16 @@ export function applySidewalkOffset(path) {
     });
   }
   return result;
+}
+
+/**
+ * Reset the pathfinding graph so it rebuilds on next findPath() call.
+ * Use after dynamically adding roads or when NPC positions have changed.
+ */
+export function resetGraph() {
+  nodes.length = 0;
+  nodeMap.clear();
+  graphBuilt = false;
 }
 
 // Get the graph node count (for debugging)

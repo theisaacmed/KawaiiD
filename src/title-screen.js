@@ -58,7 +58,7 @@ export function showTitleScreen(hasSaveFn, clearSaveFn, renderer, scene) {
       textShadow: '0 0 40px rgba(100,180,255,0.3), 0 0 80px rgba(255,107,157,0.15)',
       textTransform: 'uppercase',
     });
-    title.textContent = 'Kawaii Dealer';
+    title.textContent = 'Gray V.0001 Prototype';
     overlay.appendChild(title);
 
     // Subtitle
@@ -154,7 +154,7 @@ export function showTitleScreen(hasSaveFn, clearSaveFn, renderer, scene) {
       fontSize: '10px', color: '#333',
       letterSpacing: '1px',
     });
-    credit.textContent = 'v1.0';
+    credit.textContent = 'Gray V.0001 Prototype';
     overlay.appendChild(credit);
 
     document.body.appendChild(overlay);

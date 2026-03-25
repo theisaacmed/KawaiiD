@@ -47,18 +47,18 @@ function seedRandom(x, z) {
 function pickTemplate(district, btype, rng) {
   // Some btypes have hardcoded template mappings
   const btypeMap = {
-    'suburb_house': 'basicHouse',
-    'fancy_house': 'basicHouse',  // gets extra detail in buildings.js
+    'suburb_house': null,  // use district weights for variety
+    'fancy_house': null,
     'cottage': 'cottage',
-    'nt_residential': 'basicHouse',
-    'shop': 'shop',
-    'dt_shop': 'shop',
+    'nt_residential': null,  // use district weights for variety
+    'shop': null,  // use district weights for variety
+    'dt_shop': null,  // use district weights for variety
     'restaurant': 'restaurant',
-    'apartment': 'apartmentBlock',
-    'office': 'office',
-    'uptown_office': 'office',
-    'uptown_shop': 'shop',
-    'commercial': 'office',
+    'apartment': null,  // use district weights for variety
+    'office': null,  // use district weights for variety
+    'uptown_office': null,
+    'uptown_shop': null,
+    'commercial': null,
     'hotel': 'office',
     'tower_corp': 'tower',
     'tower_service': 'warehouse',
@@ -105,12 +105,32 @@ function pickTemplate(district, btype, rng) {
 
   // For district-specific flavor, prefer certain templates
   if (district === 'burbs' && chosenCategory === 'residential') {
-    // Prefer cottage and basicHouse in burbs
-    const burbResidential = ['basicHouse', 'cottage', 'basicHouse', 'townhouse'];
+    const burbResidential = ['basicHouse', 'cottage', 'basicHouse', 'duplex', 'townhouse', 'cottage'];
     return burbResidential[Math.floor(rng.next() * burbResidential.length)];
   }
+  if (district === 'town' && chosenCategory === 'residential') {
+    const townResidential = ['townhouse', 'rowhouse', 'apartmentBlock', 'duplex', 'basicHouse', 'rowhouse'];
+    return townResidential[Math.floor(rng.next() * townResidential.length)];
+  }
+  if (district === 'town' && chosenCategory === 'commercial') {
+    const townCommercial = ['shop', 'restaurant', 'gallery', 'shop', 'loft'];
+    return townCommercial[Math.floor(rng.next() * townCommercial.length)];
+  }
+  if (district === 'downtown' && chosenCategory === 'commercial') {
+    const dtCommercial = ['office', 'loft', 'gallery', 'shop', 'office', 'restaurant'];
+    return dtCommercial[Math.floor(rng.next() * dtCommercial.length)];
+  }
   if (district === 'uptown' && chosenCategory === 'residential') {
-    return 'apartmentBlock'; // tall apartments in uptown
+    const uptownRes = ['apartmentBlock', 'loft', 'apartmentBlock'];
+    return uptownRes[Math.floor(rng.next() * uptownRes.length)];
+  }
+  if (district === 'uptown' && chosenCategory === 'commercial') {
+    const uptownComm = ['gallery', 'office', 'shop', 'loft'];
+    return uptownComm[Math.floor(rng.next() * uptownComm.length)];
+  }
+  if (district === 'northtown' && chosenCategory === 'residential') {
+    const ntRes = ['basicHouse', 'duplex', 'cottage', 'rowhouse', 'basicHouse'];
+    return ntRes[Math.floor(rng.next() * ntRes.length)];
   }
   if (district === 'tower' && chosenCategory === 'unique') {
     return 'tower';
@@ -124,9 +144,9 @@ function pickTemplate(district, btype, rng) {
 // Returns modified { w, h, d } with ±variations
 // ============================================================
 function applyVariations(b, rng) {
-  const hVar = 0.2;  // ±20% height
-  const wVar = 0.15; // ±15% width
-  const dVar = 0.10; // ±10% depth
+  const hVar = 0.3;  // ±30% height
+  const wVar = 0.2;  // ±20% width
+  const dVar = 0.15; // ±15% depth
 
   return {
     w: b.w * (1 + (rng.next() - 0.5) * 2 * wVar),

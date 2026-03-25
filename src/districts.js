@@ -204,12 +204,8 @@ export function createDistricts(scene) {
   sceneRef = scene;
   BARRIERS.length = 0;
 
-  for (const def of BARRIER_DEFS) {
-    const district = DISTRICTS[def.district];
-    if (district && !district.unlocked) {
-      BARRIERS.push(createBarrier(scene, def));
-    }
-  }
+  // Barriers disabled — districts are open
+
 }
 
 // ========== UNLOCK LOGIC ==========

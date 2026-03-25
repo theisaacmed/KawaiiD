@@ -22,25 +22,7 @@ function noise2D(x, y) {
 // ========== TERRAIN HEIGHT ==========
 // Returns the world-Y for a given x,z — used by buildings, NPCs, player, and the terrain mesh itself.
 export function getTerrainHeight(x, z) {
-  // Base rolling hills
-  let h = noise2D(x * 0.008, z * 0.008) * 2.5;
-  h += noise2D(x * 0.022, z * 0.022) * 0.8;
-
-  // Uptown hill — center (102, 48), smooth peak
-  const uptownDist = Math.sqrt((x - 102) ** 2 + (z - 48) ** 2);
-  if (uptownDist < 48) h += (1 - uptownDist / 48) * 5;
-
-  // Ruins depression — sunken south zone
-  if (z < -60) h -= 2 * Math.min(1, (-60 - z) / 30);
-
-  // Flatten Main Street (x ≈ 0)
-  const msDist = Math.abs(x);
-  if (msDist < 4) h *= msDist / 4;
-
-  // Flatten port/waterfront (north)
-  if (z > 80) h *= Math.max(0, 1 - (z - 80) / 40);
-
-  return h;
+  return 0;
 }
 
 // ========== OCEAN UPDATE ==========

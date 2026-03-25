@@ -14,7 +14,7 @@ const NPC_APPEARANCE = {
   // === TOWN ===
   Mei: {
     heightScale: 0.92, widthScale: 0.90,
-    skinTone: 0xEAC9A0, hairStyle: 'short', hairColor: 0x3D2B1F,
+    skinTone: 0xEAC9A0, hairStyle: 'long', hairColor: 0x3D2B1F,
     accessory: 'beret', accessoryColor: 0xF4A0B0, accessoryGrayColor: 0x8A7A7E,
     personalityColor: 0xF4A0B0,
   },
@@ -41,6 +41,25 @@ const NPC_APPEARANCE = {
     skinTone: 0xC0A080, hairStyle: 'short', hairColor: 0x1A1A2A,
     accessory: 'sunglasses', accessoryColor: 0x181818, accessoryGrayColor: 0x303030,
     personalityColor: 0x8888DD,
+  },
+  // === TOWN EXTRAS ===
+  Rin: {
+    heightScale: 0.76, widthScale: 0.73,
+    skinTone: 0xF0D8B8, hairStyle: 'spiky', hairColor: 0x4A3A20,
+    accessory: 'backpack', accessoryColor: 0xE06030, accessoryGrayColor: 0x787060,
+    personalityColor: 0xE08040, headScale: 1.14,
+  },
+  Fumio: {
+    heightScale: 0.92, widthScale: 1.00,
+    skinTone: 0xC0A888, hairStyle: 'bald', hairColor: 0xB0B0A8,
+    accessory: 'glasses', accessoryColor: 0x888888, accessoryGrayColor: 0x686868,
+    personalityColor: 0xA09878, hunch: true,
+  },
+  Hana: {
+    heightScale: 0.96, widthScale: 0.93,
+    skinTone: 0xE8C8A0, hairStyle: 'ponytail', hairColor: 0x6A3A20,
+    accessory: 'scarf', accessoryColor: 0xC87050, accessoryGrayColor: 0x887068,
+    personalityColor: 0xD08860,
   },
   // === DOWNTOWN ===
   Ren: {
@@ -132,7 +151,7 @@ const NPC_APPEARANCE = {
   },
   Polly: {
     heightScale: 0.88, widthScale: 0.90,
-    skinTone: 0xF0D0C0, hairStyle: 'short', hairColor: 0xE870A0,
+    skinTone: 0xF0D0C0, hairStyle: 'pigtails', hairColor: 0xE870A0,
     accessory: 'none', accessoryColor: 0xF870B0, accessoryGrayColor: 0x88787E,
     personalityColor: 0xF870B0,
   },
@@ -177,7 +196,7 @@ const NPC_APPEARANCE = {
   },
   Marina: {
     heightScale: 0.98, widthScale: 0.97,
-    skinTone: 0xB8906A, hairStyle: 'short', hairColor: 0x4A3020,
+    skinTone: 0xB8906A, hairStyle: 'ponytail', hairColor: 0x4A3020,
     accessory: 'none', accessoryColor: 0x888888, accessoryGrayColor: 0x787878,
     personalityColor: 0x40A0B0,
   },
@@ -187,6 +206,38 @@ const NPC_APPEARANCE = {
     skinTone: 0xD8B888, hairStyle: 'short', hairColor: 0x2A2A2A,
     accessory: 'badge', accessoryColor: 0xD0D0E0, accessoryGrayColor: 0x808090,
     personalityColor: 0x8090D0,
+  },
+  // === SPECIAL — near spawn ===
+  Rina: {
+    heightScale: 0.95, widthScale: 0.90,
+    skinTone: 0xC8A070, hairStyle: 'long', hairColor: 0x0A0A0A,
+    accessory: 'camera', accessoryColor: 0x303030, accessoryGrayColor: 0x505050,
+    personalityColor: 0xE06888,
+  },
+  // === REBUILDER CREW — appear at ruins after 100% color ===
+  Rebuilder1: {
+    heightScale: 1.08, widthScale: 1.10,
+    skinTone: 0xC8A882, hairStyle: 'short', hairColor: 0x3A2A1A,
+    accessory: 'hardhat', accessoryColor: 0xE8D050, accessoryGrayColor: 0x8A8A78,
+    personalityColor: 0xE8D050,
+  },
+  Rebuilder2: {
+    heightScale: 1.02, widthScale: 1.05,
+    skinTone: 0xDDBB99, hairStyle: 'short', hairColor: 0x1A1A1A,
+    accessory: 'hardhat', accessoryColor: 0xF08030, accessoryGrayColor: 0x8A7A68,
+    personalityColor: 0xF08030,
+  },
+  Rebuilder3: {
+    heightScale: 0.96, widthScale: 0.98,
+    skinTone: 0xE8C8A0, hairStyle: 'spiky', hairColor: 0x4A3020,
+    accessory: 'hardhat', accessoryColor: 0xE8D050, accessoryGrayColor: 0x8A8A78,
+    personalityColor: 0xE8D050,
+  },
+  Rebuilder4: {
+    heightScale: 1.05, widthScale: 1.12,
+    skinTone: 0xA87850, hairStyle: 'short', hairColor: 0x888880,
+    accessory: 'hardhat', accessoryColor: 0xF08030, accessoryGrayColor: 0x8A7A68,
+    personalityColor: 0xF08030,
   },
 };
 
@@ -470,7 +521,7 @@ function buildAccessory(type, color, headRadius) {
       break;
     }
     case 'glasses': {
-      // Two thin torus rings (wire glasses)
+      // Two thin torus rings (wire glasses) facing forward
       mainMat = mat(color);
       for (const sx of [-0.08, 0.08]) {
         const frame = new THREE.Mesh(
@@ -478,12 +529,12 @@ function buildAccessory(type, color, headRadius) {
           mainMat
         );
         frame.position.set(sx, 0, headRadius * 0.9);
-        frame.rotation.y = Math.PI / 2;
+        frame.rotation.x = Math.PI / 2;
         g.add(frame);
       }
       // Bridge
       const bridge = new THREE.Mesh(
-        new THREE.BoxGeometry(0.06, 0.012, 0.012),
+        new THREE.BoxGeometry(0.06, 0.015, 0.015),
         mainMat
       );
       bridge.position.set(0, 0, headRadius * 0.88);
@@ -539,6 +590,29 @@ function buildAccessory(type, color, headRadius) {
       g.add(center);
       break;
     }
+    case 'camera': {
+      // Small camera hanging around neck
+      mainMat = mat(color);
+      // Strap (thin cylinder ring around neck)
+      const strap = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.4, 0.04), mainMat);
+      strap.position.set(0.12, -0.15, 0.18);
+      g.add(strap);
+      const strap2 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.4, 0.04), mainMat);
+      strap2.position.set(-0.12, -0.15, 0.18);
+      g.add(strap2);
+      // Camera body
+      const camBody = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.1), mainMat);
+      camBody.position.set(0, -0.34, 0.22);
+      camBody.castShadow = true;
+      g.add(camBody);
+      // Lens
+      const lensMat = mat(0x222222);
+      const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.06, 8), lensMat);
+      lens.rotation.x = Math.PI / 2;
+      lens.position.set(0, -0.34, 0.28);
+      g.add(lens);
+      break;
+    }
     case 'cap': {
       // Sailor-style flat cap
       mainMat = mat(color);
@@ -569,6 +643,80 @@ function buildAccessory(type, color, headRadius) {
   }
 
   return { group: g, material: mainMat };
+}
+
+// ============================================================
+// REBUILDER TOOL BUILDERS — shovel, pickaxe, hammer, saw
+// Returns a THREE.Group to attach to an arm pivot
+// ============================================================
+
+export function buildTool(toolType) {
+  const g = new THREE.Group();
+  const woodMat = mat(0x8B5A2B);
+  const metalMat = mat(0xA0A0A0);
+
+  switch (toolType) {
+    case 'shovel': {
+      // Handle
+      const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.7, 6), woodMat);
+      handle.position.y = -0.35;
+      handle.castShadow = true;
+      g.add(handle);
+      // Blade
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 0.02), metalMat);
+      blade.position.set(0, -0.72, 0.02);
+      blade.rotation.x = -0.15;
+      blade.castShadow = true;
+      g.add(blade);
+      break;
+    }
+    case 'pickaxe': {
+      // Handle
+      const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.65, 6), woodMat);
+      handle.position.y = -0.32;
+      handle.castShadow = true;
+      g.add(handle);
+      // Head — horizontal bar
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.05, 0.04), metalMat);
+      head.position.set(0, -0.66, 0);
+      head.castShadow = true;
+      g.add(head);
+      // Pick point
+      const point = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.12, 4), metalMat);
+      point.rotation.z = Math.PI / 2;
+      point.position.set(0.20, -0.66, 0);
+      g.add(point);
+      break;
+    }
+    case 'hammer': {
+      // Handle
+      const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.5, 6), woodMat);
+      handle.position.y = -0.25;
+      handle.castShadow = true;
+      g.add(handle);
+      // Head
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.08, 0.06), metalMat);
+      head.position.set(0, -0.52, 0);
+      head.castShadow = true;
+      g.add(head);
+      break;
+    }
+    case 'saw': {
+      // Handle
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.10, 0.03), woodMat);
+      handle.position.y = -0.12;
+      handle.castShadow = true;
+      g.add(handle);
+      // Blade
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.40, 0.12), metalMat);
+      blade.position.set(0, -0.38, 0);
+      blade.castShadow = true;
+      g.add(blade);
+      break;
+    }
+  }
+
+  return g;
 }
 
 // ============================================================
@@ -629,21 +777,21 @@ export function buildNPCModel(npcName) {
   neck.material = skinMat;
   group.add(neck);
 
-  // --- EYES ---
-  const eyeY = headY + headR * 0.1;
+  // --- EYES (parented to head so they follow head rotation) ---
+  // Positions are in head-local space (head center = origin)
+  const eyeLocalY = headR * 0.1;
   const eyeForward = headR * 0.88;
   const eyeSide = headR * 0.38;
-  const eyeMat = new THREE.MeshLambertMaterial({ color: 0x1A1A1A });
-  const eyeL = sphere(0.035, 0x1A1A1A, -eyeSide, eyeY, eyeForward);
-  const eyeR = sphere(0.035, 0x1A1A1A, eyeSide, eyeY, eyeForward);
-  eyeL.material = eyeL.material; // will be updated for expression
-  eyeR.material = eyeR.material;
-  group.add(eyeL);
-  group.add(eyeR);
+  const eyeL = sphere(0.035, 0x1A1A1A, -eyeSide, eyeLocalY, eyeForward);
+  const eyeR = sphere(0.035, 0x1A1A1A, eyeSide, eyeLocalY, eyeForward);
+  head.add(eyeL);
+  head.add(eyeR);
 
   // Eye highlights (tiny white sphere)
-  group.add(sphere(0.014, 0xFFFFFF, -eyeSide + 0.012, eyeY + 0.018, eyeForward + 0.015));
-  group.add(sphere(0.014, 0xFFFFFF,  eyeSide + 0.012, eyeY + 0.018, eyeForward + 0.015));
+  const highlightL = sphere(0.014, 0xFFFFFF, -eyeSide + 0.012, eyeLocalY + 0.018, eyeForward + 0.015);
+  const highlightR = sphere(0.014, 0xFFFFFF,  eyeSide + 0.012, eyeLocalY + 0.018, eyeForward + 0.015);
+  head.add(highlightL);
+  head.add(highlightR);
 
   // --- SMILE (hidden by default, shown at relationship 3+) ---
   const smileMat = new THREE.MeshLambertMaterial({ color: 0x331111 });
@@ -651,51 +799,57 @@ export function buildNPCModel(npcName) {
     new THREE.TorusGeometry(0.055, 0.013, 6, 10, Math.PI),
     smileMat
   );
-  smile.position.set(0, eyeY - headR * 0.3, eyeForward - 0.01);
+  smile.position.set(0, eyeLocalY - headR * 0.3, eyeForward - 0.01);
   smile.rotation.z = Math.PI;
   smile.rotation.x = 0.15;
   smile.visible = false;
-  group.add(smile);
+  head.add(smile);
 
   // --- BLUSH MARKS (hidden, shown at max relationship) ---
   const blushMat = new THREE.MeshLambertMaterial({ color: 0xF0A0A0, transparent: true, opacity: 0.6 });
   const blushL = new THREE.Mesh(new THREE.CircleGeometry(0.03, 8), blushMat);
-  blushL.position.set(-eyeSide - 0.04, eyeY - 0.04, eyeForward - 0.01);
+  blushL.position.set(-eyeSide - 0.04, eyeLocalY - 0.04, eyeForward - 0.01);
   blushL.rotation.y = -0.25;
   blushL.visible = false;
-  group.add(blushL);
+  head.add(blushL);
 
   const blushR = new THREE.Mesh(new THREE.CircleGeometry(0.03, 8), blushMat);
-  blushR.position.set(eyeSide + 0.04, eyeY - 0.04, eyeForward - 0.01);
+  blushR.position.set(eyeSide + 0.04, eyeLocalY - 0.04, eyeForward - 0.01);
   blushR.rotation.y = 0.25;
   blushR.visible = false;
-  group.add(blushR);
+  head.add(blushR);
 
-  // --- HAIR ---
+  // --- HAIR (parented to head) ---
   const hairGroup = buildHair(app.hairStyle, app.hairColor, headR, ws);
-  hairGroup.position.y = headY;
+  // Hair position is relative to head center (0,0,0)
   hairGroup.traverse(c => { if (c.isMesh) c.material = hairMat; });
-  group.add(hairGroup);
+  head.add(hairGroup);
 
   // --- ACCESSORY ---
   let accessoryMat = null;
+  let accessoryGroup = null;
+  const headAccessories = ['beret', 'hardhat', 'beanie', 'cap', 'hood', 'flower', 'sunglasses', 'glasses'];
   if (app.accessory && app.accessory !== 'none') {
     const { group: accGroup, material: accMat } = buildAccessory(app.accessory, app.accessoryGrayColor, headR);
     accessoryMat = accMat;
+    accessoryGroup = accGroup;
 
-    // Positional offset depends on accessory type
-    if (['beret', 'hardhat', 'beanie', 'cap', 'hood', 'flower'].includes(app.accessory)) {
-      accGroup.position.y = headY;
+    // Head-level accessories are parented to head (follow rotation)
+    if (headAccessories.includes(app.accessory)) {
+      // Position relative to head center (0,0,0)
+      head.add(accGroup);
     } else if (app.accessory === 'scarf') {
       accGroup.position.y = headY - headR - 0.05 * hs; // neck level
+      group.add(accGroup);
     } else if (['apron', 'badge'].includes(app.accessory)) {
-      accGroup.position.y = torso.position.y; // torso level
-    } else if (['sunglasses', 'glasses'].includes(app.accessory)) {
-      accGroup.position.y = eyeY;
+      accGroup.position.y = torso.position.y;
+      group.add(accGroup);
     } else if (app.accessory === 'backpack') {
       accGroup.position.y = torso.position.y;
+      group.add(accGroup);
+    } else {
+      group.add(accGroup);
     }
-    group.add(accGroup);
   }
 
   // --- ARM PIVOTS (at shoulder) ---
@@ -782,11 +936,22 @@ export function buildNPCModel(npcName) {
   rightFoot.castShadow = true;
   rightLegPivot.add(rightFoot);
 
-  // --- HUNCH for old NPCs (Tomas, Taro) ---
+  // --- HUNCH for old NPCs (Tomas, Taro, Fumio) ---
   if (app.hunch) {
     torso.rotation.x = 0.18;
+    // Shift head forward — eyes, hair, accessories follow automatically (parented to head)
     head.position.z += 0.08;
+    neck.position.z += 0.04;
   }
+
+  // --- GROUND SHADOW DISC (subtle grounding circle) ---
+  const shadowDisc = new THREE.Mesh(
+    new THREE.CircleGeometry(0.3 * ws, 8),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18 })
+  );
+  shadowDisc.rotation.x = -Math.PI / 2;
+  shadowDisc.position.y = 0.01;
+  group.add(shadowDisc);
 
   // --- STORE PART REFERENCES for animation ---
   const parts = {

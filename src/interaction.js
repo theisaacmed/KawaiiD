@@ -3,29 +3,18 @@
 // Waypoint meetups: NPC always accepts when you reach their requested meetup point
 
 import * as THREE from 'three';
-import { addItem, isFull, hasItem, hasAnyPlushie } from './inventory.js';
+import { addItem, isFull } from './inventory.js';
 import { showPrompt, hidePrompt, showProgress, hideProgress, showInventoryFull } from './hud.js';
-import { getNearestNPC, npcLine, resetNPCPurchases, getRelationship } from './npc.js';
+import { getNearestNPC, resetNPCPurchases } from './npc.js';
 import { openDealPanel, isDealOpen, setLocationRefuseCallback } from './dealing.js';
 import { getActiveWaypointNearPlayer, completeWaypoint, isPhoneVisible, closePhone } from './phone.js';
 import { spawnSearchDust } from './particles.js';
 import { canSleep, startSleep, isSleepingNow } from './time-system.js';
-import { isNearGachaMachine, isGachaUnlocked, openUI as openGachaUI, isGachaUIOpen } from './gacha.js';
 import { playSearchScrape, playItemFound } from './audio.js';
-import { isNearKit, isKitAvailable, openShop, isShopOpen, isNearYuna, isYunaShopOpen, openYunaShop } from './shop.js';
-import { isNearPrintStation, isPrintStationOpen, openUI as openPrintStationUI } from './stations/print-station.js';
-import { isNearCuttingTable, isCuttingTableOpen, openCuttingTableUI } from './stations/cutting-table.js';
-import { isNearSewingMachine, isSewingMachineOpen, openSewingMachineUI } from './stations/sewing-machine.js';
-import { isNearStuffingStation, isStuffingStationOpen, openStuffingStationUI } from './stations/stuffing-station.js';
-import { isNearStationShop, isStationShopOpen, openStationShopUI } from './station-shop.js';
-import { isNearGus, isGusAvailable, openOrderUI, isSmuggleUIOpen, isNearCrate, collectCrate, closeOrderUI } from './smuggling.js';
-import { isAshOnDuty, isNearRuinsKid, isRuinsKidHired, isPipRecruited, isPipHired, recruitPip, hirePip, firePip, onPileSearched } from './scavenger-system.js';
 import { isTutorialDealStep } from './tutorial.js';
-import { isNearWorkshopBuilding, isWorkshopPurchased, openStorageUI, isWorkshopStorageOpen } from './workshop.js';
-import { getNearestDecorSpot, openDecorUI, isDecorUIOpen } from './apartment-decor.js';
 
 const SEARCH_RADIUS = 3;
-const SEARCH_DURATION = 3; // seconds
+const SEARCH_DURATION = 2.5; // seconds (snappier feel)
 const STREET_REFUSE_CHANCE = 0.40; // 40% chance NPC refuses cold approach
 const BED_RADIUS = 2.5; // how close to be to the bed
 
@@ -49,6 +38,40 @@ let sceneRef = null;
 // Street refusal toast
 let refuseToast = null;
 let refuseTimeout = null;
+
+// Found item toast
+let foundToast = null;
+let foundTimeout = null;
+
+function showFoundToast(type) {
+  if (!foundToast) {
+    foundToast = document.createElement('div');
+    Object.assign(foundToast.style, {
+      position: 'fixed', bottom: '140px', left: '50%',
+      transform: 'translateX(-50%) scale(0.8)',
+      background: 'rgba(40,160,100,0.9)', color: '#fff',
+      fontFamily: 'monospace', fontSize: '15px', fontWeight: 'bold',
+      padding: '10px 22px', borderRadius: '8px',
+      pointerEvents: 'none', zIndex: '160',
+      display: 'none',
+      transition: 'opacity 0.4s, transform 0.3s',
+      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+    });
+    document.body.appendChild(foundToast);
+  }
+  const label = type === 'sticker' ? 'Old Sticker' : 'Old Plushie';
+  const icon = type === 'sticker' ? '\u2B50' : '\uD83E\uDDF8';
+  foundToast.textContent = `Found: ${label} ${icon}`;
+  foundToast.style.display = 'block';
+  foundToast.style.opacity = '1';
+  foundToast.style.transform = 'translateX(-50%) scale(1)';
+  clearTimeout(foundTimeout);
+  foundTimeout = setTimeout(() => {
+    foundToast.style.opacity = '0';
+    foundToast.style.transform = 'translateX(-50%) scale(0.9)';
+    setTimeout(() => { foundToast.style.display = 'none'; }, 400);
+  }, 1800);
+}
 
 function createRefuseToast() {
   refuseToast = document.createElement('div');
@@ -90,103 +113,13 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
   createSleepConfirm();
 
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow() && !isGachaUIOpen() && !isShopOpen() && !isYunaShopOpen() && !isPrintStationOpen() && !isCuttingTableOpen() && !isSewingMachineOpen() && !isStuffingStationOpen() && !isStationShopOpen() && !isSmuggleUIOpen() && !isWorkshopStorageOpen() && !isDecorUIOpen()) {
+    if (e.code === 'KeyE' && !searching && !isDealOpen() && !isSleepingNow()) {
       // Close phone if open
       if (isPhoneVisible()) closePhone();
 
       // Handle sleep confirmation dialog
       if (sleepConfirmVisible) {
         confirmSleep(true);
-        return;
-      }
-
-      // Check if near Industrial workshop building
-      if (isWorkshopPurchased() && isNearWorkshopBuilding(playerRef.position)) {
-        openStorageUI();
-        return;
-      }
-
-      // Check if near an apartment decoration spot
-      const decorSpot = getNearestDecorSpot(playerRef.position);
-      if (decorSpot) {
-        openDecorUI(decorSpot.id);
-        return;
-      }
-
-      // Check if near plushie workshop stations
-      if (isNearCuttingTable(playerRef.position)) {
-        openCuttingTableUI();
-        return;
-      }
-      if (isNearSewingMachine(playerRef.position)) {
-        openSewingMachineUI();
-        return;
-      }
-      if (isNearStuffingStation(playerRef.position)) {
-        openStuffingStationUI();
-        return;
-      }
-
-      // Check if near print station
-      if (isNearPrintStation(playerRef.position)) {
-        openPrintStationUI();
-        return;
-      }
-
-      // Check if near station shop counter
-      if (isNearStationShop(playerRef.position)) {
-        openStationShopUI();
-        return;
-      }
-
-      // Check if near gacha machine (before bed, since they're close together)
-      if (isGachaUnlocked() && isNearGachaMachine(playerRef.position)) {
-        openGachaUI();
-        return;
-      }
-
-      // Check if near Kit's shop
-      if (isKitAvailable() && isNearKit(playerRef.position)) {
-        openShop();
-        return;
-      }
-
-      // Check if near Yuna's flower shop and relationship >= 2 (ink sales)
-      if (isNearYuna(playerRef.position)) {
-        const yunaRel = getRelationship('Yuna');
-        if (Math.floor(yunaRel.level) >= 2) {
-          openYunaShop();
-          return;
-        }
-      }
-
-      // Check if near Gus (smuggling orders)
-      if (isNearGus(playerRef.position)) {
-        if (isGusAvailable()) {
-          openOrderUI();
-        }
-        return;
-      }
-
-      // Check if near delivery crate
-      if (isNearCrate(playerRef.position)) {
-        collectCrate();
-        return;
-      }
-
-      // Check if near Pip (Ruins Kid scavenger)
-      if (isNearRuinsKid(playerRef.position)) {
-        if (!isPipRecruited()) {
-          if (hasAnyPlushie()) {
-            recruitPip();
-          } else {
-            showRefusal("Got a spare plushie? Give me one and I'll help out.");
-          }
-        } else if (isPipHired()) {
-          firePip();
-        } else {
-          hirePip();
-        }
         return;
       }
 
@@ -210,11 +143,6 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
       // Try NPC street encounter
       const nearNPC = getNearestNPC(npcs, playerRef.position);
       if (nearNPC) {
-        // Ash on scavenger duty — unavailable for deals
-        if (nearNPC.name === 'Ash' && isAshOnDuty()) {
-          showRefusal("I'm out on a run. Catch me after 4 PM.");
-          return;
-        }
         // Street encounter — chance of refusal (bypassed during tutorial deal step)
         if (!isTutorialDealStep() && nearNPC.purchaseCount >= nearNPC.maxPurchases) {
           showRefusal(nearNPC.limitLine);
@@ -227,7 +155,7 @@ export function initInteraction(player, ruinsPiles, zStart, npcList, scene) {
           showRefusal(refuseLine);
           return;
         }
-        openDealPanel(nearNPC);
+        openDealPanel(nearNPC, isTutorialDealStep());
         return;
       }
 
@@ -347,47 +275,23 @@ function cancelSearch() {
 }
 
 function completeSearch() {
-  // Loot table: products and materials
+  // Simplified loot table: only stickers and plushies (core loop)
   const roll = Math.random();
-  let type, subtype, count = 1;
+  let type, subtype;
 
-  if (roll < 0.25) {
-    // 25% — old sticker (scavenged, worth less than manufactured)
+  if (roll < 0.55) {
+    // 55% — old sticker
     type = 'sticker'; subtype = 'old';
-  } else if (roll < 0.45) {
-    // 20% — old plushie (scavenged, worn)
-    type = 'plushie'; subtype = 'old';
-  } else if (roll < 0.65) {
-    // 20% — sticker paper (2-4 sheets)
-    type = 'material'; subtype = 'sticker_paper';
-    count = 2 + Math.floor(Math.random() * 3); // 2, 3, or 4
-  } else if (roll < 0.80) {
-    // 15% — fabric scrap
-    type = 'material'; subtype = 'fabric_scrap';
-  } else if (roll < 0.90) {
-    // 10% — stuffing bag
-    type = 'material'; subtype = 'stuffing';
-  } else if (roll < 0.95) {
-    // 5% — capsule shell (rare)
-    type = 'material'; subtype = 'capsule_shell';
   } else {
-    // 5% — color ink (very rare, natural dyes in the ruins)
-    type = 'material'; subtype = 'color_ink';
+    // 45% — old plushie
+    type = 'plushie'; subtype = 'old';
   }
 
-  let added = false;
-  if (type === 'material') {
-    // Add multiple for sticker_paper, single for others
-    for (let i = 0; i < count; i++) {
-      if (addItem('material', subtype)) added = true;
-      else break;
-    }
-  } else {
-    added = addItem(type, subtype);
-  }
+  const added = addItem(type, subtype);
 
   if (added) {
-    playItemFound(type === 'material' ? 'sticker' : type); // reuse sticker sound for materials
+    playItemFound(type);
+    showFoundToast(type);
   } else {
     showInventoryFull();
   }
@@ -399,9 +303,6 @@ function completeSearch() {
   searchTarget.searched = true;
   searchTarget.glow.visible = false;
   searchTarget.light.visible = false;
-
-  // Track cumulative scavenge count for Pip unlock
-  onPileSearched();
 
   searching = false;
   searchTarget = null;
@@ -427,8 +328,8 @@ function checkRuinsTransition() {
 export function updateInteraction(dt) {
   if (!playerRef) return;
 
-  // Don't update prompts while deal panel, phone, or any station UI is open
-  if (isDealOpen() || isPrintStationOpen() || isCuttingTableOpen() || isSewingMachineOpen() || isStuffingStationOpen()) return;
+  // Don't update prompts while deal panel is open
+  if (isDealOpen()) return;
 
   checkRuinsTransition();
 
@@ -447,50 +348,15 @@ export function updateInteraction(dt) {
     }
   }
 
-  // Show prompt based on context
+  // Show prompt based on context (core only)
   if (isSleepingNow() || sleepConfirmVisible) return;
 
-  const nearCuttingTable = isNearCuttingTable(playerRef.position);
-  const nearSewingMachine = isNearSewingMachine(playerRef.position);
-  const nearStuffingStation = isNearStuffingStation(playerRef.position);
-  const nearPrintStation = isNearPrintStation(playerRef.position);
-  const nearGacha = isGachaUnlocked() && isNearGachaMachine(playerRef.position);
-  const nearKit = isKitAvailable() && isNearKit(playerRef.position);
-  const yunaRel = getRelationship('Yuna');
-  const nearYunaShop = isNearYuna(playerRef.position) && Math.floor(yunaRel.level) >= 2;
-  const nearGus = isNearGus(playerRef.position);
-  const nearCrate = isNearCrate(playerRef.position);
-  const nearRuinsKid = isNearRuinsKid(playerRef.position);
   const waypoint = getActiveWaypointNearPlayer(playerRef.position);
   const nearNPC = getNearestNPC(npcs, playerRef.position);
   const nearPile = getNearestSearchable();
   const nearBed = isNearBed();
 
-  if (nearCuttingTable && !searching) {
-    showPrompt('Press E to use Cutting Table');
-  } else if (nearSewingMachine && !searching) {
-    showPrompt('Press E to use Sewing Machine');
-  } else if (nearStuffingStation && !searching) {
-    showPrompt('Press E to use Stuffing Station');
-  } else if (nearPrintStation && !searching) {
-    showPrompt('Press E to use print station');
-  } else if (nearGacha && !searching) {
-    showPrompt('Press E to use gacha machine');
-  } else if (nearYunaShop && !searching) {
-    showPrompt("Press E to buy Yuna's ink");
-  } else if (nearKit && !searching) {
-    showPrompt('Press E to shop');
-  } else if (nearCrate && !searching) {
-    showPrompt('Press E to collect delivery');
-  } else if (nearRuinsKid && !searching) {
-    if (!isPipRecruited()) {
-      showPrompt(hasAnyPlushie() ? 'Press E to give plushie to Pip' : 'Press E to talk to Pip');
-    } else {
-      showPrompt(isPipHired() ? 'Press E to let Pip go' : 'Press E to hire Pip ($20/day)');
-    }
-  } else if (nearGus && !searching) {
-    showPrompt(isGusAvailable() ? 'Press E to order supplies' : 'Need higher trust with Gus');
-  } else if (nearBed && !searching) {
+  if (nearBed && !searching) {
     showPrompt('Press E to sleep');
   } else if (waypoint && !searching) {
     showPrompt('Press E to meet');

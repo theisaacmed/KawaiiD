@@ -1,5 +1,5 @@
 // NPC system — creation, behavior, personality, dialogue, schedules
-// 28 NPCs across 9 districts with social connections and referral unlocks
+// 31 NPCs across 9 districts with social connections and referral unlocks
 // NPCs move between locations throughout the day and go home at night (6 PM–6 AM)
 // Probability-based dealing: affinity scores, relationship levels, mood system
 
@@ -7,8 +7,9 @@ import * as THREE from 'three';
 import { getGameHour, isNPCActive, getDayNumber } from './time-system.js';
 import { getMeiTutorialOverride } from './tutorial.js';
 import { isDistrictUnlocked } from './districts.js';
-import { getOfficers } from './ace.js';
-import { getBuildingColors } from './color-system.js';
+// STRIPPED: ACE disabled
+// import { getOfficers } from './ace.js';
+import { getBuildingColors, getWorldColor } from './color-system.js';
 import { getTerrainHeight } from './world.js';
 import {
   hasRoutine, getRoutineState, getCurrentScheduleEntry, checkScheduleTransition,
@@ -17,7 +18,7 @@ import {
   getRoutineSaveData, restoreRoutineState,
 } from './npc-routines.js';
 import { buildGraph } from './npc-pathfinding.js';
-import { buildNPCModel, makeNPCLabel } from './npc-models.js';
+import { buildNPCModel, makeNPCLabel, buildTool } from './npc-models.js';
 import { animateNPCs, updateNPCLabels } from './npc-animation.js';
 import { getAllBuildingBlocks } from './buildings.js';
 
@@ -126,13 +127,9 @@ export function checkReferrals(npcName, totalDeals) {
   return null;
 }
 
-// Check if an NPC is available (considering referral locks)
+// All NPCs available in their district (referral gating stripped for core loop)
 function isNPCReferralUnlocked(name) {
-  if (name === 'Ash') return referralState.ashUnlocked;
-  if (name === 'Dex') return referralState.dexUnlocked;
-  if (name === 'Mika') return referralState.mikaUnlocked;
-  if (name === 'Dove') return referralState.doveUnlocked;
-  return true; // all others unlock with their district
+  return true;
 }
 
 // Get color spread modifiers for specific NPCs
@@ -145,8 +142,7 @@ export function getNPCColorModifier(npcName, itemType) {
   if (npcName === 'Mei') return { radiusMult: 1.0, incrementMult: 1.5 };
   // Nao's café radiates to neighbors
   if (npcName === 'Nao') return { radiusMult: 1.5, increment: null };
-  // Sora stockpiles — no color until event
-  if (npcName === 'Sora' && !referralState.soraEvent) return { radiusMult: 0, increment: 0 };
+  // Sora spreads color normally (event gating stripped)
   // Kenji — low individual impact
   if (npcName === 'Kenji') return { radiusMult: 0.5, increment: null };
   return null;
@@ -258,15 +254,9 @@ export function getNPCMood(npcName) {
 
 // ========== ACCEPTANCE PROBABILITY ==========
 
+// ACE disabled — officers never nearby
 function getNearestOfficerDist(npcWorldPos) {
-  const officers = getOfficers();
-  let minDist = Infinity;
-  for (const o of officers) {
-    const dx = o.group.position.x - npcWorldPos.x;
-    const dz = o.group.position.z - npcWorldPos.z;
-    minDist = Math.min(minDist, Math.sqrt(dx * dx + dz * dz));
-  }
-  return minDist;
+  return Infinity;
 }
 
 function getAreaColorAmount(npcWorldPos) {
@@ -387,6 +377,9 @@ const NPC_AFFINITIES = {
   Luna:    { sticker: 1, plushie: 1, gacha: 1 },
   Ash:     { sticker: 1, plushie: 1, gacha: 0 },
   Dex:     { sticker: 1, plushie: 1, gacha: 0 },
+  Rin:     { sticker: 2, plushie: 0, gacha: 2 },
+  Fumio:   { sticker: 0, plushie: 2, gacha: -1 },
+  Hana:    { sticker: 1, plushie: 1, gacha: 1 },
   // Downtown (5)
   Ren:     { sticker: 2, plushie: -1, gacha: 0 },
   Nao:     { sticker: 1, plushie: 1, gacha: 0 },
@@ -489,9 +482,9 @@ export function getAffinityAcceptLine(affinity) {
   }
 }
 
-// ========== NPC DATA — 28 NPCs across 9 districts ==========
+// ========== NPC DATA — 31 NPCs across 9 districts ==========
 const NPC_DATA = [
-  // ===================== TOWN (5 NPCs — starting area) =====================
+  // ===================== TOWN (8 NPCs — starting area) =====================
   {
     name: 'Mei',
     position: new THREE.Vector3(-6, 0, 9),
@@ -811,10 +804,199 @@ const NPC_DATA = [
     district: 'town',
   },
 
+  // ===================== TOWN EXTRAS (3 more town NPCs) =====================
+  {
+    name: 'Rin',
+    position: new THREE.Vector3(-18, 0, 18),
+    wants: ['sticker', 'gacha'],
+    gachaPreference: 'loves',
+    personality: 'generous',
+    offerRange: [0.60, 0.75],
+    counterThreshold: 0.15,
+    meetFactor: 0.70,
+    greetings: [
+      "Whoa, you got stuff?! Show me show me!",
+      "Hey! I'm collecting EVERYTHING cute!",
+      "My mom says I shouldn't talk to dealers but you seem cool!",
+    ],
+    wantText: "I want stickers and gacha!",
+    acceptLines: [
+      "YES! This is going on my backpack!",
+      "So cool!! Deal!",
+    ],
+    rejectLines: [
+      "Hmm, I don't want that one...",
+      "Do you have anything more sparkly?",
+    ],
+    counterAcceptLines: [
+      "Okay okay! Here's my allowance!",
+      "Fine! But only because it's SO cute!",
+    ],
+    counterRejectLines: [
+      "That's too much... I only have my allowance...",
+    ],
+    finalOfferLines: [
+      "This is literally all my coins. Please?",
+    ],
+    partingLines: [
+      "Come back tomorrow! I get more allowance!",
+      "Bye! I'm gonna show everyone at school!",
+    ],
+    dealDoneLines: [
+      "BEST. DAY. EVER!",
+      "Wait till Sota sees this!",
+    ],
+    limitLine: "I spent all my allowance already!",
+    streetRefuseLines: [
+      "Can't right now, my mom's watching!",
+      "Not yet! I'm on my way somewhere!",
+    ],
+    messageTemplates: [
+      "Hey!! Do you have {item}?? Meet at {location} PLEASE! :D",
+      "I NEED {item}!! I'll be at {location}! Bring {qty}!",
+    ],
+    meetupLocations: [
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'behind the shops', pos: [-12, 0, 8] },
+    ],
+    schedule: [
+      { start: 8, end: 12, pos: new THREE.Vector3(0, 0, 20) },
+      { start: 12, end: 16, pos: new THREE.Vector3(-12, 0, 15) },
+      { start: 16, end: 18, pos: new THREE.Vector3(-18, 0, 18) },
+    ],
+    homePos: new THREE.Vector3(-18, 0, 18),
+    district: 'town',
+  },
+  {
+    name: 'Fumio',
+    position: new THREE.Vector3(24, 0, 21),
+    wants: ['plushie'],
+    gachaPreference: 'refuses',
+    personality: 'fair',
+    offerRange: [0.70, 0.85],
+    counterThreshold: 0.18,
+    meetFactor: 0.60,
+    greetings: [
+      "Ah, you remind me of the old days... before the ban.",
+      "These old bones still know a good plushie when they see one.",
+      "My granddaughter used to love these. Come, let me see.",
+    ],
+    wantText: "Plushies... they remind me of better times.",
+    acceptLines: [
+      "This one... it's just like hers. I'll take it.",
+      "Wonderful craftsmanship. Deal.",
+    ],
+    rejectLines: [
+      "No, no... that's not what I'm looking for.",
+      "Gacha? Bah. I want something with soul.",
+    ],
+    counterAcceptLines: [
+      "Fair enough, young one. You drive a fair bargain.",
+      "Alright, alright. My pension can handle that.",
+    ],
+    counterRejectLines: [
+      "I'm on a fixed income, you know...",
+    ],
+    finalOfferLines: [
+      "That's all these old pockets have. Take it or leave it.",
+    ],
+    partingLines: [
+      "Come sit with me sometime. I have stories.",
+      "Take care, young one. Stay out of trouble.",
+    ],
+    dealDoneLines: [
+      "She would have loved this one.",
+      "Thank you. This means more than you know.",
+    ],
+    limitLine: "That's enough for today. My shelf is getting full.",
+    streetRefuseLines: [
+      "Not now, I'm enjoying the quiet.",
+      "Maybe after my walk...",
+    ],
+    messageTemplates: [
+      "Young one, I heard you might have {item}. Meet me at {location}? These old legs don't go far.",
+      "Looking for {item}. I'll be at {location} on my bench. Take your time.",
+    ],
+    meetupLocations: [
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'the east bench', pos: [18, 0, 21] },
+    ],
+    schedule: [
+      { start: 9, end: 12, pos: new THREE.Vector3(6, 0, 18) },
+      { start: 12, end: 15, pos: new THREE.Vector3(0, 0, 20) },
+      { start: 15, end: 18, pos: new THREE.Vector3(24, 0, 21) },
+    ],
+    homePos: new THREE.Vector3(24, 0, 21),
+    district: 'town',
+  },
+  {
+    name: 'Hana',
+    position: new THREE.Vector3(-6, 0, 24),
+    wants: ['sticker', 'plushie', 'gacha'],
+    gachaPreference: 'curious',
+    personality: 'generous',
+    offerRange: [0.65, 0.80],
+    counterThreshold: 0.12,
+    meetFactor: 0.55,
+    greetings: [
+      "Shhh, I'm supposed to be grocery shopping right now.",
+      "Oh! You have cute things? My kids would die!",
+      "Don't tell my husband, but I love this stuff.",
+    ],
+    wantText: "I'll buy anything cute — it's for my kids!",
+    acceptLines: [
+      "Perfect! My daughter's gonna love this!",
+      "Oh, this is adorable! Done!",
+    ],
+    rejectLines: [
+      "Hmm, not quite right for my kids...",
+      "Maybe something else?",
+    ],
+    counterAcceptLines: [
+      "Okay, that's within the grocery budget... sort of!",
+      "Deal! I'll hide it in the shopping bags!",
+    ],
+    counterRejectLines: [
+      "I can't... my husband checks the receipts...",
+    ],
+    finalOfferLines: [
+      "That's all the 'grocery money' I can spare!",
+    ],
+    partingLines: [
+      "Gotta go before anyone notices! Bye!",
+      "Same time next week? The kids burn through these!",
+    ],
+    dealDoneLines: [
+      "They're gonna be so happy!",
+      "Worth every coin. Mom of the year!",
+    ],
+    limitLine: "I really need to buy actual groceries now...",
+    streetRefuseLines: [
+      "Not now, I'm with the family!",
+      "Later! My husband's right there!",
+    ],
+    messageTemplates: [
+      "Hey, my kids are asking for {item} again. Can you meet at {location}? Quick deal!",
+      "Need {qty} {item} for the kids! {location} works — make it fast!",
+    ],
+    meetupLocations: [
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'the west side', pos: [-22, 0, 12] },
+      { name: 'near the shops', pos: [-12, 0, 8] },
+    ],
+    schedule: [
+      { start: 9, end: 12, pos: new THREE.Vector3(-12, 0, 12) },
+      { start: 12, end: 15, pos: new THREE.Vector3(0, 0, 20) },
+      { start: 15, end: 18, pos: new THREE.Vector3(-6, 0, 24) },
+    ],
+    homePos: new THREE.Vector3(-6, 0, 24),
+    district: 'town',
+  },
+
   // ===================== DOWNTOWN (5 NPCs — unlocks at 15 deals) =====================
   {
     name: 'Ren',
-    position: new THREE.Vector3(-9, 0, 57),
+    position: new THREE.Vector3(-9, 0, 27),
     wants: ['sticker'],
     gachaPreference: 'curious',
     personality: 'fair',
@@ -867,21 +1049,21 @@ const NPC_DATA = [
       "Big wall, big plans. Got {qty} {item}? Meet at {location}.",
     ],
     meetupLocations: [
-      { name: 'the market alley', pos: [-8, 0, 130] },
-      { name: 'behind the clock tower', pos: [12, 0, 112] },
-      { name: 'the south wall', pos: [5, 0, 90] },
+      { name: 'the north alley', pos: [-12, 0, 28] },
+      { name: 'the west square', pos: [-22, 0, 12] },
+      { name: 'the south wall', pos: [5, 0, -4] },
     ],
     schedule: [
-      { start: 6, end: 10, pos: new THREE.Vector3(-9, 0, 55.2) },
-      { start: 10, end: 15, pos: new THREE.Vector3(4.8, 0, 64.8) },
-      { start: 15, end: 18, pos: new THREE.Vector3(-9, 0, 57) },
+      { start: 6, end: 10, pos: new THREE.Vector3(-9, 0, 25) },
+      { start: 10, end: 15, pos: new THREE.Vector3(4, 0, 30) },
+      { start: 15, end: 18, pos: new THREE.Vector3(-9, 0, 27) },
     ],
-    homePos: new THREE.Vector3(-9, 0, 57),
+    homePos: new THREE.Vector3(-9, 0, 27),
     district: 'downtown',
   },
   {
     name: 'Nao',
-    position: new THREE.Vector3(3, 0, 52.8),
+    position: new THREE.Vector3(3, 0, 22),
     wants: ['sticker', 'plushie'],
     gachaPreference: 'curious',
     personality: 'fair',
@@ -928,19 +1110,19 @@ const NPC_DATA = [
       "Got {qty} {item}? The café needs brightening. {location}.",
     ],
     meetupLocations: [
-      { name: 'the café back door', pos: [8, 0, 90] },
-      { name: 'the market square', pos: [-5, 0, 132] },
-      { name: 'near the clock tower', pos: [8, 0, 105] },
+      { name: 'the café back door', pos: [8, 0, 22] },
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'near the shops', pos: [-7, 0, 8] },
     ],
     schedule: [
-      { start: 6, end: 18, pos: new THREE.Vector3(3, 0, 52.8) },
+      { start: 6, end: 18, pos: new THREE.Vector3(3, 0, 22) },
     ],
-    homePos: new THREE.Vector3(3, 0, 52.8),
+    homePos: new THREE.Vector3(3, 0, 22),
     district: 'downtown',
   },
   {
     name: 'Felix',
-    position: new THREE.Vector3(22.8, 0, 67.2),
+    position: new THREE.Vector3(22, 0, 20),
     wants: ['gacha', 'plushie'],
     gachaPreference: 'loves',
     personality: 'generous',
@@ -986,20 +1168,20 @@ const NPC_DATA = [
       "I NEED {qty} {item}! {location}! My collection depends on it!",
     ],
     meetupLocations: [
-      { name: 'the office alley', pos: [40, 0, 115] },
-      { name: 'behind the shops', pos: [32, 0, 95] },
-      { name: 'the east block', pos: [52, 0, 110] },
+      { name: 'the east road', pos: [24, 0, 18] },
+      { name: 'behind the shops', pos: [20, 0, 8] },
+      { name: 'the crossroads', pos: [0, 0, 30] },
     ],
     schedule: [
-      { start: 6, end: 14, pos: new THREE.Vector3(22.8, 0, 67.2) },
-      { start: 14, end: 18, pos: new THREE.Vector3(25.2, 0, 64.8) },
+      { start: 6, end: 14, pos: new THREE.Vector3(22, 0, 20) },
+      { start: 14, end: 18, pos: new THREE.Vector3(24, 0, 14) },
     ],
-    homePos: new THREE.Vector3(22.8, 0, 67.2),
+    homePos: new THREE.Vector3(22, 0, 20),
     district: 'downtown',
   },
   {
     name: 'Harper',
-    position: new THREE.Vector3(-12, 0, 66),
+    position: new THREE.Vector3(-20, 0, 22),
     wants: ['sticker'],
     gachaPreference: 'curious',
     personality: 'tough',
@@ -1046,21 +1228,21 @@ const NPC_DATA = [
       "Need to see {qty} {item} for my... research. {location}.",
     ],
     meetupLocations: [
-      { name: 'the newspaper office', pos: [-22, 0, 108] },
-      { name: 'the café', pos: [5, 0, 90] },
-      { name: 'the quiet bench', pos: [-10, 0, 130] },
+      { name: 'the west alley', pos: [-22, 0, 18] },
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'the quiet bench', pos: [-10, 0, 28] },
     ],
     schedule: [
-      { start: 6, end: 12, pos: new THREE.Vector3(-15, 0, 66) },
-      { start: 12, end: 16, pos: new THREE.Vector3(3, 0, 57) },
-      { start: 16, end: 18, pos: new THREE.Vector3(-12, 0, 66) },
+      { start: 6, end: 12, pos: new THREE.Vector3(-22, 0, 20) },
+      { start: 12, end: 16, pos: new THREE.Vector3(3, 0, 22) },
+      { start: 16, end: 18, pos: new THREE.Vector3(-20, 0, 22) },
     ],
-    homePos: new THREE.Vector3(-12, 0, 66),
+    homePos: new THREE.Vector3(-20, 0, 22),
     district: 'downtown',
   },
   {
     name: 'Marco',
-    position: new THREE.Vector3(27, 0, 52.8),
+    position: new THREE.Vector3(26, 0, 18),
     wants: ['sticker', 'plushie'],
     gachaPreference: 'curious',
     personality: 'fair',
@@ -1105,22 +1287,22 @@ const NPC_DATA = [
       "Got {qty} {item}? Meet me at {location}. I'll bring espresso!",
     ],
     meetupLocations: [
-      { name: 'the restaurant back', pos: [48, 0, 90] },
-      { name: 'the market', pos: [-5, 0, 132] },
-      { name: 'the south entrance', pos: [45, 0, 85] },
+      { name: 'the east road', pos: [28, 0, 12] },
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'the south block', pos: [20, 0, -4] },
     ],
     schedule: [
-      { start: 6, end: 10, pos: new THREE.Vector3(27, 0, 54) },
-      { start: 10, end: 18, pos: new THREE.Vector3(27, 0, 52.8) },
+      { start: 6, end: 10, pos: new THREE.Vector3(26, 0, 20) },
+      { start: 10, end: 18, pos: new THREE.Vector3(26, 0, 18) },
     ],
-    homePos: new THREE.Vector3(27, 0, 52.8),
+    homePos: new THREE.Vector3(26, 0, 18),
     district: 'downtown',
   },
 
   // ===================== BURBS (4 NPCs — unlocks at 20 deals) =====================
   {
     name: 'Mika',
-    position: new THREE.Vector3(84, 0, -9),
+    position: new THREE.Vector3(20, 0, -4),
     wants: ['sticker'],
     gachaPreference: 'curious',
     personality: 'generous',
@@ -1169,21 +1351,21 @@ const NPC_DATA = [
       "Art emergency! Need {item} ASAP! {location}!",
     ],
     meetupLocations: [
-      { name: 'the park bench', pos: [125, 0, 5] },
-      { name: 'near the playground', pos: [130, 0, -18] },
-      { name: 'the quiet street', pos: [155, 0, -38] },
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'the east road', pos: [24, 0, -6] },
+      { name: 'behind the shops', pos: [-12, 0, 8] },
     ],
     schedule: [
-      { start: 6, end: 10, pos: new THREE.Vector3(75, 0, 3) },
-      { start: 10, end: 15, pos: new THREE.Vector3(93, 0, -12) },
-      { start: 15, end: 18, pos: new THREE.Vector3(84, 0, -9) },
+      { start: 6, end: 10, pos: new THREE.Vector3(18, 0, 3) },
+      { start: 10, end: 15, pos: new THREE.Vector3(20, 0, -6) },
+      { start: 15, end: 18, pos: new THREE.Vector3(20, 0, -4) },
     ],
-    homePos: new THREE.Vector3(84, 0, -9),
+    homePos: new THREE.Vector3(20, 0, -4),
     district: 'burbs',
   },
   {
     name: 'Zoe',
-    position: new THREE.Vector3(94.8, 0, -12),
+    position: new THREE.Vector3(14, 0, -8),
     wants: ['gacha'],
     gachaPreference: 'loves',
     personality: 'fair',
@@ -1234,19 +1416,19 @@ const NPC_DATA = [
       "I NEED {qty} {item}! {location}! HURRY!",
     ],
     meetupLocations: [
-      { name: 'the park', pos: [125, 0, 5] },
-      { name: 'behind the houses', pos: [160, 0, -35] },
-      { name: 'the north street', pos: [140, 0, 2] },
+      { name: 'the south block', pos: [10, 0, -6] },
+      { name: 'near the crossroads', pos: [0, 0, -6] },
+      { name: 'the east road', pos: [18, 0, -4] },
     ],
     schedule: [
-      { start: 15, end: 18, pos: new THREE.Vector3(94.8, 0, -12) },
+      { start: 15, end: 18, pos: new THREE.Vector3(14, 0, -8) },
     ],
-    homePos: new THREE.Vector3(94.8, 0, -12),
+    homePos: new THREE.Vector3(14, 0, -8),
     district: 'burbs',
   },
   {
     name: 'Tomas',
-    position: new THREE.Vector3(73.2, 0, -10.8),
+    position: new THREE.Vector3(-16, 0, -8),
     wants: ['plushie', 'sticker'],
     gachaPreference: 'curious',
     personality: 'generous',
@@ -1291,21 +1473,21 @@ const NPC_DATA = [
       "Could you visit {location}? I'm looking for {item}.",
     ],
     meetupLocations: [
-      { name: 'the park bench', pos: [125, 0, 5] },
-      { name: 'the quiet street', pos: [130, 0, -25] },
-      { name: 'near the playground', pos: [125, 0, -10] },
+      { name: 'the west alley', pos: [-20, 0, -6] },
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'near the shops', pos: [-7, 0, 8] },
     ],
     schedule: [
-      { start: 6, end: 11, pos: new THREE.Vector3(75, 0, -6) },
-      { start: 11, end: 16, pos: new THREE.Vector3(78, 0, 3) },
-      { start: 16, end: 18, pos: new THREE.Vector3(73.2, 0, -10.8) },
+      { start: 6, end: 11, pos: new THREE.Vector3(-14, 0, -6) },
+      { start: 11, end: 16, pos: new THREE.Vector3(-7, 0, 4) },
+      { start: 16, end: 18, pos: new THREE.Vector3(-16, 0, -8) },
     ],
-    homePos: new THREE.Vector3(73.2, 0, -10.8),
+    homePos: new THREE.Vector3(-16, 0, -8),
     district: 'burbs',
   },
   {
     name: 'Sara',
-    position: new THREE.Vector3(105, 0, -25.2),
+    position: new THREE.Vector3(-24, 0, -4),
     wants: ['plushie', 'sticker', 'gacha'],
     gachaPreference: 'curious',
     personality: 'fair',
@@ -1351,23 +1533,23 @@ const NPC_DATA = [
       "Need {qty} {item} for my little girl. {location}. Please.",
     ],
     meetupLocations: [
-      { name: 'the quiet backyard', pos: [178, 0, -45] },
-      { name: 'the park', pos: [125, 0, 5] },
-      { name: 'behind the nice house', pos: [180, 0, -30] },
+      { name: 'the quiet corner', pos: [-26, 0, -6] },
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'behind the shops', pos: [-12, 0, 8] },
     ],
     schedule: [
-      { start: 6, end: 10, pos: new THREE.Vector3(93, 0, -22.8) },
-      { start: 10, end: 15, pos: new THREE.Vector3(75, 0, 3) },
-      { start: 15, end: 18, pos: new THREE.Vector3(105, 0, -25.2) },
+      { start: 6, end: 10, pos: new THREE.Vector3(-22, 0, -6) },
+      { start: 10, end: 15, pos: new THREE.Vector3(-7, 0, 4) },
+      { start: 15, end: 18, pos: new THREE.Vector3(-24, 0, -4) },
     ],
-    homePos: new THREE.Vector3(105, 0, -25.2),
+    homePos: new THREE.Vector3(-24, 0, -4),
     district: 'burbs',
   },
 
   // ===================== NORTHTOWN (3 NPCs — unlocks at 25 deals) =====================
   {
     name: 'Jin',
-    position: new THREE.Vector3(78, 0, 91.2),
+    position: new THREE.Vector3(24, 0, 26),
     wants: ['plushie', 'gacha'],
     gachaPreference: 'curious',
     personality: 'tough',
@@ -1417,21 +1599,21 @@ const NPC_DATA = [
       "Bring your best {item} to {location}. I pay well for quality.",
     ],
     meetupLocations: [
-      { name: 'the chapel square', pos: [130, 0, 138] },
-      { name: 'the north walk', pos: [140, 0, 155] },
-      { name: 'the quiet corner', pos: [108, 0, 148] },
+      { name: 'the east road', pos: [24, 0, 30] },
+      { name: 'the crossroads', pos: [0, 0, 30] },
+      { name: 'the quiet corner', pos: [20, 0, 18] },
     ],
     schedule: [
-      { start: 6, end: 10, pos: new THREE.Vector3(70.8, 0, 81) },
-      { start: 10, end: 14, pos: new THREE.Vector3(3, 0, 54) },  // visits Nao's café
-      { start: 14, end: 18, pos: new THREE.Vector3(78, 0, 91.2) },
+      { start: 6, end: 10, pos: new THREE.Vector3(22, 0, 28) },
+      { start: 10, end: 14, pos: new THREE.Vector3(3, 0, 22) },  // visits Nao's café
+      { start: 14, end: 18, pos: new THREE.Vector3(24, 0, 26) },
     ],
-    homePos: new THREE.Vector3(78, 0, 91.2),
+    homePos: new THREE.Vector3(24, 0, 26),
     district: 'northtown',
   },
   {
     name: 'Yuna',
-    position: new THREE.Vector3(93, 0, 99),
+    position: new THREE.Vector3(-22, 0, 26),
     wants: ['sticker'],
     gachaPreference: 'curious',
     personality: 'fair',
@@ -1475,21 +1657,21 @@ const NPC_DATA = [
       "Got {qty} {item}? The flowers need company. {location}.",
     ],
     meetupLocations: [
-      { name: 'the flower shop', pos: [155, 0, 168] },
-      { name: 'the coastal walk', pos: [140, 0, 175] },
-      { name: 'near the chapel', pos: [130, 0, 138] },
+      { name: 'the west square', pos: [-22, 0, 28] },
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'near the shops', pos: [-7, 0, 8] },
     ],
     schedule: [
-      { start: 6, end: 12, pos: new THREE.Vector3(93, 0, 99) },
-      { start: 12, end: 13, pos: new THREE.Vector3(93, 0, 102) },
-      { start: 13, end: 18, pos: new THREE.Vector3(93, 0, 99) },
+      { start: 6, end: 12, pos: new THREE.Vector3(-22, 0, 26) },
+      { start: 12, end: 13, pos: new THREE.Vector3(-20, 0, 30) },
+      { start: 13, end: 18, pos: new THREE.Vector3(-22, 0, 26) },
     ],
-    homePos: new THREE.Vector3(93, 0, 99),
+    homePos: new THREE.Vector3(-22, 0, 26),
     district: 'northtown',
   },
   {
     name: 'Kai',
-    position: new THREE.Vector3(66, 0, 103.2),
+    position: new THREE.Vector3(10, 0, 28),
     wants: ['sticker', 'plushie'],
     gachaPreference: 'refuses',
     personality: 'tough',
@@ -1533,22 +1715,22 @@ const NPC_DATA = [
       "Need {qty} {item}. {location}. Quick.",
     ],
     meetupLocations: [
-      { name: 'the dock', pos: [110, 0, 175] },
-      { name: 'the coast path', pos: [125, 0, 172] },
+      { name: 'the north street', pos: [10, 0, 30] },
+      { name: 'the crossroads', pos: [0, 0, 30] },
     ],
     schedule: [
-      { start: 6, end: 12, pos: new THREE.Vector3(66, 0, 105) },
-      { start: 12, end: 16, pos: new THREE.Vector3(60, 0, 90) },
-      { start: 16, end: 18, pos: new THREE.Vector3(66, 0, 103.2) },
+      { start: 6, end: 12, pos: new THREE.Vector3(10, 0, 30) },
+      { start: 12, end: 16, pos: new THREE.Vector3(6, 0, 22) },
+      { start: 16, end: 18, pos: new THREE.Vector3(10, 0, 28) },
     ],
-    homePos: new THREE.Vector3(66, 0, 103.2),
+    homePos: new THREE.Vector3(10, 0, 28),
     district: 'northtown',
   },
 
   // ===================== INDUSTRIAL (3 NPCs — unlocks at 30 deals) =====================
   {
     name: 'Taro',
-    position: new THREE.Vector3(-3, 0, -52.8),
+    position: new THREE.Vector3(-4, 0, -4),
     wants: ['plushie', 'gacha'],
     gachaPreference: 'loves',
     personality: 'generous',
@@ -1596,21 +1778,21 @@ const NPC_DATA = [
       "An old man would like some {item}. Meet me at {location}?",
     ],
     meetupLocations: [
-      { name: 'the factory break room', pos: [-5, 0, -85] },
-      { name: 'the loading dock', pos: [15, 0, -88] },
-      { name: 'the south warehouse', pos: [-15, 0, -110] },
+      { name: 'the south block', pos: [-5, 0, -6] },
+      { name: 'the west alley', pos: [-12, 0, 6] },
+      { name: 'behind the shops', pos: [-12, 0, 8] },
     ],
     schedule: [
-      { start: 6, end: 12, pos: new THREE.Vector3(-3, 0, -51) },
-      { start: 12, end: 15, pos: new THREE.Vector3(-9, 0, -66) },
-      { start: 15, end: 18, pos: new THREE.Vector3(-3, 0, -52.8) },
+      { start: 6, end: 12, pos: new THREE.Vector3(-4, 0, -2) },
+      { start: 12, end: 15, pos: new THREE.Vector3(-10, 0, -6) },
+      { start: 15, end: 18, pos: new THREE.Vector3(-4, 0, -4) },
     ],
-    homePos: new THREE.Vector3(-3, 0, -52.8),
+    homePos: new THREE.Vector3(-4, 0, -4),
     district: 'industrial',
   },
   {
     name: 'Vex',
-    position: new THREE.Vector3(21, 0, -52.8),
+    position: new THREE.Vector3(20, 0, -2),
     wants: ['sticker'],
     gachaPreference: 'refuses',
     personality: 'fair',
@@ -1656,20 +1838,20 @@ const NPC_DATA = [
       "Got {qty} {item}? {location}. The revolution needs you.",
     ],
     meetupLocations: [
-      { name: 'the loading dock', pos: [35, 0, -90] },
-      { name: 'behind the warehouse', pos: [55, 0, -85] },
-      { name: 'the south fence', pos: [10, 0, -130] },
+      { name: 'the south block', pos: [18, 0, -6] },
+      { name: 'the east road', pos: [24, 0, -4] },
+      { name: 'the crossroads', pos: [0, 0, -6] },
     ],
     schedule: [
-      { start: 6, end: 14, pos: new THREE.Vector3(21, 0, -54) },
-      { start: 14, end: 18, pos: new THREE.Vector3(33, 0, -64.8) },
+      { start: 6, end: 14, pos: new THREE.Vector3(20, 0, -4) },
+      { start: 14, end: 18, pos: new THREE.Vector3(24, 0, -6) },
     ],
-    homePos: new THREE.Vector3(21, 0, -52.8),
+    homePos: new THREE.Vector3(20, 0, -2),
     district: 'industrial',
   },
   {
     name: 'Polly',
-    position: new THREE.Vector3(-3, 0, -67.2),
+    position: new THREE.Vector3(-14, 0, -2),
     wants: ['plushie'],
     gachaPreference: 'curious',
     personality: 'fair',
@@ -1713,22 +1895,22 @@ const NPC_DATA = [
       "I need {qty} {item}. {location}. Please be discreet.",
     ],
     meetupLocations: [
-      { name: 'the break room', pos: [-5, 0, -108] },
-      { name: 'behind the factory', pos: [-10, 0, -115] },
+      { name: 'the west alley', pos: [-12, 0, 6] },
+      { name: 'behind the shops', pos: [-14, 0, -6] },
     ],
     schedule: [
-      { start: 6, end: 11, pos: new THREE.Vector3(-3, 0, -57) },
-      { start: 11, end: 13, pos: new THREE.Vector3(-3, 0, -67.2) },
-      { start: 13, end: 18, pos: new THREE.Vector3(-3, 0, -57) },
+      { start: 6, end: 11, pos: new THREE.Vector3(-12, 0, -4) },
+      { start: 11, end: 13, pos: new THREE.Vector3(-14, 0, -2) },
+      { start: 13, end: 18, pos: new THREE.Vector3(-12, 0, -4) },
     ],
-    homePos: new THREE.Vector3(-3, 0, -67.2),
+    homePos: new THREE.Vector3(-14, 0, -2),
     district: 'industrial',
   },
 
   // ===================== UPTOWN (3 NPCs — unlocks at 35 deals) =====================
   {
     name: 'Sora',
-    position: new THREE.Vector3(103.2, 0, 45),
+    position: new THREE.Vector3(26, 0, 10),
     wants: ['sticker', 'plushie', 'gacha'],
     gachaPreference: 'loves',
     personality: 'generous',
@@ -1774,21 +1956,21 @@ const NPC_DATA = [
       "The event requires {qty} {item}. {location}. Don't keep me waiting.",
     ],
     meetupLocations: [
-      { name: 'behind the hotel', pos: [185, 0, 60] },
-      { name: 'the rooftop garden area', pos: [172, 0, 78] },
-      { name: 'the uptown alley', pos: [158, 0, 80] },
+      { name: 'the east road', pos: [28, 0, 12] },
+      { name: 'the fountain', pos: [0, 0, 20] },
+      { name: 'the north alley', pos: [15, 0, 18] },
     ],
     schedule: [
-      { start: 6, end: 12, pos: new THREE.Vector3(100.8, 0, 33) },
-      { start: 12, end: 16, pos: new THREE.Vector3(94.8, 0, 46.8) },
-      { start: 16, end: 18, pos: new THREE.Vector3(103.2, 0, 45) },
+      { start: 6, end: 12, pos: new THREE.Vector3(24, 0, 8) },
+      { start: 12, end: 16, pos: new THREE.Vector3(26, 0, 14) },
+      { start: 16, end: 18, pos: new THREE.Vector3(26, 0, 10) },
     ],
-    homePos: new THREE.Vector3(103.2, 0, 45),
+    homePos: new THREE.Vector3(26, 0, 10),
     district: 'uptown',
   },
   {
     name: 'Kenji',
-    position: new THREE.Vector3(100.8, 0, 33),
+    position: new THREE.Vector3(-24, 0, 4),
     wants: ['sticker', 'plushie'],
     gachaPreference: 'refuses',
     personality: 'fair',
@@ -1832,20 +2014,20 @@ const NPC_DATA = [
       "Confidential request: {qty} {item}. {location}.",
     ],
     meetupLocations: [
-      { name: 'the parking garage', pos: [165, 0, 52] },
-      { name: 'behind the hotel', pos: [185, 0, 60] },
+      { name: 'the west alley', pos: [-24, 0, 6] },
+      { name: 'behind the shops', pos: [-12, 0, 8] },
     ],
     schedule: [
-      { start: 6, end: 11, pos: new THREE.Vector3(100.8, 0, 34.8) },
-      { start: 11, end: 13, pos: new THREE.Vector3(100.8, 0, 33) },
-      { start: 13, end: 18, pos: new THREE.Vector3(100.8, 0, 34.8) },
+      { start: 6, end: 11, pos: new THREE.Vector3(-24, 0, 6) },
+      { start: 11, end: 13, pos: new THREE.Vector3(-24, 0, 4) },
+      { start: 13, end: 18, pos: new THREE.Vector3(-24, 0, 6) },
     ],
-    homePos: new THREE.Vector3(100.8, 0, 33),
+    homePos: new THREE.Vector3(-24, 0, 4),
     district: 'uptown',
   },
   {
     name: 'Mira',
-    position: new THREE.Vector3(117, 0, 33),
+    position: new THREE.Vector3(28, 0, 4),
     wants: ['plushie', 'gacha'],
     gachaPreference: 'loves',
     personality: 'generous',
@@ -1890,22 +2072,22 @@ const NPC_DATA = [
       "Urgent: {qty} {item}. {location} at dusk.",
     ],
     meetupLocations: [
-      { name: 'under the awning', pos: [198, 0, 58] },
-      { name: 'the garden path', pos: [200, 0, 75] },
+      { name: 'the east road', pos: [28, 0, 6] },
+      { name: 'behind the shops', pos: [20, 0, 8] },
     ],
     schedule: [
-      { start: 6, end: 10, pos: new THREE.Vector3(112.8, 0, 46.8) },
-      { start: 10, end: 15, pos: new THREE.Vector3(117, 0, 34.8) },
-      { start: 15, end: 18, pos: new THREE.Vector3(117, 0, 33) },
+      { start: 6, end: 10, pos: new THREE.Vector3(26, 0, 6) },
+      { start: 10, end: 15, pos: new THREE.Vector3(28, 0, 6) },
+      { start: 15, end: 18, pos: new THREE.Vector3(28, 0, 4) },
     ],
-    homePos: new THREE.Vector3(117, 0, 33),
+    homePos: new THREE.Vector3(28, 0, 4),
     district: 'uptown',
   },
 
   // ===================== TOWER (2 NPCs — unlocks at 40 deals) =====================
   {
     name: 'Quinn',
-    position: new THREE.Vector3(-81, 0, 78),
+    position: new THREE.Vector3(-8, 0, 2),
     wants: ['gacha', 'sticker'],
     gachaPreference: 'loves',
     personality: 'fair',
@@ -1951,18 +2133,18 @@ const NPC_DATA = [
       "Need {item}. Coordinates: {location}. Night only.",
     ],
     meetupLocations: [
-      { name: 'the tower lobby', pos: [-135, 0, 128] },
-      { name: 'the service alley', pos: [-135, 0, 133] },
+      { name: 'the south block', pos: [-8, 0, -4] },
+      { name: 'the west alley', pos: [-12, 0, 6] },
     ],
     schedule: [
       // Quinn only available at night — empty day schedule
     ],
-    homePos: new THREE.Vector3(-81, 0, 78),
+    homePos: new THREE.Vector3(-8, 0, 2),
     district: 'tower',
   },
   {
     name: 'Dante',
-    position: new THREE.Vector3(-91.2, 0, 60),
+    position: new THREE.Vector3(-26, 0, 14),
     wants: ['plushie', 'sticker'],
     gachaPreference: 'curious',
     personality: 'fair',
@@ -2006,23 +2188,23 @@ const NPC_DATA = [
       "Got {item}? {location}. I'm on my rounds.",
     ],
     meetupLocations: [
-      { name: 'the tower lobby', pos: [-155, 0, 102] },
-      { name: 'the service entrance', pos: [-148, 0, 98] },
-      { name: 'between the towers', pos: [-152, 0, 105] },
+      { name: 'the west square', pos: [-22, 0, 12] },
+      { name: 'the quiet corner', pos: [-26, 0, 18] },
+      { name: 'near the shops', pos: [-7, 0, 8] },
     ],
     schedule: [
-      { start: 6, end: 12, pos: new THREE.Vector3(-93, 0, 61.2) },
-      { start: 12, end: 15, pos: new THREE.Vector3(-84, 0, 84) },
-      { start: 15, end: 18, pos: new THREE.Vector3(-91.2, 0, 60) },
+      { start: 6, end: 12, pos: new THREE.Vector3(-24, 0, 16) },
+      { start: 12, end: 15, pos: new THREE.Vector3(-20, 0, 22) },
+      { start: 15, end: 18, pos: new THREE.Vector3(-26, 0, 14) },
     ],
-    homePos: new THREE.Vector3(-91.2, 0, 60),
+    homePos: new THREE.Vector3(-26, 0, 14),
     district: 'tower',
   },
 
   // ===================== PORT (2 NPCs — unlocks at 50 deals) =====================
   {
     name: 'Gus',
-    position: new THREE.Vector3(-33, 0, 118.8),
+    position: new THREE.Vector3(-10, 0, 28),
     wants: ['plushie', 'gacha'],
     gachaPreference: 'curious',
     personality: 'tough',
@@ -2065,20 +2247,20 @@ const NPC_DATA = [
       "Need {qty} {item}. {location}. Make it quick.",
     ],
     meetupLocations: [
-      { name: 'the main dock', pos: [-75, 0, 198] },
-      { name: 'the container yard', pos: [-100, 0, 200] },
-      { name: 'the harbor office', pos: [-55, 0, 200] },
+      { name: 'the north street', pos: [-10, 0, 30] },
+      { name: 'the crossroads', pos: [0, 0, 30] },
+      { name: 'the fountain', pos: [0, 0, 20] },
     ],
     schedule: [
-      { start: 6, end: 14, pos: new THREE.Vector3(-48, 0, 118.8) },
-      { start: 14, end: 18, pos: new THREE.Vector3(-33, 0, 120) },
+      { start: 6, end: 14, pos: new THREE.Vector3(-8, 0, 30) },
+      { start: 14, end: 18, pos: new THREE.Vector3(-10, 0, 28) },
     ],
-    homePos: new THREE.Vector3(-33, 0, 118.8),
+    homePos: new THREE.Vector3(-10, 0, 28),
     district: 'port',
   },
   {
     name: 'Marina',
-    position: new THREE.Vector3(-57, 0, 135),
+    position: new THREE.Vector3(-20, 0, 30),
     wants: ['sticker', 'plushie', 'gacha'],
     gachaPreference: 'curious',
     personality: 'fair',
@@ -2122,22 +2304,22 @@ const NPC_DATA = [
       "It's lonely here. Bring {qty} {item}? {location}.",
     ],
     meetupLocations: [
-      { name: 'the lighthouse', pos: [-95, 0, 228] },
-      { name: 'the dock path', pos: [-85, 0, 212] },
+      { name: 'the west square', pos: [-22, 0, 30] },
+      { name: 'the north alley', pos: [-12, 0, 28] },
     ],
     schedule: [
-      { start: 6, end: 12, pos: new THREE.Vector3(-57, 0, 135) },
-      { start: 12, end: 13, pos: new THREE.Vector3(-48, 0, 126) },
-      { start: 13, end: 18, pos: new THREE.Vector3(-57, 0, 135) },
+      { start: 6, end: 12, pos: new THREE.Vector3(-20, 0, 30) },
+      { start: 12, end: 13, pos: new THREE.Vector3(-18, 0, 26) },
+      { start: 13, end: 18, pos: new THREE.Vector3(-20, 0, 30) },
     ],
-    homePos: new THREE.Vector3(-57, 0, 135),
+    homePos: new THREE.Vector3(-20, 0, 30),
     district: 'port',
   },
 
   // ===================== ACE HQ (1 NPC — endgame unlock) =====================
   {
     name: 'Dove',
-    position: new THREE.Vector3(-75, 0, -30),
+    position: new THREE.Vector3(8, 0, -4),
     wants: [],   // Dove GIVES you items, doesn't buy
     gachaPreference: 'refuses',
     personality: 'generous',
@@ -2183,14 +2365,78 @@ const NPC_DATA = [
       "Pickup available. {location}. Night only. — D",
     ],
     meetupLocations: [
-      { name: 'outside ACE HQ', pos: [-130, 0, -45] },
-      { name: 'the west fence', pos: [-165, 0, -70] },
+      { name: 'the south block', pos: [8, 0, -6] },
+      { name: 'the west alley', pos: [-12, 0, 6] },
     ],
     schedule: [
       // Dove only available at night — empty day schedule
     ],
-    homePos: new THREE.Vector3(-75, 0, -30),
+    homePos: new THREE.Vector3(8, 0, -4),
     district: 'aceHQ',
+  },
+  // ===================== SPECIAL — Rina (near spawn) =====================
+  {
+    name: 'Rina',
+    position: new THREE.Vector3(2, 0, -50),
+    wants: ['sticker', 'gacha'],
+    gachaPreference: 'loves',
+    personality: 'generous',
+    offerRange: [0.75, 0.95],
+    counterThreshold: 0.10,
+    meetFactor: 0.80,
+    greetings: [
+      "Hold still — the light is perfect right now!",
+      "Hey! I'm documenting everything in this town. Want to see?",
+      "Every corner of this place tells a story. I photograph them all.",
+    ],
+    wantText: "I'm looking for: Stickers & Gacha",
+    acceptLines: [
+      "Ooh, this is going in my collection!",
+      "Perfect reference material! Thanks!",
+    ],
+    rejectLines: [
+      "Hmm, not quite what I'm shooting for...",
+      "I need something more photogenic, sorry!",
+    ],
+    counterAcceptLines: [
+      "Sure, fair enough! Snap!",
+      "Deal! Now hold it up so I can photograph it first.",
+    ],
+    counterRejectLines: [
+      "That's a bit steep for my budget... I spend it all on film.",
+    ],
+    finalOfferLines: [
+      "That's my final offer — cameras aren't cheap!",
+    ],
+    partingLines: [
+      "Gotta go chase the golden hour! See you!",
+      "I'll be around — look for the girl with the camera!",
+    ],
+    dealDoneLines: [
+      "Great trade! Say cheese!",
+      "Nice! This is going in my scrapbook!",
+    ],
+    limitLine: "I've spent all my budget for today — come back tomorrow!",
+    streetRefuseLines: [
+      "Can't right now, I'm mid-shot!",
+      "Maybe later — the lighting is too good to stop!",
+    ],
+    messageTemplates: [
+      "Hey! Got any {item}? Meet me at {location} — the light there is amazing! 📸",
+      "Looking for {qty} {item}! I'll be at {location} getting some shots! 🌅",
+    ],
+    meetupLocations: [
+      { name: 'the ruin entrance', pos: [0, 0, -52] },
+      { name: 'the old gate', pos: [-5, 0, -55] },
+      { name: 'the south road', pos: [5, 0, -48] },
+    ],
+    schedule: [
+      { start: 6, end: 10, pos: new THREE.Vector3(2, 0, -50) },
+      { start: 10, end: 14, pos: new THREE.Vector3(-3, 0, -55) },
+      { start: 14, end: 18, pos: new THREE.Vector3(5, 0, -48) },
+    ],
+    homePos: new THREE.Vector3(2, 0, -50),
+    district: 'town',
   },
 ];
 
@@ -2376,16 +2622,18 @@ const PLAYER_AVOID_DIST = 1.5;
 const PLAYER_AVOID_STRENGTH = 1.2;
 const NPC_RADIUS = 0.4;
 
+// NPC-to-NPC separation
+const NPC_SEP_DIST = 1.2;
+const NPC_SEP_STRENGTH = 2.0;
+let _allNpcs = null; // set during updateNPCs for separation checks
+
+// NPCs walk through buildings freely — no collision check
 function npcInsideBuilding(x, z) {
-  const bldgs = getAllBuildingBlocks();
-  for (const b of bldgs) {
-    if (x >= b.x - b.w / 2 - NPC_RADIUS && x <= b.x + b.w / 2 + NPC_RADIUS &&
-        z >= b.z - b.d / 2 - NPC_RADIUS && z <= b.z + b.d / 2 + NPC_RADIUS) return true;
-  }
   return false;
 }
 
 export function updateNPCs(npcs, playerPos, dt) {
+  _allNpcs = npcs;
   const hour = getGameHour();
   const active = isNPCActive();
 
@@ -2463,8 +2711,8 @@ export function updateNPCs(npcs, playerPos, dt) {
     }
   }
 
-  // Procedural animation (walk cycle + idle breathing)
-  animateNPCs(npcs, dt);
+  // Procedural animation (walk cycle, idle, activity poses, blinking, player awareness)
+  animateNPCs(npcs, dt, playerPos);
 
   // Label visibility (hide beyond 15 units)
   updateNPCLabels(npcs, playerPos, null);
@@ -2567,6 +2815,21 @@ function updateNPCRoutine(npc, playerPos, hour, dt) {
       avoidZ = -(pdz / pDist) * pushStrength;
     }
 
+    // NPC-to-NPC separation — push apart when overlapping
+    if (_allNpcs) {
+      for (const other of _allNpcs) {
+        if (other === npc || !other.group.visible) continue;
+        const ndx = other.worldPos.x - npc.worldPos.x;
+        const ndz = other.worldPos.z - npc.worldPos.z;
+        const nDist = Math.sqrt(ndx * ndx + ndz * ndz);
+        if (nDist < NPC_SEP_DIST && nDist > 0.01) {
+          const push = (1 - nDist / NPC_SEP_DIST) * NPC_SEP_STRENGTH * dt;
+          avoidX -= (ndx / nDist) * push;
+          avoidZ -= (ndz / nDist) * push;
+        }
+      }
+    }
+
     // Apply move with building collision — sliding response
     const cx = npc.worldPos.x;
     const cz = npc.worldPos.z;
@@ -2602,6 +2865,29 @@ function updateNPCRoutine(npc, playerPos, hour, dt) {
   } else if (rs.atDestination) {
     // At destination — perform activity behavior
     npc.isWalking = false;
+
+    // Gentle NPC separation even when idle
+    if (_allNpcs) {
+      let sepX = 0, sepZ = 0;
+      for (const other of _allNpcs) {
+        if (other === npc || !other.group.visible) continue;
+        const ndx = other.worldPos.x - npc.worldPos.x;
+        const ndz = other.worldPos.z - npc.worldPos.z;
+        const nDist = Math.sqrt(ndx * ndx + ndz * ndz);
+        if (nDist < NPC_SEP_DIST * 0.8 && nDist > 0.01) {
+          const push = (1 - nDist / (NPC_SEP_DIST * 0.8)) * NPC_SEP_STRENGTH * 0.5 * dt;
+          sepX -= (ndx / nDist) * push;
+          sepZ -= (ndz / nDist) * push;
+        }
+      }
+      if (sepX !== 0 || sepZ !== 0) {
+        npc.worldPos.x += sepX;
+        npc.worldPos.z += sepZ;
+        npc.group.position.x = npc.worldPos.x;
+        npc.group.position.z = npc.worldPos.z;
+      }
+    }
+
     updateActivityBehavior(npc, rs, playerPos, dt);
   }
 }
@@ -2758,6 +3044,176 @@ export function enableNPCByName(npcs, name) {
       }
       break;
     }
+  }
+}
+
+// ============================================================
+// REBUILDER CREW — 4 NPCs with hard hats & tools at the ruins
+// Only appear when worldColor >= 1.0 (100% color) and during daytime
+// ============================================================
+
+const REBUILDER_TOOLS = ['shovel', 'pickaxe', 'hammer', 'saw'];
+const REBUILDER_NAMES = ['Rebuilder1', 'Rebuilder2', 'Rebuilder3', 'Rebuilder4'];
+// Spread them around the ruins center (0, -120)
+const REBUILDER_POSITIONS = [
+  new THREE.Vector3(-8, 0, -118),
+  new THREE.Vector3(-3, 0, -124),
+  new THREE.Vector3(4, 0, -116),
+  new THREE.Vector3(9, 0, -122),
+];
+
+let _rebuilders = [];
+let _rebuildersSpawned = false;
+let _rebuildersScene = null;
+
+export function initRebuilders(scene) {
+  _rebuildersScene = scene;
+}
+
+function spawnRebuilders(scene) {
+  for (let i = 0; i < 4; i++) {
+    const name = REBUILDER_NAMES[i];
+    const pos = REBUILDER_POSITIONS[i];
+
+    const { group, parts, bodyMat, accessoryMat, headMat, hairMat } = buildNPCModel(name);
+    group.position.copy(pos);
+    group.position.y = getTerrainHeight(pos.x, pos.z);
+
+    // Attach tool to right arm
+    const tool = buildTool(REBUILDER_TOOLS[i]);
+    parts.rightArmPivot.add(tool);
+
+    // Label showing name — we repurpose the label to show the crew role
+    const { sprite: labelSprite } = makeNPCLabel('Builder');
+    labelSprite.position.y = 2.1;
+    group.add(labelSprite);
+
+    // Speech bubble with "time to rebuild!" text
+    const bubbleGroup = createRebuilderBubble();
+    bubbleGroup.position.set(0, 2.5, 0);
+    group.add(bubbleGroup);
+
+    // Face random direction
+    group.rotation.y = (i / 4) * Math.PI * 2 + Math.random() * 0.5;
+
+    group.visible = false;
+    scene.add(group);
+
+    _rebuilders.push({
+      group,
+      parts,
+      bodyMat,
+      accessoryMat,
+      headMat,
+      hairMat,
+      name,
+      worldPos: pos.clone(),
+      isWalking: false,
+      labelSprite,
+      bubbleGroup,
+      bubbleTimer: Math.random() * 3, // stagger bubble animation
+    });
+  }
+  _rebuildersSpawned = true;
+}
+
+function createRebuilderBubble() {
+  const group = new THREE.Group();
+
+  // Background box
+  const bgMat = new THREE.MeshBasicMaterial({
+    color: 0xFFFFFF, transparent: true, opacity: 0.9,
+  });
+  const bg = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.28, 0.04), bgMat);
+  group.add(bg);
+
+  // Triangle pointer
+  const triGeo = new THREE.BufferGeometry();
+  const triVerts = new Float32Array([
+    -0.05, -0.14, 0.02,
+     0.05, -0.14, 0.02,
+     0,    -0.24, 0.02,
+  ]);
+  triGeo.setAttribute('position', new THREE.BufferAttribute(triVerts, 3));
+  const triMat = new THREE.MeshBasicMaterial({
+    color: 0xFFFFFF, transparent: true, opacity: 0.9, side: THREE.DoubleSide,
+  });
+  group.add(new THREE.Mesh(triGeo, triMat));
+
+  // Text canvas: "time to rebuild!"
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.font = 'bold 26px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#333333';
+  ctx.fillText('time to rebuild!', 128, 32);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.minFilter = THREE.LinearFilter;
+  const textSprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true })
+  );
+  textSprite.scale.set(1.2, 0.3, 1);
+  textSprite.position.z = 0.03;
+  group.add(textSprite);
+
+  return group;
+}
+
+export function updateRebuilders(playerPos, dt) {
+  if (!_rebuildersScene) return;
+
+  const worldColor = getWorldColor();
+  const active = isNPCActive(); // daytime check
+
+  // Only show at 100% color + daytime
+  if (worldColor < 0.999 || !active) {
+    for (const r of _rebuilders) {
+      r.group.visible = false;
+    }
+    return;
+  }
+
+  // Spawn on first trigger
+  if (!_rebuildersSpawned) {
+    spawnRebuilders(_rebuildersScene);
+  }
+
+  // Show and animate
+  for (const r of _rebuilders) {
+    r.group.visible = true;
+
+    // Billboard the bubble toward the player
+    r.bubbleTimer += dt;
+    // Gentle bob
+    r.bubbleGroup.position.y = 2.5 + Math.sin(r.bubbleTimer * 1.5) * 0.05;
+
+    // Only show bubble when player is nearby (within 20 units)
+    const dx = playerPos.x - r.worldPos.x;
+    const dz = playerPos.z - r.worldPos.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    r.bubbleGroup.visible = dist < 20;
+
+    // Face the player when nearby
+    if (dist < 12) {
+      const targetAngle = Math.atan2(dx, dz);
+      let diff = targetAngle - r.group.rotation.y;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      r.group.rotation.y += Math.sign(diff) * Math.min(Math.abs(diff), 2 * dt);
+    }
+  }
+
+  // Animate walk cycle for rebuilders (simple idle arm sway)
+  for (const r of _rebuilders) {
+    if (!r.group.visible) continue;
+    const t = r.bubbleTimer;
+    // Gentle working motion — right arm swings as if hammering/digging
+    r.parts.rightArmPivot.rotation.x = Math.sin(t * 2.0) * 0.3;
+    r.parts.leftArmPivot.rotation.x = Math.sin(t * 2.0 + Math.PI) * 0.15;
   }
 }
 

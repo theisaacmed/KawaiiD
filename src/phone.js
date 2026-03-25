@@ -19,7 +19,8 @@ import { playPhoneBuzz } from './audio.js';
 import { renderMap } from './map-renderer.js';
 import { showNotification, updateNotifBadge as updateNotifBadgeNew, getNPCColor, getNotificationHistory, markHistoryRead } from './notifications.js';
 import { getJP, getRankName, getJPProgress, getNextRank, RANKS } from './jp-system.js';
-import { isAshHired, isAshHireUnlocked, hireAsh, fireAsh, isRuinsKidHired, isRuinsKidHireUnlocked, hireRuinsKid, fireRuinsKid } from './scavenger-system.js';
+// STRIPPED: Scavenger system disabled
+// import { isAshHired, isAshHireUnlocked, hireAsh, fireAsh, isRuinsKidHired, isRuinsKidHireUnlocked, hireRuinsKid, fireRuinsKid } from './scavenger-system.js';
 import { addActiveDeal, completeDeal as completeActiveDeal, expireDeal as expireActiveDeal, updateDeals, getActiveDealsState, restoreActiveDealsState } from './active-deals-hud.js';
 
 // Deal panel functions — set by main.js to avoid circular dependencies
@@ -1102,6 +1103,12 @@ function renderMessagesTab() {
           <span style="font-size:10px;color:#555">${timeAgo}</span>
         </div>
         <div style="color:#ccc;font-size:12px;line-height:1.4">${msg.text}</div>
+        ${!msg.accepted && !msg.declined && !msg.expired ? (() => {
+          const aff = getNPCAffinity(msg.npcName, msg.itemType);
+          const affLabel = aff >= 2 ? '\u2764\uFE0F loves' : aff === 1 ? '\uD83D\uDC4D likes' : aff === 0 ? '' : '\uD83D\uDC4E dislikes';
+          const itemLabel = msg.itemType === 'sticker' ? 'stickers' : msg.itemType === 'gacha' ? 'capsules' : 'plushies';
+          return affLabel ? `<div style="font-size:10px;color:${aff >= 2 ? '#f8a' : aff === 1 ? '#8c8' : '#a66'};margin-top:3px">${msg.npcName} ${affLabel} ${itemLabel}</div>` : '';
+        })() : ''}
         ${statusHtml}
         ${actionsHtml}
       </div>
@@ -1183,57 +1190,11 @@ function renderContactsTab() {
           </div>
           <div>Deals: <span style="color:#ccc">${rel.totalDeals}</span> &middot; Spent: <span style="color:#6f6">$${rel.totalSpent}</span></div>
         </div>
-        ${npc.name === 'Ash' && isAshHireUnlocked() ? `
-        <div style="margin-top:8px">
-          ${isAshHired()
-            ? `<button class="ash-hire-btn" data-action="fire" style="background:rgba(255,100,100,0.1);border:1px solid rgba(255,100,100,0.3);border-radius:6px;padding:5px 12px;color:#f88;font-family:monospace;font-size:11px;cursor:pointer">Fire Ash ($15/day)</button>`
-            : `<button class="ash-hire-btn" data-action="hire" style="background:rgba(100,200,150,0.1);border:1px solid rgba(100,200,150,0.3);border-radius:6px;padding:5px 12px;color:#6f9;font-family:monospace;font-size:11px;cursor:pointer">Hire Ash ($15/day)</button>`
-          }
-          ${isAshHired() ? '<span style="color:#555;font-size:10px;margin-left:8px">Scavenging 6AM–4PM</span>' : ''}
-        </div>` : ''}
-      </div>
-    `;
-  }
-
-  // Add Pip hire card if recruited (standalone NPC, shown at bottom)
-  if (isRuinsKidHireUnlocked()) {
-    html += `
-      <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px 14px;margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <div style="font-weight:bold;color:#c8b090">Pip</div>
-          <div style="font-size:11px;color:#556">Ruins — scavenger</div>
-        </div>
-        <div style="font-size:12px;color:#667;margin-bottom:8px">Finds old stickers and plushies in the ruins. $20/day.</div>
-        <div>
-          ${isRuinsKidHired()
-            ? `<button class="rk-hire-btn" data-action="fire" style="background:rgba(255,100,100,0.1);border:1px solid rgba(255,100,100,0.3);border-radius:6px;padding:5px 12px;color:#f88;font-family:monospace;font-size:11px;cursor:pointer">Let Pip go ($20/day)</button>
-               <span style="color:#555;font-size:10px;margin-left:8px">Scavenging 6AM–4PM</span>`
-            : `<button class="rk-hire-btn" data-action="hire" style="background:rgba(180,150,100,0.1);border:1px solid rgba(180,150,100,0.3);border-radius:6px;padding:5px 12px;color:#c8a860;font-family:monospace;font-size:11px;cursor:pointer">Hire Pip ($20/day)</button>`
-          }
-        </div>
       </div>
     `;
   }
 
   content.innerHTML = html || '<div style="text-align:center;padding:60px 20px;color:#444">No contacts yet.</div>';
-
-  // Attach hire/fire handlers for Ash
-  content.querySelectorAll('.ash-hire-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.dataset.action === 'hire') hireAsh();
-      else fireAsh();
-      renderContactsTab();
-    });
-  });
-
-  // Attach hire/fire handlers for Ruins Kid
-  content.querySelectorAll('.rk-hire-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.dataset.action === 'hire') hireRuinsKid();
-      else fireRuinsKid();
-      renderContactsTab();
-    });
-  });
 }
 
 // --- Stats Tab ---

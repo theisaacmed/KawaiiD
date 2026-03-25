@@ -1,6 +1,6 @@
 // HUD — bottom inventory bar, money counter, rank/JP display, search prompt, progress bar
 
-import { getSlots, getMaxSlots, onInventoryChange, onMoneyChange, onMaxSlotsChange } from './inventory.js';
+import { getSlots, getMaxSlots, onInventoryChange, onMoneyChange, onMaxSlotsChange, getMoney } from './inventory.js';
 import { isOverGachaInput, handleGachaDrop, updateGachaDropHighlight, isGachaUIOpen } from './gacha.js';
 import { isOverPrintPaperZone, isOverPrintInkZone, handlePrintDrop, updatePrintDropHighlights, isPrintStationOpen } from './stations/print-station.js';
 import { getMaterialIconStyle, getMaterialGhostStyle } from './materials.js';
@@ -65,6 +65,22 @@ export function createHUD() {
 
   setOnJPChangeCallback(updateRankHUD);
   updateRankHUD();
+
+  // World color % indicator — top-right, subtle
+  const colorIndicator = document.createElement('div');
+  colorIndicator.id = 'world-color-hud';
+  Object.assign(colorIndicator.style, {
+    position: 'fixed', top: '16px', right: '16px',
+    background: 'rgba(0,0,0,0.5)',
+    fontFamily: 'monospace', fontSize: '11px', color: '#888',
+    padding: '6px 12px', borderRadius: '6px',
+    pointerEvents: 'none', zIndex: '100',
+    transition: 'color 0.5s',
+  });
+  colorIndicator.textContent = 'Color: 0%';
+  document.body.appendChild(colorIndicator);
+
+  // World color indicator is updated via updateWorldColorHUD export
 
   // Bottom inventory bar
   invBar = document.createElement('div');
@@ -456,16 +472,38 @@ export function isDragging() {
   return dragState !== null;
 }
 
-// --- Money flash ---
+// --- Money flash with count-up ---
+let moneyCountUpAnim = null;
 export function flashMoney(amount) {
   moneyEl.style.transform = 'scale(1.3)';
   moneyEl.style.textShadow = '0 0 12px #6f6';
+
+  // Count-up animation: show money incrementing to final value
+  const finalMoney = getMoney();
+  const startMoney = finalMoney - amount;
+  const duration = Math.min(400, amount * 30); // faster for small amounts
+  const startTime = performance.now();
+
+  if (moneyCountUpAnim) cancelAnimationFrame(moneyCountUpAnim);
+  function tick() {
+    const t = Math.min((performance.now() - startTime) / duration, 1);
+    const eased = 1 - (1 - t) * (1 - t); // ease-out
+    const display = Math.round(startMoney + (finalMoney - startMoney) * eased);
+    moneyEl.textContent = `$${display}`;
+    if (t < 1) {
+      moneyCountUpAnim = requestAnimationFrame(tick);
+    } else {
+      moneyEl.textContent = `$${finalMoney}`;
+      moneyCountUpAnim = null;
+    }
+  }
+  tick();
 
   clearTimeout(moneyFlashTimeout);
   moneyFlashTimeout = setTimeout(() => {
     moneyEl.style.transform = 'scale(1)';
     moneyEl.style.textShadow = 'none';
-  }, 350);
+  }, 500);
 }
 
 // --- Floating +$X text ---
@@ -513,4 +551,16 @@ export function showProgress(fraction) {
 export function hideProgress() {
   progressBarOuter.style.display = 'none';
   progressBarInner.style.width = '0%';
+}
+
+// --- World color % indicator ---
+export function updateWorldColorHUD(pct) {
+  const el = document.getElementById('world-color-hud');
+  if (!el) return;
+  const p = Math.round(pct * 100);
+  el.textContent = `Color: ${p}%`;
+  if (p < 25) el.style.color = '#666';
+  else if (p < 50) el.style.color = '#8a8';
+  else if (p < 75) el.style.color = '#6cf';
+  else el.style.color = '#f8a';
 }

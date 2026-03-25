@@ -23,7 +23,7 @@ function nb(id, fallbackX, fallbackZ) {
 function _meiApt()    { return nb('mei_apartment', 28.8, 15); }
 function _lunaTown()  { return nb('luna_townhouse', -7.2, 15); }
 function _kitShop()   { return nb('kit_shop', -13.2, 8.4); }
-function _fountain()  { return nb('fountain_square', 0, 12); }
+function _fountain()  { return nb('fountain_square', 0, 20); } // now points to town center square
 function _naoCafe()   { return nb('nao_cafe', 7.2, 52.8); }
 function _marco()     { return nb('marco_restaurant', 30, 54); }
 function _harper()    { return nb('harper_office', -21, 54); }
@@ -61,13 +61,15 @@ function _pollyShack()    { return { x: 18,   z: -45 }; }  // Polly's industrial
 function _miraApt()       { return { x: 93,  z: 33  }; }  // Mira's uptown apartment
 function _kaiDock()       { return { x: 60,  z: 100.8 }; }  // Kai's dock fishing spot
 function _aceHQ()         { return { x: -93, z: -60}; }  // ACE headquarters area
+function _townCenter()    { return { x: 0,   z: 20 }; }  // Town center square
 
 const ROUTINES = {
   Mei: [
     { time: 6.0,  ..._meiApt(),  activity: 'sleeping', dealOk: false },
     { time: 7.0,  ..._kitShop(), activity: 'working', dealOk: false, dealRefuseLine: "I'm at work... maybe at lunch?" },
-    { time: 12.0, ..._fountain(), activity: 'sitting', dealOk: true },  // fountain square at lunch
+    { time: 12.0, ..._townCenter(), activity: 'standing', dealOk: true },  // town center at lunch
     { time: 13.0, ..._kitShop(), activity: 'working', dealOk: false, dealRefuseLine: "Not at the shop. Find me at lunch." },
+    { time: 16.0, ..._townCenter(), activity: 'walking', dealOk: true },  // afternoon stroll through town center
     { time: 17.0, x: -9, z: 57,  activity: 'socializing', dealOk: true, requiresDistrict: 'downtown' }, // Ren's place
     { time: 17.0, ..._meiApt(),   activity: 'walking', dealOk: false, altIfLocked: true }, // go home if downtown locked
     { time: 20.0, ..._meiApt(),   activity: 'sleeping', dealOk: false },
@@ -78,6 +80,7 @@ const ROUTINES = {
     { time: 6.5,  x: 30,  z: -6, activity: 'working', dealOk: false, dealRefuseLine: "Not here. Meet me at the alley at noon." },
     { time: 12.0, x: -12, z: 4.8,   activity: 'eating', dealOk: true },   // alley behind market
     { time: 13.0, x: 30,  z: -6, activity: 'working', dealOk: false, dealRefuseLine: "I said not here. Noon at the alley." },
+    { time: 15.0, ..._townCenter(), activity: 'wandering', dealOk: true },  // afternoon at town center
     { time: 17.0, ..._marco(),    activity: 'eating', dealOk: true, requiresDistrict: 'downtown' }, // Marco's restaurant
     { time: 17.0, x: 15,  z: -3,  activity: 'walking', dealOk: false, altIfLocked: true },
     { time: 19.0, x: 15,  z: -3,  activity: 'sleeping', dealOk: false },
@@ -86,10 +89,10 @@ const ROUTINES = {
   Luna: [
     { time: 7.0,  ..._lunaTown(), activity: 'sleeping', dealOk: false },
     { time: 8.0,  x: -9, z: 21,  activity: 'working', dealOk: true },  // wellness center
-    { time: 10.0, ..._fountain(), activity: 'socializing', dealOk: true }, // fountain / town square
+    { time: 10.0, ..._townCenter(), activity: 'socializing', dealOk: true }, // town center
     { time: 12.0, ..._naoCafe(),  activity: 'eating', dealOk: true, requiresDistrict: 'downtown' }, // Nao's café
-    { time: 12.0, ..._fountain(), activity: 'socializing', dealOk: true, altIfLocked: true },
-    { time: 14.0, ..._fountain(), activity: 'socializing', dealOk: true }, // back to fountain
+    { time: 12.0, ..._townCenter(), activity: 'socializing', dealOk: true, altIfLocked: true },
+    { time: 14.0, ..._townCenter(), activity: 'socializing', dealOk: true }, // back to town center
     { time: 17.0, ..._lunaTown(), activity: 'walking', dealOk: true },
     { time: 18.0, ..._lunaTown(), activity: 'sleeping', dealOk: false },
   ],
@@ -97,10 +100,44 @@ const ROUTINES = {
   Ash: [
     { time: 8.0,  x: 21,  z: 22.8,  activity: 'sleeping', dealOk: false },
     { time: 9.0,  x: -21, z: 9,  activity: 'working', dealOk: false, dealRefuseLine: "N-not here... too many people..." }, // library
-    { time: 12.0, x: -13.2, z: 3,   activity: 'sitting', dealOk: true },  // secluded bench
+    { time: 12.0, x: -13.2, z: 3,   activity: 'standing', dealOk: true },  // secluded spot
     { time: 13.0, x: -21, z: 9,  activity: 'working', dealOk: false, dealRefuseLine: "I c-can't do this at the library..." },
-    { time: 16.0, x: 0,   z: 0,   activity: 'wandering', dealOk: false, dealRefuseLine: "I'm too nervous out in the open..." },
+    { time: 16.0, ..._townCenter(),  activity: 'wandering', dealOk: false, dealRefuseLine: "I'm too nervous out in the open..." },
     { time: 19.0, x: 21,  z: 22.8,  activity: 'sleeping', dealOk: false },
+  ],
+
+  // ===== TOWN EXTRAS =====
+
+  Rin: [
+    { time: 6.0,  x: -18, z: 18, activity: 'sleeping', dealOk: false },
+    { time: 8.0,  x: -6,  z: 15, activity: 'walking', dealOk: true },             // runs out to explore
+    { time: 10.0, ..._townCenter(), activity: 'wandering', dealOk: true },          // plays at fountain
+    { time: 12.0, x: -12, z: 12, activity: 'walking', dealOk: true },              // exploring west
+    { time: 14.0, ..._townCenter(), activity: 'wandering', dealOk: true },          // back at fountain
+    { time: 16.0, x: 12,  z: 21, activity: 'walking', dealOk: true },              // east side adventure
+    { time: 18.0, x: -18, z: 18, activity: 'walking', dealOk: false, dealRefuseLine: "My mom's calling me home! Tomorrow!" },
+    { time: 19.0, x: -18, z: 18, activity: 'sleeping', dealOk: false },
+  ],
+
+  Fumio: [
+    { time: 7.0,  x: 24,  z: 21, activity: 'sleeping', dealOk: false },
+    { time: 9.0,  x: 6,   z: 18, activity: 'walking', dealOk: true },             // morning walk to bench
+    { time: 11.0, x: -3,  z: 21, activity: 'sitting', dealOk: true },              // sitting near fountain
+    { time: 13.0, ..._townCenter(), activity: 'standing', dealOk: true },           // afternoon at center
+    { time: 15.0, x: 12,  z: 18, activity: 'walking', dealOk: true },              // slow walk east
+    { time: 17.0, x: 24,  z: 21, activity: 'walking', dealOk: false, dealRefuseLine: "These old legs need rest. Tomorrow." },
+    { time: 18.0, x: 24,  z: 21, activity: 'sleeping', dealOk: false },
+  ],
+
+  Hana: [
+    { time: 7.0,  x: -6,  z: 24, activity: 'sleeping', dealOk: false },
+    { time: 9.0,  x: -12, z: 12, activity: 'walking', dealOk: true },             // "grocery shopping"
+    { time: 11.0, ..._kitShop(), activity: 'standing', dealOk: true },             // browsing near shop
+    { time: 12.0, ..._townCenter(), activity: 'walking', dealOk: true },           // through center
+    { time: 14.0, x: -6,  z: 18, activity: 'wandering', dealOk: true },           // afternoon wander
+    { time: 16.0, ..._townCenter(), activity: 'socializing', dealOk: true },       // chatting at fountain
+    { time: 18.0, x: -6,  z: 24, activity: 'walking', dealOk: false, dealRefuseLine: "Gotta get home before dinner!" },
+    { time: 19.0, x: -6,  z: 24, activity: 'sleeping', dealOk: false },
   ],
 
   // ===== DOWNTOWN =====
@@ -108,6 +145,8 @@ const ROUTINES = {
   Nao: [
     { time: 6.0,  ..._naoCafe(),    activity: 'working',     dealOk: true,  heldObject: 'coffee',  dealRefuseLine: null },       // opens café, arranges chairs
     { time: 10.0, ..._naoCafe(),    activity: 'working',     dealOk: true,  heldObject: null,       dealRefuseLine: null },       // mid-day café service
+    { time: 14.0, ..._townCenter(), activity: 'walking',     dealOk: true },                                                     // afternoon break at town center
+    { time: 15.0, ..._naoCafe(),    activity: 'working',     dealOk: true,  heldObject: null,       dealRefuseLine: null },       // back to café
     { time: 17.0, ..._naoCafe(),    activity: 'working',     dealOk: true,  heldObject: 'cloth',    dealRefuseLine: null },       // wiping tables, winding down
     { time: 21.0, ..._naoCafe(),    activity: 'sleeping',    dealOk: false, dealRefuseLine: "Café's closed. Come back tomorrow morning." },
   ],
@@ -122,6 +161,7 @@ const ROUTINES = {
   Felix: [
     { time: 0.0,  ..._felixHome(),  activity: 'sleeping',    dealOk: false, dealRefuseLine: "Too late. Come back in the morning." },
     { time: 8.0,  ..._dtBench(),    activity: 'socializing', dealOk: true,  heldObject: 'sketchbook', dealRefuseLine: null },    // morning bench session
+    { time: 10.0, ..._townCenter(), activity: 'wandering',   dealOk: true,  heldObject: 'sketchbook' },                          // morning town center sketching
     { time: 12.0, ..._naoCafe(),    activity: 'eating',      dealOk: true,  requiresDistrict: 'downtown' },                       // lunch at Nao's
     { time: 12.0, ..._dtBench(),    activity: 'eating',      dealOk: true,  altIfLocked: true },
     { time: 14.0, ..._clockTower(), activity: 'wandering',   dealOk: true },                                                      // downtown wander
@@ -152,7 +192,7 @@ const ROUTINES = {
   Mika: [
     { time: 0.0,  ..._mikaHome(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "I'm asleep!" },
     { time: 8.0,  ..._theSchool(),  activity: 'working',     dealOk: false, dealRefuseLine: "I'm in school right now, meet me after." },
-    { time: 14.0, ..._burbsBench(), activity: 'sitting',     dealOk: true,  heldObject: 'sketchbook' },                           // after school sketching
+    { time: 14.0, ..._burbsBench(), activity: 'standing',    dealOk: true,  heldObject: 'sketchbook' },                           // after school sketching
     { time: 18.0, ..._mikaHome(),   activity: 'walking',     dealOk: true },
     { time: 20.0, ..._mikaHome(),   activity: 'sleeping',    dealOk: false, dealRefuseLine: "Too tired from class. Tomorrow?" },
   ],
@@ -168,10 +208,10 @@ const ROUTINES = {
 
   Tomas: [
     { time: 0.0,  ..._tomas(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "I'm already in bed." },
-    { time: 8.0,  ..._burbsBench(), activity: 'sitting',     dealOk: true,  heldObject: 'book' },                                 // morning bench reading
+    { time: 8.0,  ..._burbsBench(), activity: 'standing',    dealOk: true,  heldObject: 'book' },                                 // morning reading
     { time: 10.0, ..._playground(), activity: 'walking',     dealOk: true,  heldObject: 'book' },                                 // mid-morning stroll
     { time: 12.0, ..._tomas(),      activity: 'eating',      dealOk: true },                                                      // lunch at cottage
-    { time: 14.0, ..._burbsBench(), activity: 'sitting',     dealOk: true,  heldObject: 'book' },                                 // afternoon bench
+    { time: 14.0, ..._burbsBench(), activity: 'standing',    dealOk: true,  heldObject: 'book' },                                 // afternoon reading
     { time: 17.0, ..._tomas(),      activity: 'walking',     dealOk: true },
     { time: 20.0, ..._tomas(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "Reading time is over. Good night." },
   ],
@@ -187,7 +227,7 @@ const ROUTINES = {
 
   Jin: [
     { time: 0.0,  ..._jinHome(),    activity: 'sleeping',    dealOk: false, dealRefuseLine: "..." },
-    { time: 9.0,  ..._burbsBench(), activity: 'sitting',     dealOk: true,  heldObject: 'book' },                                 // morning quiet time
+    { time: 9.0,  ..._burbsBench(), activity: 'standing',    dealOk: true,  heldObject: 'book' },                                 // morning quiet time
     { time: 12.0, ..._jinHome(),    activity: 'eating',      dealOk: true },
     { time: 14.0, ..._theSchool(),  activity: 'walking',     dealOk: true },                                                      // afternoon stroll around school area
     { time: 17.0, ..._jinHome(),    activity: 'walking',     dealOk: true },
@@ -307,6 +347,19 @@ const ROUTINES = {
     { time: 0.0,  ..._aceHQ(),      activity: 'wandering',   dealOk: true },                                                     // night — active near ACE HQ
     { time: 6.0,  ..._aceHQ(),      activity: 'sleeping',    dealOk: false, dealRefuseLine: "Not during the day. You'll get us both caught." },
     { time: 20.0, ..._aceHQ(),      activity: 'wandering',   dealOk: true },                                                     // evening — reappears
+  ],
+
+  // ===== SPECIAL — Rina (near spawn, photographer) =====
+
+  Rina: [
+    { time: 6.0,  x: 3,   z: 8,   activity: 'sleeping',    dealOk: false },
+    { time: 7.0,  x: 3,   z: 8,   activity: 'standing',    dealOk: true },                                                     // morning near spawn — taking photos
+    { time: 9.0,  ..._fountain(),  activity: 'walking',     dealOk: true },                                                     // walks to fountain for morning light
+    { time: 12.0, ..._townCenter(),activity: 'socializing',  dealOk: true },                                                     // lunch at town center — people watching
+    { time: 14.0, x: 15,  z: 18,  activity: 'walking',      dealOk: true },                                                     // afternoon — photographing east side
+    { time: 16.0, x: -6,  z: 24,  activity: 'standing',     dealOk: true },                                                     // golden hour — taking sunset photos
+    { time: 18.0, x: 3,   z: 8,   activity: 'walking',      dealOk: false },                                                    // heading home
+    { time: 20.0, x: 3,   z: 8,   activity: 'sleeping',     dealOk: false },
   ],
 
   // Dex is special — random daily location

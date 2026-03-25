@@ -10,7 +10,6 @@ import { isNight } from './time-system.js';
 const ASH_COUNT = 60;
 const SPARKLE_COUNT = 60;
 const FIREFLY_COUNT = 30;
-const FOUNTAIN_DROP_COUNT = 40;
 const PETAL_COUNT = 20;
 const DUST_COUNT = 25;
 
@@ -35,13 +34,7 @@ let fireflyPoints = null;
 let fireflyPositions = null;
 let fireflyMat = null;
 
-// Fountain water drops
-let fountainPoints = null;
-let fountainPositions = null;
-let fountainVelocities = null;
-let fountainMat = null;
-let fountainActive = false;
-let fountainPos = { x: 0, z: 0 };
+// Fountain removed
 
 // Flower petals (high color trees)
 let petalPoints = null;
@@ -62,7 +55,6 @@ let zoneTimer = 0;
 let localColorAtPlayer = 0;
 let isInRuins = false;
 let highColorNearby = false; // any building > 0.7 within 20 units
-let fountainAreaColor = 0;
 
 // Wind direction (subtle)
 const windDir = { x: 0.3, z: 0.15 };
@@ -139,38 +131,6 @@ function createFireflyParticles(scene) {
   fireflyPositions = geo.attributes.position;
 }
 
-function createFountainParticles(scene) {
-  const positions = new Float32Array(FOUNTAIN_DROP_COUNT * 3);
-  fountainVelocities = new Float32Array(FOUNTAIN_DROP_COUNT * 3);
-  for (let i = 0; i < FOUNTAIN_DROP_COUNT; i++) {
-    resetFountainDrop(positions, fountainVelocities, i);
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  fountainMat = new THREE.PointsMaterial({
-    color: 0xAADDFF,
-    size: 0.08,
-    transparent: true,
-    opacity: 0,
-    depthWrite: false,
-    sizeAttenuation: true,
-  });
-  fountainPoints = new THREE.Points(geo, fountainMat);
-  scene.add(fountainPoints);
-  fountainPositions = geo.attributes.position;
-}
-
-function resetFountainDrop(positions, velocities, i) {
-  const angle = Math.random() * Math.PI * 2;
-  const speed = 0.3 + Math.random() * 0.5;
-  positions[i * 3] = fountainPos.x;
-  positions[i * 3 + 1] = 2.1 + Math.random() * 0.3;
-  positions[i * 3 + 2] = fountainPos.z;
-  velocities[i * 3] = Math.cos(angle) * speed;
-  velocities[i * 3 + 1] = 1.5 + Math.random() * 1.0;
-  velocities[i * 3 + 2] = Math.sin(angle) * speed;
-}
-
 function createPetalParticles(scene) {
   const positions = new Float32Array(PETAL_COUNT * 3);
   for (let i = 0; i < PETAL_COUNT; i++) {
@@ -223,16 +183,12 @@ export function initParticles(scene, player) {
   createAshParticles(scene);
   createSparkleParticles(scene);
   createFireflyParticles(scene);
-  createFountainParticles(scene);
   createPetalParticles(scene);
   createRuinsDustParticles(scene);
 }
 
-// Set fountain world position
-export function setFountainPosition(x, z) {
-  fountainPos.x = x;
-  fountainPos.z = z;
-}
+// Kept as no-op for backward compat
+export function setFountainPosition(x, z) {}
 
 // --- Zone check (runs every 2-3 seconds) ---
 function refreshZoneData() {
@@ -260,21 +216,6 @@ function refreshZoneData() {
     }
   }
   localColorAtPlayer = count > 0 ? total / count : 0;
-
-  // Fountain area color (buildings near 0,0)
-  let fTotal = 0;
-  let fCount = 0;
-  for (const b of buildings) {
-    const dx = b.x - fountainPos.x;
-    const dz = b.z - fountainPos.z;
-    const dist = Math.sqrt(dx * dx + dz * dz);
-    if (dist < 20) {
-      fTotal += b.displayAmount;
-      fCount++;
-    }
-  }
-  fountainAreaColor = fCount > 0 ? fTotal / fCount : 0;
-  fountainActive = fountainAreaColor >= 0.5;
 
   // Petals active when park trees area has high color
   let parkColor = 0;
@@ -377,38 +318,6 @@ export function updateParticles(dt, elapsed) {
     fireflyPositions.needsUpdate = true;
     // Pulsing size
     fireflyMat.size = 0.08 + Math.sin(elapsed * 2) * 0.04;
-  }
-
-  // --- Fountain water (active when area color >= 0.5) ---
-  const fOpacity = fountainActive ? Math.min(0.6, (fountainAreaColor - 0.5) * 2) : 0;
-  fountainMat.opacity = fOpacity;
-  if (fOpacity > 0.01) {
-    for (let i = 0; i < FOUNTAIN_DROP_COUNT; i++) {
-      let x = fountainPositions.getX(i);
-      let y = fountainPositions.getY(i);
-      let z = fountainPositions.getZ(i);
-
-      // Apply velocity + gravity
-      x += fountainVelocities[i * 3] * dt;
-      y += fountainVelocities[i * 3 + 1] * dt;
-      z += fountainVelocities[i * 3 + 2] * dt;
-
-      // Gravity
-      fountainVelocities[i * 3 + 1] -= 4.0 * dt;
-
-      // Reset if below basin level
-      if (y < 0.3) {
-        resetFountainDrop(
-          fountainPositions.array, fountainVelocities, i
-        );
-        x = fountainPositions.array[i * 3];
-        y = fountainPositions.array[i * 3 + 1];
-        z = fountainPositions.array[i * 3 + 2];
-      }
-
-      fountainPositions.setXYZ(i, x, y, z);
-    }
-    fountainPositions.needsUpdate = true;
   }
 
   // --- Flower petals (high color park area) ---
@@ -527,4 +436,44 @@ function updateSearchBursts(dt) {
     }
     pos.needsUpdate = true;
   }
+}
+
+// ============================================================
+// NPC SPARKLE BURST — on deal completion or relationship level-up
+// ============================================================
+
+export function spawnNPCSparkle(worldPos, color, count = 12) {
+  if (!sceneRef) return;
+
+  const positions = new Float32Array(count * 3);
+  const velocities = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 0.3 + Math.random() * 0.8;
+    positions[i * 3] = worldPos.x + (Math.random() - 0.5) * 0.3;
+    positions[i * 3 + 1] = 1.2 + Math.random() * 0.6;
+    positions[i * 3 + 2] = worldPos.z + (Math.random() - 0.5) * 0.3;
+    velocities[i * 3] = Math.cos(angle) * speed * 0.3;
+    velocities[i * 3 + 1] = 0.8 + Math.random() * 1.5;
+    velocities[i * 3 + 2] = Math.sin(angle) * speed * 0.3;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const mat = new THREE.PointsMaterial({
+    color: color || 0xFFDD44,
+    size: 0.08,
+    transparent: true,
+    opacity: 0.8,
+    depthWrite: false,
+    sizeAttenuation: true,
+  });
+  const points = new THREE.Points(geo, mat);
+  sceneRef.add(points);
+
+  searchBursts.push({
+    points, geo, mat, velocities,
+    positions: geo.attributes.position,
+    age: 0, maxAge: 1.2,
+  });
 }

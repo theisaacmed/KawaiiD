@@ -30,7 +30,7 @@ export function initAudio() {
   try {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     masterGain = ctx.createGain();
-    masterGain.gain.value = 0.5;
+    masterGain.gain.value = 0.65;
     masterGain.connect(ctx.destination);
 
     // Resume on user interaction (autoplay policy)
@@ -71,7 +71,17 @@ let padTargetColor = 0; // 0 = cold, 1 = warm
 let melodyKey = 0;
 let melodyStep = 0;
 
-// === COLD MELODIES (minor keys) ===
+// === TIER 0: GRAY (0-0.15) — sparse, desolate, very minimal ===
+const GRAY_MELODIES = [
+  // emptiness — very low, sparse single notes with long gaps
+  [[82.41,3.5],[73.42,2.8],[82.41,3.2],[87.31,2.4],[82.41,3.8]],
+  // dust — barely there, low register
+  [[110,3.2],[98,2.6],[82.41,3.5],[110,2.9],[98,3.1]],
+  // stillness — minimal movement, hollow
+  [[73.42,3.8],[82.41,3.1],[73.42,2.9],[65.41,3.5],[73.42,3.2]],
+];
+
+// === TIER 1: COLD (0.15-0.35) — melancholy minor, slow and sad ===
 const COLD_MELODIES = [
   // lament — A aeolian, sighing descent
   [[164.81,2.6],[220,1.4],[196,1.1],[164.81,2.1],[146.83,1.4],[123.47,0.9],[110,2.6],[123.47,1.6],[130.81,1.9],[146.83,1.6],[164.81,2.4],[164.81,2.9]],
@@ -83,15 +93,25 @@ const COLD_MELODIES = [
   [[329.63,1.6],[246.94,2.4],[293.66,1.1],[246.94,2.9],[293.66,1.4],[246.94,2.1],[220,1.1],[246.94,2.4],[293.66,1.6],[246.94,2.1]],
   // lonely peak — A aeolian, climb then fall
   [[130.81,2.6],[146.83,1.4],[164.81,1.1],[196,2.1],[220,1.4],[196,0.9],[164.81,2.6],[130.81,1.6],[123.47,1.9],[110,1.6],[123.47,2.4],[130.81,2.9]],
-  // sparse — A pentatonic minor, wide leaps
-  [[146.83,2.9],[293.66,1.1],[196,1.6],[261.63,2.4],[146.83,1.1],[196,2.1],[146.83,1.4],[220,2.8],[196,1.1],[146.83,1.9]],
   // rocking — E phrygian, gentle back-and-forth
   [[123.47,2.1],[130.81,1.9],[123.47,1.4],[130.81,1.1],[123.47,2.4],[146.83,2.1],[110,1.6],[130.81,0.9],[123.47,2.6],[110,1.9],[123.47,2.1],[123.47,2.9]],
-  // fragments — D dorian, descending scale pieces
-  [[440,1.6],[392,2.4],[329.63,1.1],[440,2.9],[392,1.4],[329.63,2.1],[293.66,1.1],[392,2.4],[329.63,1.6],[293.66,2.1]],
 ];
 
-// === WARM MELODIES (major keys) ===
+// === TIER 2: AWAKENING (0.35-0.6) — dorian/mixolydian, hopeful but bittersweet ===
+const AWAKENING_MELODIES = [
+  // first light — D dorian, tentative hope
+  [[196,2.1],[220,1.6],[246.94,1.4],[220,2.4],[261.63,1.6],[246.94,1.1],[220,2.6],[196,1.4],[220,1.9],[246.94,2.1]],
+  // stirring — G mixolydian, gentle momentum
+  [[196,1.9],[246.94,1.4],[293.66,2.1],[246.94,1.6],[329.63,1.1],[293.66,2.4],[246.94,1.4],[293.66,1.9],[246.94,2.6],[196,1.6]],
+  // wonder — C major pentatonic but slow, discovering beauty
+  [[261.63,2.4],[293.66,1.6],[329.63,1.9],[261.63,2.1],[392,1.4],[329.63,2.6],[293.66,1.1],[261.63,2.4],[329.63,1.6],[293.66,2.1]],
+  // unfolding — F lydian, opening up
+  [[174.61,2.6],[220,1.4],[246.94,1.9],[261.63,2.1],[246.94,1.4],[220,2.4],[261.63,1.6],[293.66,1.9],[261.63,2.6],[220,1.4]],
+  // resolve — A dorian, determined but gentle
+  [[220,2.1],[246.94,1.4],[261.63,1.6],[293.66,2.4],[261.63,1.1],[246.94,2.1],[293.66,1.6],[329.63,1.9],[293.66,2.4],[261.63,1.6]],
+];
+
+// === TIER 3: WARM (0.6-0.85) — bright major keys, lively ===
 const WARM_MELODIES = [
   // hope — C ionian, ascending phrase
   [[164.81,2.1],[196,1.9],[220,1.4],[196,1.1],[261.63,2.4],[246.94,2.1],[293.66,1.6],[261.63,0.9],[246.94,2.6],[220,1.9],[196,1.4]],
@@ -105,11 +125,39 @@ const WARM_MELODIES = [
   [[196,2.1],[293.66,1.9],[261.63,1.4],[329.63,1.1],[261.63,2.4],[440,2.1],[329.63,1.6],[261.63,0.9],[329.63,2.6],[220,1.9],[196,1.4]],
   // lullaby — C ionian, settling down warmly
   [[261.63,1.6],[392,2.4],[329.63,1.1],[293.66,2.9],[329.63,1.4],[261.63,2.1],[246.94,1.1],[293.66,2.4],[261.63,1.6],[246.94,2.1],[261.63,2.9]],
-  // celebration — G mixolydian, big upward leaps
-  [[196,2.6],[329.63,1.4],[293.66,1.1],[440,2.1],[329.63,1.4],[392,0.9],[440,2.6],[392,1.6],[293.66,1.9],[329.63,1.6],[293.66,2.4]],
   // wandering — F lydian, peaceful roaming
   [[196,2.9],[220,1.1],[261.63,1.6],[196,2.4],[261.63,1.1],[293.66,2.1],[246.94,1.4],[220,2.8],[293.66,1.1],[220,1.9],[196,2.6]],
 ];
+
+// === TIER 4: VIBRANT (0.85-1.0) — celebration, full color, joyful ===
+const VIBRANT_MELODIES = [
+  // celebration — G mixolydian, big upward leaps
+  [[196,2.6],[329.63,1.4],[293.66,1.1],[440,2.1],[329.63,1.4],[392,0.9],[440,2.6],[392,1.6],[293.66,1.9],[329.63,1.6],[293.66,2.4]],
+  // jubilant — C major, bright and bouncy
+  [[329.63,1.4],[392,1.1],[440,1.6],[523.25,2.1],[440,1.1],[392,1.6],[523.25,1.4],[659.25,1.9],[523.25,1.6],[440,1.1],[392,2.4],[523.25,1.6]],
+  // soaring — wide intervals, triumphant
+  [[261.63,1.6],[392,1.4],[523.25,1.9],[440,1.1],[659.25,2.1],[523.25,1.4],[440,1.6],[523.25,2.4],[659.25,1.1],[523.25,1.9],[392,1.4],[523.25,2.6]],
+  // bloom — F lydian, bright and open with #4
+  [[349.23,1.6],[440,1.4],[523.25,1.9],[493.88,1.1],[523.25,2.1],[440,1.6],[349.23,1.4],[440,1.9],[523.25,2.4],[440,1.1],[349.23,2.6]],
+  // kaleidoscope — pentatonic major, dancing high
+  [[392,1.1],[523.25,1.6],[440,1.4],[659.25,1.9],[523.25,1.1],[587.33,1.6],[523.25,1.4],[440,1.9],[523.25,2.1],[659.25,1.4],[523.25,1.6]],
+];
+
+// Color tier configuration: [threshold, melodies, pauseMin, pauseMax, volumeBase, volumeColor, legatoOverlap]
+const COLOR_TIERS = [
+  { max: 0.15, melodies: GRAY_MELODIES,      pauseMin: 10000, pauseMax: 16000, volBase: 0.012, volColor: 0.004, legato: 0.40 },
+  { max: 0.35, melodies: COLD_MELODIES,      pauseMin: 7000,  pauseMax: 12000, volBase: 0.016, volColor: 0.006, legato: 0.50 },
+  { max: 0.60, melodies: AWAKENING_MELODIES, pauseMin: 5000,  pauseMax: 9000,  volBase: 0.020, volColor: 0.010, legato: 0.55 },
+  { max: 0.85, melodies: WARM_MELODIES,      pauseMin: 4000,  pauseMax: 8000,  volBase: 0.022, volColor: 0.012, legato: 0.58 },
+  { max: 1.01, melodies: VIBRANT_MELODIES,   pauseMin: 3000,  pauseMax: 6000,  volBase: 0.025, volColor: 0.014, legato: 0.62 },
+];
+
+function getCurrentTier(color) {
+  for (let i = 0; i < COLOR_TIERS.length; i++) {
+    if (color < COLOR_TIERS[i].max) return COLOR_TIERS[i];
+  }
+  return COLOR_TIERS[COLOR_TIERS.length - 1];
+}
 
 function startAmbientDrone() {
   if (!ctx) return;
@@ -242,6 +290,9 @@ function playPadVoice(freq, dur, vol, color) {
   }
 }
 
+// Track which tier we're in so we can detect tier changes mid-phrase
+let currentMelodyTier = null;
+
 function scheduleNextNote() {
   if (!ctx) return;
   if (ctx.state === 'suspended') {
@@ -250,14 +301,22 @@ function scheduleNextNote() {
   }
 
   const color = padTargetColor;
-  const melodies = color < 0.5 ? COLD_MELODIES : WARM_MELODIES;
+  const tier = getCurrentTier(color);
+
+  // If tier changed mid-phrase, finish current phrase then switch
+  if (currentMelodyTier !== tier && melodyStep === 0) {
+    currentMelodyTier = tier;
+  }
+  const activeTier = currentMelodyTier || tier;
+
+  const melodies = activeTier.melodies;
   const melody = melodies[melodyKey % melodies.length];
   const [freq, dur] = melody[melodyStep];
 
   // Phrase shaping: volume swells in the middle of a phrase
   const progress = melody.length > 1 ? melodyStep / (melody.length - 1) : 0.5;
   const phraseShape = 0.5 + 0.5 * Math.sin(progress * Math.PI);
-  const vol = (0.018 + color * 0.01) * (0.5 + 0.5 * phraseShape);
+  const vol = (activeTier.volBase + color * activeTier.volColor) * (0.5 + 0.5 * phraseShape);
 
   // Play this note as a pad voice
   playPadVoice(freq, dur, vol, color);
@@ -265,16 +324,16 @@ function scheduleNextNote() {
   // Advance
   melodyStep++;
   if (melodyStep >= melody.length) {
-    // Phrase done — long pause, then next melody
+    // Phrase done — pause duration depends on tier (more color = shorter gaps)
     melodyStep = 0;
     melodyKey++;
-    const pause = 6000 + Math.random() * 6000; // 6-12s gap between phrases
+    currentMelodyTier = null; // allow tier switch at next phrase
+    const pause = activeTier.pauseMin + Math.random() * (activeTier.pauseMax - activeTier.pauseMin);
     melodyTimeout = setTimeout(() => scheduleNextNote(), pause);
   } else {
-    // Next note overlaps the current — heavy legato crossfade
-    // Notes bleed into each other so there's no gap/beep separation
+    // Next note overlaps the current — legato amount depends on tier
     const rubato = 1 + (Math.random() - 0.5) * 0.2;
-    const spacing = dur * 0.55 * rubato * 1000; // 55% overlap = very legato
+    const spacing = dur * activeTier.legato * rubato * 1000;
     melodyTimeout = setTimeout(() => scheduleNextNote(), spacing);
   }
 }
@@ -286,9 +345,12 @@ export function updateAmbientDrone(worldColor) {
   if (!ambNoiseLPF) return;
 
   const t = Math.min(worldColor, 1);
-  ambNoiseLPF.frequency.value = 200 + t * 300;
+  // Noise bed: very present when gray, fades as color grows, almost gone when vibrant
+  // LPF opens up slightly with color — less muffled, more airy
+  ambNoiseLPF.frequency.value = 150 + t * 450;
   if (ambNoiseGain) {
-    ambNoiseGain.gain.value = 0.012 - t * 0.005;
+    // Gray: loud hiss (0.015), vibrant: barely there (0.003)
+    ambNoiseGain.gain.value = 0.015 - t * 0.012;
   }
 }
 
@@ -875,7 +937,7 @@ export function playSleepFadeOut() {
 export function playDawnBirds() {
   if (!ensureCtx()) return;
   // Restore master
-  masterGain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 1.0);
+  masterGain.gain.linearRampToValueAtTime(0.65, ctx.currentTime + 1.0);
 
   // Bird chirps
   const t = ctx.currentTime + 0.3;
