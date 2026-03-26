@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { getBuildingColors } from './color-system.js';
-import { isNight, getGameHour } from './time-system.js';
+import { isNight } from './time-system.js';
 
 // --- State ---
 const posters = [];      // { mesh, material, x, z }
@@ -22,14 +22,6 @@ const localColors = new Map();
 const _c = new THREE.Color();
 
 // --- ACE Propaganda Posters ---
-const POSTER_TEXTS = [
-  'CUTE IS CRIME',
-  'REPORT CUTE ACTIVITY',
-  'GRAY IS GOOD',
-  'COLOR KILLS',
-  'STAY DULL STAY SAFE',
-];
-
 function createPosters(scene, buildings) {
   // Place posters on some building walls
   const posterBuildings = [
@@ -371,13 +363,3 @@ export function updateEnvironment(dt) {
   }
 }
 
-// --- NPC homes gain color faster ---
-// Call this during color spread to give NPC home buildings a boost
-export function boostNPCHomeColor(npcName, amount) {
-  const bColors = getBuildingColors();
-  for (const glow of npcHomeGlows) {
-    if (glow.npcName === npcName && glow.buildingColor) {
-      glow.buildingColor.colorAmount = Math.min(1.0, glow.buildingColor.colorAmount + amount * 0.5);
-    }
-  }
-}

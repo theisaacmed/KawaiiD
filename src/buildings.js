@@ -3,10 +3,8 @@
 // Each building tracks colorAmount individually for the color system.
 
 import * as THREE from 'three';
-import { isDistrictUnlocked } from './districts.js';
 import { getRoadSegments } from './roads.js';
 import { generateBuilding } from './building-generator.js';
-import { NAMED_BUILDINGS } from './named-buildings.js';
 import { getTerrainHeight } from './world.js';
 
 // Window and door materials — updated by color system
@@ -31,7 +29,7 @@ const TOWN_BUILDINGS = [
   { x: -7.2, z: -4.8, w: 8, d: 7, h: 7, btype: 'shop' },
   { x: -7.2, z: 1.8, w: 8, d: 7, h: 9, btype: 'apartment' },
   { x: -6.6, z: 8.4, w: 7, d: 7, h: 8, btype: 'residential' },
-  { x: -7.2, z: 15, w: 8, d: 7, h: 10, btype: 'luna_townhouse', named: 'luna_townhouse', namedSigColor: 0xAFA9EC },
+  { x: -7, z: 6, w: 5, d: 5, h: 10, btype: 'luna_townhouse', named: 'luna_townhouse', namedSigColor: 0xAFA9EC },
   { x: -6.6, z: 21.6, w: 7, d: 7, h: 7, btype: 'shop' },
   { x: -7.2, z: 27.6, w: 8, d: 6, h: 9, btype: 'residential' },
 
@@ -43,7 +41,7 @@ const TOWN_BUILDINGS = [
   { x: 7.2, z: 27.6, w: 8, d: 6, h: 10, btype: 'apartment' },
 
   // === Player apartment (on east side of Main St) ===
-  { x: 7.2, z: 8.4, w: 7, d: 7, h: 10, landmark: 'apartment', btype: 'player_apartment' },
+  { x: 6.5, z: 6, w: 6, d: 5, h: 10, landmark: 'apartment', btype: 'player_apartment' },
 
   // ====== WEST SECONDARY STREET (X=-40) — WEST SIDE (X ~ -48) ======
   { x: -28.8, z: -4.8, w: 8, d: 7, h: 8, btype: 'residential' },
@@ -73,7 +71,7 @@ const TOWN_BUILDINGS = [
   { x: 28.8, z: -4.8, w: 8, d: 7, h: 8, btype: 'residential' },
   { x: 28.8, z: 1.8, w: 8, d: 7, h: 10, btype: 'apartment' },
   { x: 28.8, z: 8.4, w: 8, d: 7, h: 7, btype: 'shop' },
-  { x: 28.8, z: 15, w: 8, d: 7, h: 10, btype: 'mei_apartment', named: 'mei_apartment', namedSigColor: 0xED93B1 },
+  { x: 6, z: 18, w: 5, d: 4, h: 10, btype: 'mei_apartment', named: 'mei_apartment', namedSigColor: 0xED93B1 },
   { x: 28.8, z: 21.6, w: 8, d: 7, h: 8, btype: 'apartment' },
   { x: 28.8, z: 27.6, w: 8, d: 6, h: 7, btype: 'residential' },
 
@@ -87,7 +85,7 @@ const TOWN_BUILDINGS = [
   { x: 15, z: 19.2, w: 8, d: 6, h: 7, btype: 'cornerstore' },
 
   // === Named buildings — mid-block fills ===
-  { x: -13.2, z: 8.4, w: 7, d: 6, h: 8, btype: 'kit_shop', named: 'kit_shop', namedSigColor: 0x9FE1CB },
+  { x: -8, z: 14, w: 5, d: 4, h: 8, btype: 'kit_shop', named: 'kit_shop', namedSigColor: 0x9FE1CB },
 ];
 
 // DOWNTOWN (north-center) — dense commercial/office district
@@ -1912,14 +1910,6 @@ function createSkyBridge(scene, x1, z1, x2, z2, height) {
   scene.add(bridge);
 }
 
-function createSmokestack(scene, x, z, buildingH) {
-  const stackMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
-  const stack = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 5, 8), stackMat);
-  stack.position.set(x + 2, buildingH + 2.5, z - 1);
-  stack.castShadow = true;
-  scene.add(stack);
-}
-
 function createLoadingDock(scene, x, z) {
   const dockMat = new THREE.MeshLambertMaterial({ color: 0x585858 });
   const platform = new THREE.Mesh(new THREE.BoxGeometry(8, 0.5, 3), dockMat);
@@ -2709,73 +2699,8 @@ export function showDistrictBuildings(districtKey, scene) {
   // All buildings are already visible and detailed at creation time
 }
 
-// Get building collision data (for ACE LOS checks)
-export function getBuildingBlocks() {
-  return allBuildingBlocks.filter(b => {
-    // Only include buildings from unlocked districts
-    return b.district === 'town' || b.district === 'ruins' || isDistrictUnlocked(b.district);
-  });
-}
-
-// Get all building meshes for a district
-export function getDistrictBuildingMeshes(districtKey) {
-  return allBuildings.filter(b => b.district === districtKey).map(b => b.mesh);
-}
-
 // Get all building block data (for minimap, etc)
 export function getAllBuildingBlocks() {
   return allBuildingBlocks;
 }
 
-export function getWindowMats() { return windowMats; }
-export function getDoorMats() { return doorMats; }
-
-// ========== NPC SPAWN POINTS (future use) ==========
-export const NPC_SPAWN_POINTS = {
-  burbs: [
-    { x: 78, z: -21 }, { x: 93, z: -9 }, { x: 105, z: -22.8 }, { x: 87, z: 4.8 },
-  ],
-  northtown: [
-    { x: 69, z: 84 }, { x: 84, z: 93 }, { x: 75, z: 100.8 }, { x: 93, z: 96 },
-  ],
-  uptown: [
-    { x: 96, z: 37.2 }, { x: 108, z: 37.2 }, { x: 99, z: 49.2 }, { x: 114, z: 57 },
-  ],
-  tower: [
-    { x: -93, z: 64.8 }, { x: -81, z: 75 }, { x: -88.8, z: 82.8 }, { x: -78, z: 67.2 },
-  ],
-  industrial: [
-    { x: -6, z: -55.2 }, { x: 15, z: -55.2 }, { x: 9, z: -69 }, { x: 27, z: -67.2 },
-  ],
-  port: [
-    { x: -54, z: 120 }, { x: -39, z: 120 }, { x: -33, z: 126 }, { x: -48, z: 130.8 },
-  ],
-  aceHQ: [
-    { x: -87, z: -30 }, { x: -81, z: -39 },
-  ],
-};
-
-// ========== ACE PATROL WAYPOINTS (future use) ==========
-export const ACE_PATROL_WAYPOINTS = {
-  burbs: [
-    { x: 78, z: -18 }, { x: 96, z: -18 }, { x: 96, z: 6 }, { x: 78, z: 6 },
-  ],
-  northtown: [
-    { x: 66, z: 84 }, { x: 90, z: 84 }, { x: 90, z: 102 }, { x: 66, z: 102 },
-  ],
-  uptown: [
-    { x: 94.8, z: 36 }, { x: 117, z: 36 }, { x: 117, z: 57 }, { x: 94.8, z: 57 },
-  ],
-  tower: [
-    { x: -99, z: 60 }, { x: -75, z: 60 }, { x: -75, z: 84 }, { x: -99, z: 84 },
-  ],
-  industrial: [
-    { x: -12, z: -51 }, { x: 33, z: -51 }, { x: 33, z: -78 }, { x: -12, z: -78 },
-  ],
-  port: [
-    { x: -60, z: 117 }, { x: -30, z: 117 }, { x: -30, z: 132 }, { x: -60, z: 132 },
-  ],
-  aceHQ: [
-    { x: -102, z: -27 }, { x: -72, z: -27 }, { x: -72, z: -49.2 }, { x: -102, z: -49.2 },
-  ],
-};

@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { getSlots, clearInventory, deductMoney } from './inventory.js';
 import { isDealOpen } from './dealing.js';
-import { getGameHour, isNight, getDaylightFactor, getTimePeriod } from './time-system.js';
+import { getGameHour, isNight, getTimePeriod } from './time-system.js';
 
 // Callback for save system (avoids circular import)
 let onCaughtCallback = null;
@@ -330,20 +330,8 @@ export function createACEOfficers(scene) {
 export function initACE(player) { playerRef = player; }
 export function getOfficers() { return officers; }
 
-// Enable officer at specific index (for district unlocks)
-export function enableEastsideOfficer() {
-  // No-op for backwards compatibility — officers are now always enabled
-}
-
-// Add building data for LOS and collision
-export function addEastsideBuildings(blocks) {
-  for (const b of blocks) {
-    BUILDINGS.push(b);
-  }
-}
-
 // Add buildings dynamically for LOS checks
-export function addBuildingsForLOS(blocks) {
+function addBuildingsForLOS(blocks) {
   for (const b of blocks) {
     BUILDINGS.push(b);
   }
@@ -735,4 +723,4 @@ export function getDetectRange() {
 export function getDetectConeHalf() {
   return (currentMode === 'night' || currentMode === 'to_night') ? NIGHT_CONE_HALF : DAY_CONE_HALF;
 }
-export function getCurrentMode() { return currentMode; }
+

@@ -10,7 +10,7 @@
 //   - Phone state is persisted via save-system.js (getPhoneState / restorePhoneState)
 
 import * as THREE from 'three';
-import { getSlots, getMoney } from './inventory.js';
+import { getSlots } from './inventory.js';
 import { getWorldColor } from './color-system.js';
 import { isNPCActive, getDayNumber, getGameHour } from './time-system.js';
 import { isDistrictUnlocked, DISTRICTS as PHONE_DISTRICTS } from './districts.js';
@@ -30,7 +30,6 @@ export function setDealFunctions(isDealOpen) { isDealOpenFn = isDealOpen; }
 // Gacha unlock callback — set by main.js
 export function setGachaUnlockCallback(fn) { gachaUnlockCallback = fn; }
 
-export function isPhoneUnlocked() { return phoneUnlocked; }
 export function unlockPhone() { phoneUnlocked = true; }
 
 let noPhoneToastTimeout;
@@ -96,7 +95,6 @@ let gachaUnlockCallback = null; // set by main.js
 // Eastside unlock tracking
 let eastsideUnlockSent = false;
 let eastsideUnlockCallback = null;
-export function setEastsideUnlockCallback(fn) { eastsideUnlockCallback = fn; }
 
 // Message generation timer
 let msgTimer = 0;
@@ -134,9 +132,6 @@ function sendDexDailyMsg() {
 
 // Notification
 let notifBadge = null;
-
-// Deal completed hook — set by initPhone, called by dealing.js
-let dealCompletedCallback = null;
 
 // --- Helpers ---
 function randomBetween(min, max) {
@@ -1327,7 +1322,7 @@ function renderNotifHistoryTab() {
 }
 
 // --- Open / Close ---
-export function openPhone() {
+function openPhone() {
   if (isDealOpenFn()) return; // don't open phone during deal
   isPhoneOpen = true;
   phoneContainer.style.display = 'flex';
@@ -1346,7 +1341,7 @@ export function closePhone() {
   updateNotifBadge();
 }
 
-export function togglePhone() {
+function togglePhone() {
   if (!phoneUnlocked) { showNoPhoneToast(); return; }
   if (isPhoneOpen) closePhone();
   else openPhone();

@@ -327,11 +327,6 @@ export function updateRoads(dt) {
   }
 }
 
-// Get all road data for minimap
-export function getRoadData() {
-  return allRoadMeshes;
-}
-
 // Get road segment data for building placement validation
 // Returns array of { x, z, w, d, roadWidth } where roadWidth is the actual road width category
 export function getRoadSegments() {

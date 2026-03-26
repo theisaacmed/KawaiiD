@@ -194,7 +194,7 @@ function gatherSaveData() {
 }
 
 // --- Save to localStorage ---
-export function saveGame() {
+function saveGame() {
   try {
     const data = gatherSaveData();
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -206,7 +206,7 @@ export function saveGame() {
 }
 
 // Save with visual indicator
-export function saveWithMessage(msg) {
+function saveWithMessage(msg) {
   const ok = saveGame();
   if (ok) showSaveMessage(msg || 'Saving...');
 }

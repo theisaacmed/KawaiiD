@@ -79,7 +79,3 @@ export function createApartment(scene) {
   // Decoration spots (placed items, color progression)
   initDecor(scene);
 }
-
-export function getApartmentGroup() {
-  return apartmentGroup;
-}

@@ -74,10 +74,6 @@ export function setStationEnabled(val) {
 
 export function isPrintStationOpen() { return isUIOpen; }
 
-export function getPrintStationState() {
-  return { ...stationState };
-}
-
 export function restorePrintStationState(data) {
   if (!data) return;
   stationState.inputQueue = data.inputQueue || 0;

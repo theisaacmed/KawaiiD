@@ -25,7 +25,6 @@ let backdrop = null;
 let panel = null;
 
 // Reveal state (set after a gacha deal completes)
-let revealPending = null; // { contains, npcName, bonusMoney, isPlushie }
 let revealOverlay = null;
 
 // Callbacks set by main.js

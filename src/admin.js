@@ -2,15 +2,15 @@
 // Provides testing controls: teleport, give items/money, time, ACE, color, progression
 
 import { addItem, addMoney, getMoney, getSlots, clearInventory, deductMoney } from './inventory.js';
-import { getGameHour, setGameHour, getDayNumber, setDayNumber, isNight, getTimePeriod } from './time-system.js';
+import { getGameHour, setGameHour, getDayNumber, setDayNumber, getTimePeriod } from './time-system.js';
 import { getOfficers } from './ace.js';
 import { getWorldColor, spreadColor, getBuildingColors } from './color-system.js';
 import { getPhoneStats } from './phone.js';
 import { getJP, addJP, getRankName, getCurrentRankIndex, getNextRank, RANKS } from './jp-system.js';
 import { unlockGacha, isGachaUnlocked } from './gacha.js';
-import { getUnlockedDistricts, DISTRICTS } from './districts.js';
+import { getUnlockedDistricts } from './districts.js';
 import { triggerSave } from './save-system.js';
-import { checkDealMilestone, checkColorMilestone } from './progression.js';
+import { checkColorMilestone } from './progression.js';
 
 let panel = null;
 let visible = false;
@@ -20,7 +20,6 @@ let performEastsideUnlockFn = null;
 
 // God mode — ACE officers ignore you
 let godMode = false;
-export function isGodMode() { return godMode; }
 
 // Noclip — fly through walls
 let noclip = false;

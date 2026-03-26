@@ -4,10 +4,10 @@ import { createWorld, updateOcean } from './world.js';
 import { createRuins, updateRuinsGlow } from './ruins.js';
 import { createRoads, updateRoads } from './roads.js';
 import { createBuildings, getFountainData, showDistrictBuildings } from './buildings.js';
-import { createDistricts, checkDistrictUnlocks, checkDistrictUnlocksByRank, restoreDistrictState, getDistrictState, isDistrictUnlocked } from './districts.js';
+import { createDistricts, checkDistrictUnlocks, checkDistrictUnlocksByRank, restoreDistrictState, isDistrictUnlocked } from './districts.js';
 import { createWorldDetail, updateWorldDetail, createTownCenter } from './world-detail.js';
 import { createRuinsDetail } from './ruins-detail.js';
-import { initParticles, updateParticles, setFountainPosition, spawnSearchDust } from './particles.js';
+import { initParticles, updateParticles, setFountainPosition } from './particles.js';
 import { initEnvironment, updateEnvironment } from './environment.js';
 import { createHUD, flashMoney, showFloatingMoney, updateWorldColorHUD } from './hud.js';
 import { initActiveDealsHUD } from './active-deals-hud.js';
@@ -17,10 +17,10 @@ import { initDealing, isDealOpen, setOnDealCallback, setOnPhoneDealCallback } fr
 import { initPhone, updatePhone, setDealFunctions, onPhoneDealCompleted, isPhoneVisible, getPhoneStats, acceptMessage, declineMessage, openPhoneToMessage, getUnreadCount } from './phone.js';
 // STRIPPED: ACE system disabled for core-loop focus
 // import { createACEOfficers, initACE, updateACE, getOfficers, setOnCaughtCallback, setOnEscapeCallback, isAnyOfficerWithinRange } from './ace.js';
-import { initColorSystem, updateColorSystem, spreadColorBonus, addBuildings, getWorldColor, setNPCColorModifierFn, setNPCsForColorSystem, setOnBuildingThresholdCallback, syncBuildingThresholds } from './color-system.js';
+import { initColorSystem, updateColorSystem, spreadColorBonus, getWorldColor, setNPCColorModifierFn, setNPCsForColorSystem, setOnBuildingThresholdCallback, syncBuildingThresholds } from './color-system.js';
 import { initLighting, updateLighting } from './lighting.js';
 import {
-  updateTime, setGameHour, setDayNumber, getDayNumber,
+  updateTime, setGameHour, setDayNumber,
   registerPausePredicate, setSleepCallback, isSleepingNow, isNight,
 } from './time-system.js';
 import { initMinimap, updateMinimap } from './minimap.js';
@@ -30,9 +30,9 @@ import { hasSave, loadSave, clearSave, applySave, initSaveSystem, triggerSave } 
 // import { initGacha, setRevealCallbacks, unlockGacha, isGachaUIOpen } from './gacha.js';
 import { showTitleScreen } from './title-screen.js';
 import { initPauseMenu, isPauseMenuOpen } from './pause-menu.js';
-import { initProgression, setVictoryCallback, checkDealMilestone, checkColorMilestone, getProgressionState, restoreProgressionState, showRankMessage } from './progression.js';
+import { initProgression, setVictoryCallback, checkDealMilestone, checkColorMilestone, restoreProgressionState, showRankMessage } from './progression.js';
 import { spawnPropsIfNeeded, restoreAllProps } from './named-buildings.js';
-import { addJP, setOnRankUpCallback, getCurrentRankIndex, restoreJPState } from './jp-system.js';
+import { addJP, setOnRankUpCallback, getCurrentRankIndex } from './jp-system.js';
 import {
   initAudio, updateAmbientDrone, updateFootsteps,
   startNightSounds, stopNightSounds,

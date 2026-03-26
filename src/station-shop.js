@@ -15,7 +15,7 @@ import { purchaseWorkshop, applyWorkshopMk2 } from './workshop.js';
 
 // ========== CATALOG ==========
 
-export const STATION_CATALOG = [
+const STATION_CATALOG = [
   {
     id: 'print_station',
     name: 'Print Station',
@@ -160,10 +160,6 @@ let backdrop = null;
 let panel = null;
 
 // ========== PUBLIC API ==========
-
-export function isStationPurchased(id) {
-  return !!purchased[id];
-}
 
 export function isNearStationShop(playerPos) {
   if (!counterMesh) return false;

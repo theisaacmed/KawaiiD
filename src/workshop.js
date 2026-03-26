@@ -4,9 +4,7 @@
 // Mk2 per station: 35% faster, $500 each.
 
 import * as THREE from 'three';
-import { getMoney, deductMoney, getSlots, addItem, removeFromSlot } from './inventory.js';
-import { getCurrentRankIndex } from './jp-system.js';
-import { showFloatingMoney } from './hud.js';
+import { getSlots, addItem, removeFromSlot } from './inventory.js';
 
 // workshop_property building center is at x:35, z:-88 (14w × 11d)
 // Entrance is at the south face: z = -88 + 11/2 = -82.5
@@ -78,10 +76,6 @@ export function restoreWorkshopState(data) {
 // Apply Mk2 upgrade for a workshop station (called from station-shop)
 export function applyWorkshopMk2(stationType) {
   if (stationFlags[stationType]) stationFlags[stationType].mk2 = true;
-}
-
-export function isWorkshopMk2(stationType) {
-  return !!(stationFlags[stationType] && stationFlags[stationType].mk2);
 }
 
 // ==============================
@@ -204,7 +198,7 @@ export function openStorageUI() {
   storageBackdrop.onclick = () => closeStorageUI();
 }
 
-export function closeStorageUI() {
+function closeStorageUI() {
   storageOpen = false;
   if (storageBackdrop) storageBackdrop.style.display = 'none';
   if (storagePanel) storagePanel.style.display = 'none';

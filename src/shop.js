@@ -3,8 +3,7 @@
 
 import * as THREE from 'three';
 import { MATERIALS, getMaterialIconStyle } from './materials.js';
-import { addItem, getMoney, deductMoney, isFull, roomFor } from './inventory.js';
-import { showInventoryFull } from './hud.js';
+import { addItem, getMoney, deductMoney, roomFor } from './inventory.js';
 import { isNPCActive } from './time-system.js';
 
 // Kit's position — hidden alley off a secondary road in Town
@@ -225,7 +224,7 @@ function shopKeyHandler(e) {
   }
 }
 
-export function closeShop() {
+function closeShop() {
   if (!shopOpen) return;
   shopOpen = false;
   if (shopPanel) {

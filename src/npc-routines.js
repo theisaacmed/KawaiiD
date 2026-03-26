@@ -5,7 +5,7 @@
 // Deal availability depends on NPC location and activity.
 
 import { findPath, applySidewalkOffset, buildGraph } from './npc-pathfinding.js';
-import { getGameHour, getDayNumber } from './time-system.js';
+import { getDayNumber } from './time-system.js';
 import { isDistrictUnlocked } from './districts.js';
 import { getNamedBuildingPosition } from './named-buildings.js';
 

@@ -38,10 +38,6 @@ export function isNight() {
   return gameHour >= NIGHT_START_HOUR || gameHour < DAY_START_HOUR;
 }
 
-export function isDaytime() {
-  return gameHour >= DAY_START_HOUR && gameHour < NIGHT_START_HOUR;
-}
-
 // Daylight factor: 1.0 = full day, 0.0 = full night, with transitions
 export function getDaylightFactor() {
   // Dawn: 5:30 AM – 8:00 AM  (gradual brightening)
@@ -198,13 +194,6 @@ function showDayCard(onDone) {
       if (onDone) onDone();
     }, 600);
   }, 1800);
-}
-
-// Show day card on game start too (called from main.js)
-export function showStartDayCard() {
-  return new Promise(resolve => {
-    showDayCard(resolve);
-  });
 }
 
 export function isSleepingNow() { return isSleeping; }

@@ -71,11 +71,3 @@ export async function loadBuildingModels(scene, buildings) {
     }
   }
 }
-
-export function getLoadedModel(namedId) {
-  return loadedModels.get(namedId) || null;
-}
-
-export function getAllLoadedModels() {
-  return Array.from(loadedModels.values());
-}

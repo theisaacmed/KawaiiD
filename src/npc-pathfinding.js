@@ -365,21 +365,6 @@ export function applySidewalkOffset(path) {
   return result;
 }
 
-/**
- * Reset the pathfinding graph so it rebuilds on next findPath() call.
- * Use after dynamically adding roads or when NPC positions have changed.
- */
-export function resetGraph() {
-  nodes.length = 0;
-  nodeMap.clear();
-  graphBuilt = false;
-}
-
-// Get the graph node count (for debugging)
-export function getNodeCount() {
-  return nodes.length;
-}
-
 // Get all nodes (for debugging / visualization)
 export function getNodes() {
   return nodes;

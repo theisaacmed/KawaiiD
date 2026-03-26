@@ -5,19 +5,6 @@
 
 import * as THREE from 'three';
 
-// Shared geometry cache (created once, reused)
-let _geoCache = null;
-function getGeoCache() {
-  if (_geoCache) return _geoCache;
-  _geoCache = {
-    unitBox: new THREE.BoxGeometry(1, 1, 1),
-    unitCyl: new THREE.CylinderGeometry(0.5, 0.5, 1, 8),
-    thinCyl: new THREE.CylinderGeometry(0.5, 0.5, 1, 6),
-    cone4: new THREE.ConeGeometry(0.5, 1, 4),
-  };
-  return _geoCache;
-}
-
 // Base gray materials — cloned per building instance by the generator
 const WALL_GRAY = 0x888888;
 const ROOF_GRAY = 0x707070;
@@ -116,7 +103,7 @@ function makeRooftopDetail(w, h, d) {
 // ============================================================
 // TEMPLATE 1: BASIC HOUSE — box body + pitched roof + door + 2 windows upstairs
 // ============================================================
-export function templateBasicHouse(w, h, d) {
+function templateBasicHouse(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -165,7 +152,7 @@ export function templateBasicHouse(w, h, d) {
 // ============================================================
 // TEMPLATE 2: TOWNHOUSE — narrow, tall, flat roof with parapet, bay window
 // ============================================================
-export function templateTownhouse(w, h, d) {
+function templateTownhouse(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -215,7 +202,7 @@ export function templateTownhouse(w, h, d) {
 // ============================================================
 // TEMPLATE 3: APARTMENT BLOCK — wide, 4 stories, grid of windows, balconies
 // ============================================================
-export function templateApartmentBlock(w, h, d) {
+function templateApartmentBlock(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -263,7 +250,7 @@ export function templateApartmentBlock(w, h, d) {
 // ============================================================
 // TEMPLATE 4: COTTAGE — small, squat, very steep pitched roof, single window
 // ============================================================
-export function templateCottage(w, h, d) {
+function templateCottage(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -305,7 +292,7 @@ export function templateCottage(w, h, d) {
 // ============================================================
 // TEMPLATE 5: SHOP — wider ground floor, large shop window, awning, sign
 // ============================================================
-export function templateShop(w, h, d) {
+function templateShop(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -354,7 +341,7 @@ export function templateShop(w, h, d) {
 // ============================================================
 // TEMPLATE 6: OFFICE — tall, sleek, 5-6 stories, uniform window grid, flat roof
 // ============================================================
-export function templateOffice(w, h, d) {
+function templateOffice(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -400,7 +387,7 @@ export function templateOffice(w, h, d) {
 // ============================================================
 // TEMPLATE 7: MARKET STALL — open-sided, 4 poles, flat roof, tables
 // ============================================================
-export function templateMarketStall(w, h, d) {
+function templateMarketStall(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -439,7 +426,7 @@ export function templateMarketStall(w, h, d) {
 // ============================================================
 // TEMPLATE 8: RESTAURANT — shop-like + outdoor seating area
 // ============================================================
-export function templateRestaurant(w, h, d) {
+function templateRestaurant(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -494,7 +481,7 @@ export function templateRestaurant(w, h, d) {
 // ============================================================
 // TEMPLATE 9: WAREHOUSE — long, low, flat roof, corrugated walls, loading dock
 // ============================================================
-export function templateWarehouse(w, h, d) {
+function templateWarehouse(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -532,7 +519,7 @@ export function templateWarehouse(w, h, d) {
 // ============================================================
 // TEMPLATE 10: FACTORY — wide, smokestack, few windows, functional
 // ============================================================
-export function templateFactory(w, h, d) {
+function templateFactory(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -569,7 +556,7 @@ export function templateFactory(w, h, d) {
 // ============================================================
 // TEMPLATE 11: TOWER BUILDING — very tall, slight setback at top, observation deck
 // ============================================================
-export function templateTower(w, h, d) {
+function templateTower(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];
@@ -639,7 +626,7 @@ export function templateTower(w, h, d) {
 // ============================================================
 // TEMPLATE 12: CHURCH/CHAPEL — box body, steep pointed roof, bell tower
 // ============================================================
-export function templateChurch(w, h, d) {
+function templateChurch(w, h, d) {
   const group = new THREE.Group();
   const windows = [];
   const doors = [];

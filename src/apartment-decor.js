@@ -111,13 +111,11 @@ export function openDecorUI(spotId) {
   if (uiEl) uiEl.style.display = 'block';
 }
 
-export function closeDecorUI() {
+function closeDecorUI() {
   uiOpen = false;
   activeSpotId = null;
   if (uiEl) uiEl.style.display = 'none';
 }
-
-export function getDecorColorAmount() { return colorAmount; }
 
 export function getDecorState() {
   return {
@@ -137,7 +135,7 @@ export function restoreDecorState(data) {
   if (data.colorAmount !== undefined) colorAmount = data.colorAmount;
 }
 
-export function placeItem(spotId, invSlotIndex) {
+function placeItem(spotId, invSlotIndex) {
   const spot = DECOR_SPOTS.find(s => s.id === spotId);
   if (!spot) return false;
   if (placedItems[spotId]) return false; // already occupied

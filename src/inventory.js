@@ -135,16 +135,6 @@ export function getSlots() {
   });
 }
 
-// Legacy compat — returns counts
-export function getInventory() {
-  let stickers = 0, plushies = 0;
-  for (const s of state.slots) {
-    if (s.type === 'sticker') stickers += s.count;
-    else if (s.type === 'plushie') plushies += s.count;
-  }
-  return { stickers, plushies };
-}
-
 export function hasItem(type, subtype) {
   return state.slots.some(s => slotsMatch(s, type, subtype) && s.count > 0);
 }

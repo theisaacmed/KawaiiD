@@ -11,10 +11,6 @@ let ambiDrone = null;
 let stepTimer = 0;
 const STEP_INTERVAL = 0.42; // seconds between footsteps while walking
 
-// Chase pulse state
-let chasePulseOsc = null;
-let chasePulseGain = null;
-let chaseActive = false;
 
 // Ambient cricket/wind state
 let cricketInterval = null;
@@ -23,7 +19,6 @@ let windGain = null;
 
 // Track current world color for drone modulation
 let currentWorldColor = 0;
-let droneLPF = null;
 
 // --- Init ---
 export function initAudio() {
@@ -713,116 +708,6 @@ export function playGachaRevealCymbal() {
   osc.stop(ctx.currentTime + 0.3);
 }
 
-// ============================
-//  ACE OFFICER SOUNDS
-// ============================
-
-export function playACEAlert() {
-  if (!ensureCtx()) return;
-
-  // Low warning tone — two-note descending
-  const t = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(440, t);
-  osc.frequency.setValueAtTime(330, t + 0.15);
-  gain.gain.setValueAtTime(0.08, t);
-  gain.gain.setValueAtTime(0.06, t + 0.15);
-  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-  osc.connect(gain);
-  gain.connect(masterGain);
-  osc.start(t);
-  osc.stop(t + 0.3);
-}
-
-export function startChasePulse() {
-  if (!ensureCtx() || chaseActive) return;
-  chaseActive = true;
-
-  chasePulseOsc = ctx.createOscillator();
-  chasePulseGain = ctx.createGain();
-  const lfo = ctx.createOscillator();
-  const lfoGain = ctx.createGain();
-
-  chasePulseOsc.type = 'sawtooth';
-  chasePulseOsc.frequency.value = 80;
-
-  lfo.type = 'sine';
-  lfo.frequency.value = 4; // pulses per second
-  lfoGain.gain.value = 0.04;
-
-  chasePulseGain.gain.value = 0;
-
-  lfo.connect(lfoGain);
-  lfoGain.connect(chasePulseGain.gain);
-  chasePulseOsc.connect(chasePulseGain);
-  chasePulseGain.connect(masterGain);
-
-  chasePulseOsc.start();
-  lfo.start();
-
-  // Store lfo ref for cleanup
-  chasePulseOsc._lfo = lfo;
-  chasePulseOsc._lfoGain = lfoGain;
-}
-
-export function updateChasePulse(proximity) {
-  // proximity: 0 = far, 1 = very close
-  if (!chasePulseGain || !chasePulseOsc) return;
-  const speed = 4 + proximity * 8; // 4-12 Hz pulse
-  if (chasePulseOsc._lfo) {
-    chasePulseOsc._lfo.frequency.value = speed;
-  }
-  chasePulseGain.gain.value = 0.03 + proximity * 0.06;
-  chasePulseOsc.frequency.value = 80 + proximity * 40;
-}
-
-export function stopChasePulse() {
-  if (!chaseActive) return;
-  chaseActive = false;
-  try {
-    if (chasePulseOsc) {
-      if (chasePulseOsc._lfo) chasePulseOsc._lfo.stop();
-      chasePulseOsc.stop();
-    }
-  } catch (e) {}
-  chasePulseOsc = null;
-  chasePulseGain = null;
-}
-
-export function playACECaught() {
-  if (!ensureCtx()) return;
-
-  stopChasePulse();
-
-  // Harsh buzzer
-  const t = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(150, t);
-  osc.frequency.linearRampToValueAtTime(80, t + 0.5);
-  gain.gain.setValueAtTime(0.15, t);
-  gain.gain.linearRampToValueAtTime(0.08, t + 0.3);
-  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-  osc.connect(gain);
-  gain.connect(masterGain);
-  osc.start(t);
-  osc.stop(t + 0.5);
-
-  // Second buzz
-  const osc2 = ctx.createOscillator();
-  const gain2 = ctx.createGain();
-  osc2.type = 'sawtooth';
-  osc2.frequency.value = 100;
-  gain2.gain.setValueAtTime(0.12, t + 0.15);
-  gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
-  osc2.connect(gain2);
-  gain2.connect(masterGain);
-  osc2.start(t + 0.15);
-  osc2.stop(t + 0.6);
-}
 
 // ============================
 //  COLOR SPREAD SHIMMER

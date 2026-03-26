@@ -206,25 +206,6 @@ export function recordDeal(npcName, price) {
   }
 }
 
-// Record a phone deal refusal
-export function recordPhoneRefusal(npcName) {
-  const rel = getRelationship(npcName);
-  rel.refusedRequests++;
-  if (rel.refusedRequests >= 3) {
-    // -0.5 levels for 3 consecutive refusals
-    rel.level = Math.max(0, rel.level - 0.5);
-    rel.refusedRequests = 0;
-  }
-}
-
-// Record NPC getting busted by ACE (devastating trust loss)
-export function recordNPCBusted(npcName) {
-  const rel = getRelationship(npcName);
-  rel.level = Math.max(0, rel.level - 1);
-  rel.spooked = true;
-  rel.spookedUntil = Date.now() + 120000; // spooked for 2 minutes
-}
-
 // Reset daily deal counts (called when day changes)
 export function resetDailyDeals() {
   const today = getDayNumber();
@@ -275,7 +256,7 @@ function getAreaColorAmount(npcWorldPos) {
 }
 
 // Calculate acceptance chance for an offered item
-export function calcAcceptanceChance(npc, itemType, sessionRejections) {
+function calcAcceptanceChance(npc, itemType, sessionRejections) {
   const affinity = getNPCAffinity(npc.name, itemType);
   const rel = getRelationship(npc.name);
   const today = getDayNumber();
@@ -324,7 +305,7 @@ export function rollAcceptance(npc, itemType, sessionRejections) {
 
 // ========== PRICE CALCULATION ==========
 
-export function calcDealPrice(npc, itemType, itemSubtype) {
+function calcDealPrice(npc, itemType, itemSubtype) {
   const affinity = getNPCAffinity(npc.name, itemType);
   const rel = getRelationship(npc.name);
 
@@ -427,7 +408,7 @@ export function getNPCAffinity(npcName, itemType) {
   return base[key] !== undefined ? base[key] : 0;
 }
 
-export function setAffinityOverride(npcName, itemType, value) {
+function setAffinityOverride(npcName, itemType, value) {
   if (!affinityOverrides[npcName]) affinityOverrides[npcName] = {};
   affinityOverrides[npcName][itemType] = value;
 }
@@ -2563,12 +2544,6 @@ export function generateOffer(npc, itemType) {
   }
 
   return offer;
-}
-
-// Get the maximum price NPC will pay for this deal
-export function getMaxPrice(npc, itemType) {
-  const { maxPrice } = generateDealOffer(npc, itemType);
-  return maxPrice;
 }
 
 // Legacy: willAcceptGacha — now just checks affinity (acceptance is probability-based)

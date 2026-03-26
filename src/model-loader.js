@@ -61,23 +61,3 @@ export function storeOriginalColors(model) {
     }
   });
 }
-
-// Apply color amount (0 = fully gray, 1 = full original color)
-export function applyColorAmount(model, amount) {
-  model.traverse(child => {
-    if (child.isMesh && child.userData.originalColor) {
-      const orig = child.userData.originalColor;
-      const mats = Array.isArray(child.material) ? child.material : [child.material];
-      mats.forEach(mat => {
-        if (mat.color) {
-          const gray = orig.r * 0.299 + orig.g * 0.587 + orig.b * 0.114;
-          mat.color.setRGB(
-            gray + (orig.r - gray) * amount,
-            gray + (orig.g - gray) * amount,
-            gray + (orig.b - gray) * amount
-          );
-        }
-      });
-    }
-  });
-}

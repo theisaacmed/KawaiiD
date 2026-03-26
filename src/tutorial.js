@@ -7,9 +7,6 @@ import { unlockPhone } from './phone.js';
 
 // Ruins entrance area (RUINS_Z_START = -90)
 const RUINS_WAYPOINT = new THREE.Vector3(0, 0, -90);
-// Mei's world position
-const MEI_POS = new THREE.Vector3(-6, 0, 9);
-
 const STEP_TEXTS = [
   // Step 0 — intro lore (3s auto-advance)
   "The city has been drained of all color.\nCuteness is banned.",
@@ -42,8 +39,6 @@ let skipBtn = null;
 // ==============================
 // Public API
 // ==============================
-
-export function isTutorialComplete() { return tutorialComplete; }
 
 // Returns true while the player needs to complete the first deal with Mei.
 export function isTutorialDealStep() { return !tutorialComplete && tutorialStep === 3; }

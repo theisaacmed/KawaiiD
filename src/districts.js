@@ -2,8 +2,6 @@
 // Districts are NOT hard-walled. They overlap. Defined by building character, not walls.
 
 import * as THREE from 'three';
-import { getPhoneStats } from './phone.js';
-
 // ========== DISTRICT DEFINITIONS ==========
 // unlockRank: minimum rank index (from jp-system.js RANKS) to unlock via rank system
 // unlockDeals: legacy deal-count threshold (kept for backward compat / debug)
@@ -256,7 +254,7 @@ export function checkDistrictUnlocksByRank(rankIndex) {
 }
 
 // Force-unlock a district (for save restoration)
-export function forceUnlockDistrict(key) {
+function forceUnlockDistrict(key) {
   const district = DISTRICTS[key];
   if (!district || district.unlocked) return;
   district.unlocked = true;
@@ -286,37 +284,11 @@ export function getUnlockedDistricts() {
     .map(([key]) => key);
 }
 
-export function getLockedDistricts() {
-  return Object.entries(DISTRICTS)
-    .filter(([, d]) => !d.unlocked)
-    .map(([key, d]) => ({ key, name: d.name, dealsNeeded: d.unlockDeals, rankNeeded: d.unlockRank }));
-}
-
 // Get all active barrier boxes for player collision
 export function getBarrierBoxes() {
   return BARRIERS
     .filter(b => !b.removed)
     .map(b => ({ x: b.x, z: b.z, w: Math.max(b.w, 1.5), d: Math.max(b.d, 1.5) }));
-}
-
-// For proximity check — "This area is restricted by ACE. [X more deals to access]"
-export function getNearbyLockedDistrict(px, pz) {
-  for (const barrier of BARRIERS) {
-    if (barrier.removed) continue;
-    const dx = px - barrier.x;
-    const dz = pz - barrier.z;
-    if (Math.abs(dx) < 5 && Math.abs(dz) < 5) {
-      const district = DISTRICTS[barrier.district];
-      if (district && !district.unlocked) {
-        return {
-          name: district.name,
-          dealsNeeded: district.unlockDeals,
-          rankNeeded: district.unlockRank,
-        };
-      }
-    }
-  }
-  return null;
 }
 
 // Get district save state
@@ -338,19 +310,3 @@ export function restoreDistrictState(state) {
   }
 }
 
-// Which district is the player currently in?
-export function getPlayerDistrict(px, pz) {
-  let closest = 'town';
-  let closestDist = Infinity;
-  for (const [key, d] of Object.entries(DISTRICTS)) {
-    if (!d.unlocked) continue;
-    const dx = px - d.center.x;
-    const dz = pz - d.center.z;
-    const dist = Math.sqrt(dx * dx + dz * dz);
-    if (dist < d.radius && dist < closestDist) {
-      closest = key;
-      closestDist = dist;
-    }
-  }
-  return closest;
-}

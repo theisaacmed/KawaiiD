@@ -2,7 +2,7 @@
 
 import { removeFromSlot, addMoney } from './inventory.js';
 import { flashMoney, showFloatingMoney, onItemDrop, isDragging } from './hud.js';
-import { generateOffer, npcLine, BASE_VALUES, willAcceptGacha, rollAcceptance, generateDealOffer, getNPCAffinity, getAffinityIcon, getAffinityRejectLine, getAffinityAcceptLine, recordDeal, checkAffinityGrowth, getRelationship, freezeForDeal, unfreezeFromDeal, checkDealAvailability } from './npc.js';
+import { npcLine, rollAcceptance, generateDealOffer, getNPCAffinity, getAffinityIcon, getAffinityRejectLine, getAffinityAcceptLine, recordDeal, checkAffinityGrowth, getRelationship, freezeForDeal, unfreezeFromDeal, checkDealAvailability } from './npc.js';
 import { NPC_APPEARANCE } from './npc-models.js';
 import { spreadColor } from './color-system.js';
 import { triggerReveal } from './gacha.js';
@@ -29,7 +29,6 @@ let offeredItem = null;    // { slotIndex, type }
 let currentOffer = 0;
 let maxNPCPrice = 0; // ceiling for this deal
 let counterRound = 0;
-const MAX_COUNTER_ROUNDS = 2;
 let sessionRejections = 0; // rejections in this deal session
 
 export function initDealing() {
@@ -116,7 +115,7 @@ export function openDealPanel(npc, skipAvailabilityCheck) {
 let locationRefuseCallback = null;
 export function setLocationRefuseCallback(fn) { locationRefuseCallback = fn; }
 
-export function closePanel() {
+function closePanel() {
   if (!isOpen) return;
   // Unfreeze NPC movement
   if (activeNPC) unfreezeFromDeal(activeNPC.name);
@@ -223,8 +222,6 @@ function renderGreeting() {
   panel.querySelector('#deal-done-btn').addEventListener('click', closePanel);
 }
 
-let rejectTimeout = null;
-
 function renderConsidering(itemType) {
   const npc = activeNPC;
   const sub = offeredItem ? offeredItem.subtype : undefined;
@@ -308,11 +305,6 @@ function renderSessionMaxReject() {
     </div>
   `;
   panel.querySelector('#session-max-close').addEventListener('click', closePanel);
-}
-
-function renderReject(itemType) {
-  // Legacy — now uses affinity-based rejection
-  renderAffinityReject(getNPCAffinity(activeNPC.name, itemType), itemType);
 }
 
 function renderOffer(affinity) {

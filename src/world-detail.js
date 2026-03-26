@@ -7,7 +7,6 @@ import { getBuildingColors } from './color-system.js';
 import { getTerrainHeight } from './world.js';
 
 // Color targets
-const GRAY = new THREE.Color(0x808080);
 const BENCH_COLOR = new THREE.Color(0x8B5E3C);
 const FENCE_WHITE = new THREE.Color(0xF0E8D8);
 const FENCE_BROWN = new THREE.Color(0x7A5230);
@@ -594,15 +593,3 @@ export function updateWorldDetail(dt) {
   }
 }
 
-// Expose fountain data for particles — now in buildings.js
-export function getFountainData() {
-  return null; // Overridden in main.js
-}
-
-export function getLocalColorAmount(x, z) {
-  return getLocalColor(x, z);
-}
-
-export function getWorldObjects() {
-  return worldObjects;
-}

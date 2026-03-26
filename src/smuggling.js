@@ -112,7 +112,6 @@ export function isNearCrate(playerPos) {
   const dz = playerPos.z - CRATE_POS.z;
   return Math.sqrt(dx * dx + dz * dz) < CRATE_INTERACT_RADIUS;
 }
-export function isCrateWaiting() { return crateContents !== null; }
 export function isGusAvailable() {
   const rel = getRelationship('Gus');
   return Math.floor(rel.level) >= 2;

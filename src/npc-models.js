@@ -10,7 +10,7 @@ import * as THREE from 'three';
 // personalityColor: vibrant full-saturation color
 // accessoryGrayColor: muted personality color used in gray world
 // ============================================================
-const NPC_APPEARANCE = {
+export const NPC_APPEARANCE = {
   // === TOWN ===
   Mei: {
     heightScale: 0.92, widthScale: 0.90,
@@ -1079,4 +1079,3 @@ export function makeNPCLabel(name, personalityColor) {
 // ============================================================
 // EXPORT APPEARANCE DATA for other modules
 // ============================================================
-export { NPC_APPEARANCE };

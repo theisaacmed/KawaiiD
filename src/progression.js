@@ -84,10 +84,6 @@ export function checkColorMilestone(worldColor) {
   }
 }
 
-export function isVictoryTriggered() {
-  return victoryTriggered;
-}
-
 function queueMessage(msg) {
   messageQueue.push(msg);
   if (!showingMessage) showNextMessage();

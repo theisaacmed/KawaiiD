@@ -28,7 +28,6 @@ export function setOnJPChangeCallback(fn) { onJPChangeCb = fn; }
 
 export function getJP() { return currentJP; }
 export function getCurrentRankIndex() { return currentRankIndex; }
-export function getCurrentRank() { return RANKS[currentRankIndex]; }
 export function getRankName() { return RANKS[currentRankIndex].name; }
 
 export function getNextRank() {

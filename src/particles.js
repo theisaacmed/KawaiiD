@@ -59,11 +59,6 @@ let highColorNearby = false; // any building > 0.7 within 20 units
 // Wind direction (subtle)
 const windDir = { x: 0.3, z: 0.15 };
 
-// --- Utility ---
-function randomInRange(min, max) {
-  return min + Math.random() * (max - min);
-}
-
 // --- Create particle systems ---
 function createAshParticles(scene) {
   const positions = new Float32Array(ASH_COUNT * 3);

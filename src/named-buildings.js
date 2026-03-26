@@ -6,7 +6,7 @@ import * as THREE from 'three';
 
 // ========== NPC SIGNATURE COLORS ==========
 // Each NPC has a color that their building absorbs as a target
-export const NPC_COLORS = {
+const NPC_COLORS = {
   Mei:    0xED93B1, // warm pink
   Hiro:   0xF5C4B3, // soft peach
   Luna:   0xAFA9EC, // lavender
@@ -49,7 +49,7 @@ export const NAMED_BUILDINGS = [
     id: 'mei_apartment',
     name: "Mei's Apartment",
     district: 'town',
-    x: 29, z: 15, w: 8, d: 7, h: 10,
+    x: 6, z: 18, w: 5, d: 4, h: 10,
     type: 'residential',
     ownerNPC: 'Mei',
     sigColor: NPC_COLORS.Mei,
@@ -63,7 +63,7 @@ export const NAMED_BUILDINGS = [
     id: 'luna_townhouse',
     name: "Luna's Townhouse",
     district: 'town',
-    x: -7, z: 15, w: 8, d: 7, h: 10,
+    x: -7, z: 6, w: 5, d: 5, h: 10,
     type: 'residential',
     ownerNPC: 'Luna',
     sigColor: NPC_COLORS.Luna,
@@ -77,7 +77,7 @@ export const NAMED_BUILDINGS = [
     id: 'kit_shop',
     name: "Kit's Supply Shop",
     district: 'town',
-    x: -13, z: 8, w: 7, d: 6, h: 8,
+    x: -8, z: 14, w: 5, d: 4, h: 8,
     type: 'commercial',
     ownerNPC: 'Kit',
     sigColor: NPC_COLORS.Kit,
@@ -91,7 +91,7 @@ export const NAMED_BUILDINGS = [
     id: 'fountain_square',
     name: 'Fountain Square',
     district: 'town',
-    x: 0, z: 12,
+    x: 6, z: -2,
     type: 'unique',
     ownerNPC: null,
     sigColor: null,
@@ -102,7 +102,7 @@ export const NAMED_BUILDINGS = [
     id: 'player_apartment',
     name: 'Your Apartment',
     district: 'town',
-    x: 7, z: 8, w: 7, d: 7, h: 10,
+    x: 6.5, z: 6, w: 6, d: 5, h: 10,
     type: 'residential',
     ownerNPC: null,
     sigColor: 0xFAEEDA,
@@ -115,7 +115,7 @@ export const NAMED_BUILDINGS = [
     id: 'nao_cafe',
     name: "Nao's Café",
     district: 'downtown',
-    x: 7, z: 53, w: 9, d: 8, h: 10,
+    x: -14.5, z: 35, w: 5, d: 4, h: 10,
     type: 'commercial',
     ownerNPC: 'Nao',
     sigColor: NPC_COLORS.Nao,
@@ -129,7 +129,7 @@ export const NAMED_BUILDINGS = [
     id: 'marco_restaurant',
     name: "Marco's Restaurant",
     district: 'downtown',
-    x: 30, z: 54, w: 9, d: 8, h: 11,
+    x: 6.5, z: 36, w: 6, d: 4, h: 11,
     type: 'commercial',
     ownerNPC: 'Marco',
     sigColor: NPC_COLORS.Marco,
@@ -143,7 +143,7 @@ export const NAMED_BUILDINGS = [
     id: 'clock_tower',
     name: 'Clock Tower',
     district: 'downtown',
-    x: 5, z: 67,
+    x: 5.5, z: 41,
     type: 'unique',
     ownerNPC: null,
     sigColor: 0xFAEEDA,
@@ -154,7 +154,7 @@ export const NAMED_BUILDINGS = [
     id: 'harper_office',
     name: "Harper's News Office",
     district: 'downtown',
-    x: -21, z: 54, w: 9, d: 8, h: 11,
+    x: -6, z: 37, w: 5, d: 4, h: 11,
     type: 'commercial',
     ownerNPC: 'Harper',
     sigColor: NPC_COLORS.Harper,
@@ -170,7 +170,7 @@ export const NAMED_BUILDINGS = [
     id: 'playground',
     name: 'Playground',
     district: 'burbs',
-    x: 75, z: 3,
+    x: 30, z: 9,
     type: 'unique',
     ownerNPC: null,
     sigColor: null,
@@ -181,7 +181,7 @@ export const NAMED_BUILDINGS = [
     id: 'tomas_cottage',
     name: "Tomas's Cottage",
     district: 'burbs',
-    x: 93, z: -23, w: 9, d: 7, h: 6,
+    x: 32, z: 16, w: 5, d: 4, h: 6,
     type: 'residential',
     ownerNPC: 'Tomas',
     sigColor: NPC_COLORS.Tomas,
@@ -195,7 +195,7 @@ export const NAMED_BUILDINGS = [
     id: 'the_school',
     name: 'The School',
     district: 'burbs',
-    x: 105, z: -25, w: 14, d: 10, h: 9,
+    x: 30.5, z: 1, w: 7, d: 5, h: 9,
     type: 'unique',
     ownerNPC: null,
     sigColor: 0x85B7EB,
@@ -207,7 +207,7 @@ export const NAMED_BUILDINGS = [
     id: 'taro_factory',
     name: "Taro's Old Factory",
     district: 'industrial',
-    x: -3, z: -53, w: 14, d: 11, h: 10,
+    x: -5, z: -22, w: 8, d: 6, h: 10,
     type: 'unique',
     ownerNPC: 'Taro',
     sigColor: NPC_COLORS.Taro,
@@ -221,7 +221,7 @@ export const NAMED_BUILDINGS = [
     id: 'workshop_property',
     name: 'The Workshop',
     district: 'industrial',
-    x: 21, z: -53, w: 14, d: 11, h: 8,
+    x: 7, z: -28, w: 8, d: 6, h: 8,
     type: 'unique',
     ownerNPC: null,
     sigColor: 0xF5C4B3,
@@ -231,7 +231,7 @@ export const NAMED_BUILDINGS = [
     id: 'vex_squat',
     name: "Vex's Squat",
     district: 'industrial',
-    x: 33, z: -51, w: 10, d: 9, h: 7,
+    x: -8, z: -30, w: 5, d: 4, h: 7,
     type: 'residential',
     ownerNPC: 'Vex',
     sigColor: NPC_COLORS.Vex,
@@ -247,7 +247,7 @@ export const NAMED_BUILDINGS = [
     id: 'yuna_flower_shop',
     name: "Yuna's Flower Shop",
     district: 'northtown',
-    x: 93, z: 81, w: 8, d: 7, h: 7,
+    x: 20.5, z: 37, w: 5, d: 4, h: 7,
     type: 'commercial',
     ownerNPC: 'Yuna',
     sigColor: NPC_COLORS.Yuna,
@@ -261,7 +261,7 @@ export const NAMED_BUILDINGS = [
     id: 'chapel',
     name: 'Chapel',
     district: 'northtown',
-    x: 78, z: 81,
+    x: 28, z: 38,
     type: 'unique',
     ownerNPC: null,
     sigColor: 0xFAEEDA,
@@ -272,7 +272,7 @@ export const NAMED_BUILDINGS = [
     id: 'kai_shack',
     name: "Kai's Dock Shack",
     district: 'northtown',
-    x: 60, z: 90, w: 7, d: 6, h: 5,
+    x: 28.5, z: 25.5, w: 4, d: 3, h: 5,
     type: 'residential',
     ownerNPC: 'Kai',
     sigColor: NPC_COLORS.Kai,
@@ -288,7 +288,7 @@ export const NAMED_BUILDINGS = [
     id: 'sora_building',
     name: "Sora's Building",
     district: 'uptown',
-    x: 103, z: 45, w: 10, d: 8, h: 15,
+    x: 38, z: 23, w: 5, d: 5, h: 15,
     type: 'residential',
     ownerNPC: 'Sora',
     sigColor: NPC_COLORS.Sora,
@@ -302,7 +302,7 @@ export const NAMED_BUILDINGS = [
     id: 'kenji_office',
     name: "Kenji's Office",
     district: 'uptown',
-    x: 101, z: 33, w: 9, d: 7, h: 14,
+    x: 46.5, z: 24.5, w: 6, d: 5, h: 14,
     type: 'commercial',
     ownerNPC: 'Kenji',
     sigColor: NPC_COLORS.Kenji,
@@ -316,7 +316,7 @@ export const NAMED_BUILDINGS = [
     id: 'the_hotel',
     name: 'The Grand Hotel',
     district: 'uptown',
-    x: 109, z: 35,
+    x: 42.5, z: 15,
     type: 'unique',
     ownerNPC: null,
     sigColor: 0xF0997B,
@@ -329,7 +329,7 @@ export const NAMED_BUILDINGS = [
     id: 'dante_tower',
     name: "Twin Tower — Dante's Lobby",
     district: 'tower',
-    x: -96, z: 60, w: 10, d: 9, h: 28,
+    x: -17.5, z: 21.5, w: 6, d: 6, h: 28,
     type: 'unique',
     ownerNPC: 'Dante',
     sigColor: NPC_COLORS.Dante,
@@ -343,7 +343,7 @@ export const NAMED_BUILDINGS = [
     id: 'quinn_apartment',
     name: "Quinn's Apartment",
     district: 'tower',
-    x: -84, z: 84, w: 10, d: 9, h: 30,
+    x: -30, z: 18.5, w: 5, d: 4, h: 30,
     type: 'residential',
     ownerNPC: 'Quinn',
     sigColor: NPC_COLORS.Quinn,
@@ -359,7 +359,7 @@ export const NAMED_BUILDINGS = [
     id: 'gus_dock_office',
     name: "Gus's Dock Office",
     district: 'port',
-    x: -33, z: 119, w: 9, d: 7, h: 7,
+    x: -18, z: 44, w: 5, d: 4, h: 7,
     type: 'commercial',
     ownerNPC: 'Gus',
     sigColor: NPC_COLORS.Gus,
@@ -373,7 +373,7 @@ export const NAMED_BUILDINGS = [
     id: 'marina_lighthouse',
     name: "Marina's Lighthouse",
     district: 'port',
-    x: -57, z: 135,
+    x: -24, z: 48,
     type: 'unique',
     ownerNPC: 'Marina',
     sigColor: NPC_COLORS.Marina,
@@ -384,7 +384,7 @@ export const NAMED_BUILDINGS = [
     id: 'shipping_yard',
     name: 'Shipping Yard',
     district: 'port',
-    x: -45, z: 117, w: 12, d: 9, h: 7,
+    x: -15, z: 50, w: 8, d: 5, h: 7,
     type: 'unique',
     ownerNPC: null,
     sigColor: 0x85B7EB,
@@ -402,19 +402,6 @@ export function getNamedBuildingPosition(id) {
   const b = _byId[id];
   if (!b) return null;
   return { x: b.x, z: b.z };
-}
-
-export function getNamedBuildingData(id) {
-  return _byId[id] || null;
-}
-
-export function getAllNamedBuildings() {
-  return NAMED_BUILDINGS;
-}
-
-// Return all named buildings for a given district
-export function getNamedBuildingsByDistrict(district) {
-  return NAMED_BUILDINGS.filter(b => b.district === district);
 }
 
 // ========== PROP TRACKING ==========

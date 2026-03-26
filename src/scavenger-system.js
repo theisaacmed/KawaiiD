@@ -5,7 +5,7 @@
 // Deposits at 4 PM, wages deducted at 6 AM
 
 import * as THREE from 'three';
-import { addItem, getMoney, deductMoney, hasItem, removeItem, hasAnyPlushie, removeAnyPlushie } from './inventory.js';
+import { addItem, getMoney, deductMoney, hasAnyPlushie, removeAnyPlushie } from './inventory.js';
 import { getCurrentRankIndex } from './jp-system.js';
 import { getGameHour, getDayNumber } from './time-system.js';
 import { showNotification } from './notifications.js';
@@ -34,11 +34,8 @@ let pipMesh = null;
 // --- Queries ---
 export function isAshHired() { return ashHired; }
 export function isAshHireUnlocked() { return getCurrentRankIndex() >= 3; }
-export function isPipUnlocked() { return pipUnlocked; }
 export function isPipRecruited() { return pipRecruited; }
 export function isPipHired() { return pipHired; }
-export function isAnyScavengerHired() { return ashHired || pipHired; }
-
 // Backward-compat aliases used by interaction.js and phone.js
 export function isRuinsKidHired() { return pipHired; }
 export function isRuinsKidHireUnlocked() { return pipRecruited; }
